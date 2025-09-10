@@ -9,6 +9,7 @@ import { GamesModule } from './games/games.module';
 import { SchedulingModule } from './scheduling/scheduling.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { ExportsModule } from './exports/exports.module';
+import { FixturesModule } from './fixtures/fixtures.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ExportsModule } from './exports/exports.module';
     SchedulingModule,
     IntegrationsModule,
     ExportsModule,
+    FixturesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

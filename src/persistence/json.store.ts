@@ -11,8 +11,10 @@ export class JsonStore<T extends { id: string }> {
   }
 
   async all(): Promise<T[]> {
-    if (!(await pathExists(this.file()))) return [];
-    return readJSON(this.file());
+    const filePath = this.file();
+    const exists: boolean = await pathExists(filePath);
+    if (!exists) return [];
+    return readJSON(filePath);
   }
 
   async saveAll(rows: T[]) {
