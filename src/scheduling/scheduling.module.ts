@@ -1,6 +1,17 @@
 import { Module } from '@nestjs/common';
 import { SchedulingController } from './scheduling.controller';
 import { SchedulingService } from './scheduling.service';
+import { PodSchedulerService } from './pod-scheduler.service';
+import { MatchingService } from './matching.service';
+import { CostService } from './cost.service';
 
-@Module({ controllers: [SchedulingController], providers: [SchedulingService] })
+@Module({
+  controllers: [SchedulingController],
+  providers: [
+    SchedulingService,
+    PodSchedulerService,
+    MatchingService,
+    CostService,
+  ],
+})
 export class SchedulingModule {}

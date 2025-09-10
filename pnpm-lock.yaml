@@ -29,6 +29,9 @@ importers:
       class-validator:
         specifier: ^0.14.2
         version: 0.14.2
+      edmonds-blossom:
+        specifier: ^1.0.0
+        version: 1.0.0
       fs-extra:
         specifier: ^11.3.1
         version: 11.3.1
@@ -1499,6 +1502,9 @@ packages:
 
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
+
+  edmonds-blossom@1.0.0:
+    resolution: {integrity: sha512-wz18RgLg21nW4afc80d080fZuAjiaePfSoHje56aOiH8mO6O5Mc/VAv7s8bCBJkxsks37e0cYTS0dNirsQ4/rg==}
 
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
@@ -4707,6 +4713,8 @@ snapshots:
       gopd: 1.2.0
 
   eastasianwidth@0.2.0: {}
+
+  edmonds-blossom@1.0.0: {}
 
   ee-first@1.1.1: {}
 
