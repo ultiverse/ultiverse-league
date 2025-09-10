@@ -4,6 +4,6 @@ import { ExportsService } from './exports.service';
 
 @Module({
   controllers: [ExportsController],
-  providers: [ExportsService]
+  providers: [ExportsService],
 })
 export class ExportsModule {}

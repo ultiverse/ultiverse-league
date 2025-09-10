@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   IsArray,
   IsInt,
@@ -38,6 +37,31 @@ export class PodScheduleByLeagueDto {
   @IsOptional() recencyWindow?: number;
   @IsOptional() @IsObject() history?: ScheduleInput['history'];
   @IsOptional() @IsObject() skill?: ScheduleInput['skill'];
+  @IsOptional()
+  @IsIn(['each-vs-both', 'one-each'])
+  pairingMode?: 'each-vs-both' | 'one-each';
+}
+
+export class PodScheduleByUcEventDto {
+  @IsInt()
+  @Min(1)
+  eventId!: number;
+
+  @IsInt()
+  @Min(1)
+  rounds!: number;
+
+  @IsOptional()
+  recencyWindow?: number;
+
+  @IsOptional()
+  @IsObject()
+  history?: ScheduleInput['history'];
+
+  @IsOptional()
+  @IsObject()
+  skill?: ScheduleInput['skill'];
+
   @IsOptional()
   @IsIn(['each-vs-both', 'one-each'])
   pairingMode?: 'each-vs-both' | 'one-each';

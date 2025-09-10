@@ -7,6 +7,12 @@ import {
   UCMeResponse,
   EventsQuery,
   toUcEventsParams,
+  TeamsQuery,
+  UCTeamsResponse,
+  toUcTeamsParams,
+  UCGamesResponse,
+  GamesQuery,
+  toUcGamesParams,
 } from './uc.types';
 
 type TokenState = { accessToken: string; expiresAt: number };
@@ -143,6 +149,28 @@ export class UCService {
           headers: auth,
         },
       );
+      return data;
+    });
+  }
+
+  async listTeams(params: TeamsQuery): Promise<UCTeamsResponse> {
+    return this.authed(async (cli, auth) => {
+      const qp = toUcTeamsParams(params);
+      const { data } = await cli.get<UCTeamsResponse>('/api/teams', {
+        params: qp,
+        headers: auth,
+      });
+      return data;
+    });
+  }
+
+  async listGames(params: GamesQuery): Promise<UCGamesResponse> {
+    return this.authed(async (cli, auth) => {
+      const qp = toUcGamesParams(params);
+      const { data } = await cli.get<UCGamesResponse>('/api/games', {
+        params: qp,
+        headers: auth,
+      });
       return data;
     });
   }

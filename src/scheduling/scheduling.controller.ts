@@ -4,6 +4,7 @@ import { PodSchedulerService } from './pod-scheduler.service';
 import {
   PodScheduleByIdsDto,
   PodScheduleByLeagueDto,
+  PodScheduleByUcEventDto,
   ScheduleRequestDto,
 } from './dto';
 import { FieldAllocator } from './field-allocator.util';
@@ -13,6 +14,7 @@ import {
   type RoundView,
   type ScheduleOutput,
 } from './types';
+import { UCService } from 'src/integrations/uc.service';
 
 @Controller('schedule')
 export class SchedulingController {
@@ -21,6 +23,7 @@ export class SchedulingController {
   constructor(
     private readonly podScheduler: PodSchedulerService,
     private readonly fixtures: FixturesService,
+    private readonly uc: UCService,
   ) {
     this.allocator = new FieldAllocator(fixtures);
   }
@@ -65,7 +68,37 @@ export class SchedulingController {
     return this.mapBlocksToView(raw, dto.leagueId);
   }
 
-  // ---- helper (typed) ----
+  // 🆕 Build pod schedule using UC teams for an event (each UC team is treated as a pod)
+  @Post('pods/by-uc-event')
+  async buildPodsByUcEvent(@Body() dto: PodScheduleByUcEventDto) {
+    // 1) Load UC teams
+    const teamsRes = await this.uc.listTeams({ event_id: dto.eventId });
+    const ucTeams = teamsRes.result;
+
+    // 2) Map UC teams -> pods (ids + friendly names). We use stable string IDs:
+    //    podId = `uc:team:${id}`
+    const podIds = ucTeams.map((t) => `uc:team:${t.id}`);
+
+    // 3) Build schedule (2 pods per side)
+    const raw = this.podScheduler.build({
+      pods: podIds,
+      rounds: dto.rounds,
+      recencyWindow: dto.recencyWindow,
+      skill: dto.skill,
+      history: dto.history,
+      pairingMode: dto.pairingMode ?? 'each-vs-both',
+    });
+
+    // 4) Map to view with fields & names
+    const leagueId = `uc:event:${dto.eventId}`;
+    const nameByPod: Record<string, string> = {};
+    for (const t of ucTeams) {
+      nameByPod[`uc:team:${t.id}`] = t.name ?? `Team ${t.id}`;
+    }
+
+    return this.mapBlocksToViewWithNames(raw, leagueId, nameByPod);
+  }
+
   private mapBlocksToView(
     raw: ScheduleOutput,
     leagueId?: string,
@@ -100,6 +133,39 @@ export class SchedulingController {
             pods: [blk.c, blk.d],
             teamName: `${name(blk.c)} + ${name(blk.d)}`,
           },
+          meta: {},
+        };
+      });
+
+      return { round: r.round, games };
+    });
+
+    return { leagueId, rounds };
+  }
+
+  private mapBlocksToViewWithNames(
+    raw: ScheduleOutput,
+    leagueId: string | undefined,
+    nameByPod: Record<string, string>,
+  ): ScheduleView {
+    const rounds: RoundView[] = raw.rounds.map((r, idx) => {
+      const slots = this.allocator.allocate(r.blocks.length, {
+        leagueId,
+        roundIndex: idx,
+        startBaseISO: '2025-06-01T22:00:00Z',
+        durationMins: 60,
+      });
+
+      const games: ScheduleGameView[] = r.blocks.map((blk, i) => {
+        const slot = slots[i];
+        const n = (id: string) => nameByPod[id] ?? id;
+        return {
+          gameId: `R${r.round}G${i + 1}`,
+          start: slot.start,
+          durationMins: slot.durationMins,
+          field: slot.field,
+          home: { pods: [blk.a, blk.b], teamName: `${n(blk.a)} + ${n(blk.b)}` },
+          away: { pods: [blk.c, blk.d], teamName: `${n(blk.c)} + ${n(blk.d)}` },
           meta: {},
         };
       });
