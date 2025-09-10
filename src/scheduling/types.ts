@@ -30,3 +30,23 @@ export type RoundBlocks = { round: number; blocks: GameBlock[] };
 export interface ScheduleOutput {
   rounds: RoundBlocks[];
 }
+
+export interface ScheduleGameView {
+  gameId: string;
+  start: string; // ISO datetime
+  durationMins: number;
+  field: { id: string; name: string };
+  home: { pods: PodId[]; teamName?: string };
+  away: { pods: PodId[]; teamName?: string };
+  meta?: Record<string, unknown>;
+}
+
+export interface RoundView {
+  round: number;
+  games: ScheduleGameView[];
+}
+
+export interface ScheduleView {
+  leagueId?: string;
+  rounds: RoundView[];
+}

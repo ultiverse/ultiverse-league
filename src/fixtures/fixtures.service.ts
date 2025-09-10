@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { League, Player, Team } from '../domain/models';
+import { League, Player, Team, Field } from '../domain/models';
 
 @Injectable()
 export class FixturesService {
@@ -49,6 +49,22 @@ export class FixturesService {
     meta: {},
   }));
 
+  private fields: Field[] = [
+    {
+      id: 'F1',
+      name: 'Field 1',
+      venue: 'Central Park',
+      meta: { lights: false },
+    },
+    {
+      id: 'F2',
+      name: 'Field 2',
+      venue: 'Central Park',
+      meta: { lights: false },
+    },
+    { id: 'F3', name: 'Field 3', venue: 'Riverside', meta: { lights: true } },
+  ];
+
   getLeagues(): League[] {
     return this.leagues;
   }
@@ -66,5 +82,12 @@ export class FixturesService {
   getPlayersByIds(ids: string[]): Player[] {
     const set = new Set(ids);
     return this.players.filter((p) => set.has(p.id));
+  }
+
+  getFields(): Field[] {
+    return this.fields;
+  }
+  getFieldById(id: string): Field | undefined {
+    return this.fields.find((f) => f.id === id);
   }
 }
