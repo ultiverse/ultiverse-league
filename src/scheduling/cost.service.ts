@@ -6,25 +6,24 @@ import {
   RoundIndexMatrix,
   SkillRatings,
 } from './types';
-import { BIG } from './scheduling.constants';
+import { hash2 } from './random.util';
 
-/**
- * Cost function weights. Lower cost = more desirable.
- */
 export interface CostWeights {
-  unseenPartnerWeight: number; // reward unseen partnerings (negative cost)
-  repeatedPartnerPenalty: number; // penalty per repeat partnering
-  recentPartnerPenalty: number; // penalty if within recency window
-  skillBalanceWeight: number; // weight * |skill(a)-skill(b)|
+  unseenPartnerWeight: number;
+  repeatedPartnerPenalty: number;
+  recentPartnerPenalty: number;
+  skillBalanceWeight: number;
+  jitter: number; // tiny value to break ties deterministically
 }
 
 @Injectable()
 export class CostService {
   private defaultWeights: CostWeights = {
-    unseenPartnerWeight: -5,
-    repeatedPartnerPenalty: 2,
-    recentPartnerPenalty: 3,
+    unseenPartnerWeight: -20,
+    repeatedPartnerPenalty: 4,
+    recentPartnerPenalty: 12,
     skillBalanceWeight: 0.2,
+    jitter: 0.001,
   };
 
   partnerCostMatrix(
@@ -41,13 +40,13 @@ export class CostService {
 
     const n = pods.length;
     const C: number[][] = Array.from({ length: n }, () =>
-      new Array<number>(n).fill(0),
+      Array.from({ length: n }, () => 0),
     );
 
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         if (i === j) {
-          C[i][j] = BIG;
+          C[i][j] = 1e9;
           continue;
         }
         const A = pods[i],
@@ -55,19 +54,16 @@ export class CostService {
 
         const repeats = pc[A]?.[B] ?? 0;
         const last = lr[A]?.[B];
-        const aSkill = skill?.[A] ?? undefined;
-        const bSkill = skill?.[B] ?? undefined;
+        const aSkill = skill?.[A];
+        const bSkill = skill?.[B];
 
         let cost = 0;
 
-        // Prefer unseen partners (give negative cost)
-        if (repeats === 0) {
-          cost += w.unseenPartnerWeight;
-        } else {
-          cost += repeats * w.repeatedPartnerPenalty;
-        }
+        cost +=
+          repeats === 0
+            ? w.unseenPartnerWeight
+            : repeats * w.repeatedPartnerPenalty;
 
-        // Recency penalty (if they partnered recently)
         if (
           typeof last === 'number' &&
           currentRoundIndex - last <= recencyWindow
@@ -75,15 +71,17 @@ export class CostService {
           cost += w.recentPartnerPenalty;
         }
 
-        // Optional skill balancing: minimize |diff|
         if (aSkill !== undefined && bSkill !== undefined) {
           cost += Math.abs(aSkill - bSkill) * w.skillBalanceWeight;
         }
 
+        // Deterministic jitter
+        cost += (hash2(i, j) - 0.5) * w.jitter;
+
         C[i][j] = cost;
       }
     }
-    // Blossom expects symmetric costs; ensure symmetry
+    // symmetry
     for (let i = 0; i < n; i++)
       for (let j = i + 1; j < n; j++) {
         const s = (C[i][j] + C[j][i]) / 2;
@@ -92,7 +90,6 @@ export class CostService {
     return C;
   }
 
-  // Pair-vs-pair cost (for opponent stage). We’ll use pod-level opposed counts as a proxy.
   pairVsPairCost(
     pairA: [PodId, PodId],
     pairB: [PodId, PodId],
@@ -103,7 +100,7 @@ export class CostService {
     const oc: CountMatrix = history?.opposedCounts ?? {};
     const lr: RoundIndexMatrix = history?.lastOpposedRound ?? {};
 
-    const podsCross = [
+    const cross: [PodId, PodId][] = [
       [pairA[0], pairB[0]],
       [pairA[0], pairB[1]],
       [pairA[1], pairB[0]],
@@ -113,15 +110,17 @@ export class CostService {
     let repeats = 0;
     let recentHits = 0;
 
-    for (const [x, y] of podsCross) {
+    for (const [x, y] of cross) {
       repeats += oc[x]?.[y] ?? 0;
       const last = lr[x]?.[y];
-      if (typeof last === 'number' && currentRoundIndex - last <= recencyWindow)
+      if (
+        typeof last === 'number' &&
+        currentRoundIndex - last <= recencyWindow
+      ) {
         recentHits++;
+      }
     }
 
-    // Basic scheme: prefer unseen pair-vs-pair (low cost),
-    // penalize repeats and recency.
-    return repeats * 2 + recentHits * 2;
+    return repeats * 2 + recentHits * 4;
   }
 }

@@ -9,6 +9,7 @@ import {
   ScheduleOutput,
 } from './types';
 import { BIG } from './scheduling.constants';
+import { cloneHistory, applyRoundToHistory } from './history.util';
 
 @Injectable()
 export class PodSchedulerService {
@@ -20,30 +21,28 @@ export class PodSchedulerService {
   build(input: ScheduleInput): ScheduleOutput {
     const pods = [...input.pods];
     if (pods.length % 4 !== 0) {
-      throw new Error(
-        'Number of pods must be a multiple of 4 (to form A&B vs C&D blocks).',
-      );
+      throw new Error('Number of pods must be a multiple of 4.');
     }
-
     const recencyWindow = input.recencyWindow ?? 2;
-    const rounds: RoundBlocks[] = [];
 
-    // Current round index is 0-based within this call.
-    for (let r = 0; r < input.rounds; r++) {
-      // 1) Partner matching: min-cost perfect matching across pods.
+    // ✅ working history so each round sees the previous rounds’ results
+    const workingHistory = cloneHistory(input.history);
+
+    const rounds: RoundBlocks[] = [];
+    // We use an absolute round index that increments within this build call
+    let rAbs = input.baseRoundIndex ?? 0;
+
+    for (let r = 0; r < input.rounds; r++, rAbs++) {
+      // Partner matching
       const partnerCosts = this.costs.partnerCostMatrix(
         pods,
-        input.history,
+        workingHistory,
         input.skill,
-        r,
+        rAbs,
         recencyWindow,
       );
-
-      // Depending on your blossom build, you may need invert=true for min-cost.
-      // We’ll default to invert=false, and confirm with tests.
       const mate = this.matching.perfectMatching(partnerCosts);
 
-      // Convert mate[] to list of unique pairs
       const used = new Set<number>();
       const pairs: [PodId, PodId][] = [];
       for (let i = 0; i < mate.length; i++) {
@@ -54,15 +53,13 @@ export class PodSchedulerService {
           used.add(j);
         }
       }
-
-      // 2) Opponent matching: group pairs into blocks of 2 pairs (4 pods total).
-      // We’ll create a cost matrix over pairs and run Blossom again.
-      if (pairs.length % 2 !== 0) {
+      if (pairs.length % 2 !== 0)
         throw new Error('Internal: pairs length must be even.');
-      }
+
+      // Opponent matching (pair vs pair)
       const m = pairs.length;
-      const pairCosts: number[][] = Array.from({ length: m }, (): number[] =>
-        new Array<number>(m).fill(0),
+      const pairCosts: number[][] = Array.from({ length: m }, () =>
+        Array<number>(m).fill(0),
       );
       for (let i = 0; i < m; i++) {
         for (let j = 0; j < m; j++) {
@@ -73,8 +70,23 @@ export class PodSchedulerService {
           pairCosts[i][j] = this.costs.pairVsPairCost(
             pairs[i],
             pairs[j],
-            input.history,
-            r,
+            workingHistory,
+            rAbs,
+            recencyWindow,
+          );
+        }
+      }
+      for (let i = 0; i < m; i++) {
+        for (let j = 0; j < m; j++) {
+          if (i === j) {
+            pairCosts[i][j] = BIG;
+            continue;
+          }
+          pairCosts[i][j] = this.costs.pairVsPairCost(
+            pairs[i],
+            pairs[j],
+            workingHistory,
+            rAbs,
             recencyWindow,
           );
         }
@@ -84,7 +96,6 @@ export class PodSchedulerService {
           const s = (pairCosts[i][j] + pairCosts[j][i]) / 2;
           pairCosts[i][j] = pairCosts[j][i] = s;
         }
-
       const pairMate = this.matching.perfectMatching(pairCosts);
 
       const seen = new Set<number>();
@@ -101,7 +112,9 @@ export class PodSchedulerService {
       }
 
       rounds.push({ round: r + 1, blocks });
-      // NOTE: Not mutating history here; caller can capture the schedule and update persistent history matrices after committing.
+
+      // ✅ update history so the next round penalizes repeats and recency
+      applyRoundToHistory(workingHistory, blocks, rAbs);
     }
 
     return { rounds };

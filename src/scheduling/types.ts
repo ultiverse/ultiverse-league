@@ -18,10 +18,11 @@ export interface SkillRatings {
 export interface ScheduleInput {
   pods: PodId[];
   rounds: number;
-  recencyWindow?: number; // penalize repeats within this many rounds
-  skill?: SkillRatings;
+  recencyWindow?: number;
   history?: HistoryState;
+  skill?: SkillRatings;
   pairingMode?: 'each-vs-both' | 'one-each';
+  baseRoundIndex?: number;
 }
 
 export type GameBlock = { a: PodId; b: PodId; c: PodId; d: PodId };
