@@ -1,0 +1,47 @@
+name: CI (API)
+
+on:
+  pull_request:
+    paths: ['apps/api/**', '.github/workflows/**']
+  push:
+    branches: [main]
+    paths: ['apps/api/**', '.github/workflows/**']
+
+permissions:
+  contents: read
+
+jobs:
+  api-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      UC_API_DOMAIN: http://localhost
+      UC_CLIENT_ID: test
+      UC_CLIENT_SECRET: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: true
+
+      - run: pnpm build # type check/compile
+      - run: pnpm lint
+      - run: pnpm test -- --coverage --runInBand
+      - run: pnpm test:e2e -- --runInBand --logHeapUsage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-api
+          path: apps/api/coverage
+          if-no-files-found: ignore

@@ -1,0 +1,52 @@
+services:
+  - type: web
+    name: ultiverse-api
+    runtime: node
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: apps/api
+    buildCommand: |
+      corepack enable
+      pnpm install --frozen-lockfile
+      pnpm build
+    startCommand: pnpm start:prod
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 3000
+      - key: UC_CLIENT_ID
+        sync: false
+      - key: UC_CLIENT_SECRET
+        sync: false
+      - key: UC_API_DOMAIN
+        sync: false
+    healthCheckPath: /health
+    previews:
+      generation: automatic
+    buildFilter:
+      paths:
+        - apps/api/**
+      ignoredPaths:
+        - apps/web/**
+
+  # - type: web
+  #   name: ultiverse-web
+  #   runtime: static
+  #   plan: free
+  #   region: oregon
+  #   branch: main
+  #   rootDir: apps/web
+  #   buildCommand: |
+  #     corepack enable
+  #     pnpm install --frozen-lockfile
+  #     pnpm build
+  #   staticPublishPath: dist
+  #   previews:
+  #     generation: automatic
+  #   buildFilter:
+  #     paths:
+  #       - apps/web/**
+  #     ignoredPaths:
+  #       - apps/api/**

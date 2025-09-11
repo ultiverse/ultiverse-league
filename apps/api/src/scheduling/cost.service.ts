@@ -7,6 +7,7 @@ import {
   SkillRatings,
 } from './types';
 import { hash2 } from './random.util';
+import { BIG } from './scheduling.constants';
 
 export interface CostWeights {
   unseenPartnerWeight: number;
@@ -46,7 +47,7 @@ export class CostService {
     for (let i = 0; i < n; i++) {
       for (let j = 0; j < n; j++) {
         if (i === j) {
-          C[i][j] = 1e9;
+          C[i][j] = BIG;
           continue;
         }
         const A = pods[i],
