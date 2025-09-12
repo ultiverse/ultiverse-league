@@ -73,7 +73,7 @@ describe('PodScheduler – verification (8 pods, 6 rounds)', () => {
       maxRecencyViolations: 0, // strict on recency
       checkFairness: false, // enable later if desired
     });
-
+    console.log('result.violations=============', result.violations);
     // If you want to debug locally, you can log result.violations here.
     expect(result.pass).toBe(true);
   });

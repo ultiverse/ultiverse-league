@@ -39,86 +39,92 @@ export interface UCEventsResponse {
   errors?: unknown[];
 }
 
+export type Pagination = {
+  page?: number; // 1-based
+  per_page?: number; // 1..100
+};
+
 /**
  * Only fields allowed by UC /api/events help.
  * Multi-value fields use arrays; we’ll serialize them as CSV in a helper.
  */
-export type EventsQuery = Partial<{
-  age: number[]; // multiple
-  ancestor_page_id: number;
-  all_tags: boolean;
-  end: string; // YYYY-MM-DD
-  event_series_id: number[]; // multiple
-  event_status: ('registering' | 'happening')[]; // multiple
-  family_id: number;
-  id: number[] | number | string; // single | array | CSV string
-  gender: ('men' | 'mixed' | 'open' | 'women')[]; // multiple
-  order_by: 'date_desc' | 'date_asc' | 'name_asc' | 'start_date_asc';
-  organization_id: number;
-  person_id: number;
-  publicity: 'any' | 'hidden' | 'person' | 'public' | 'coordinator';
-  registration_status: (
-    | 'accepted'
-    | 'waitlisted'
-    | 'pending'
-    | 'incomplete'
-    | 'inactive'
-    | 'interested'
-  )[]; // multiple
-  search: string;
-  service_id: number;
-  site_id: number;
-  site_list_scope: 'site' | 'network' | 'service';
-  sport_id: number[]; // multiple
-  surface: (
-    | 'grass'
-    | 'sand'
-    | 'turf'
-    | 'hard'
-    | 'venue'
-    | 'outdoor_venue'
-    | 'ice'
-    | 'indoor_turf'
-    | 'indoor_pool'
-    | 'outdoor_pool'
-  )[]; // multiple
-  start: UCStartParam; // allowed enum values
-  tag: string[]; // multiple
-  tag_ids: number[]; // multiple
-  team_id: number;
-  through: string; // YYYY-MM-DD
-  type: (
-    | 'administrative'
-    | 'camp'
-    | 'day camp'
-    | 'class'
-    | 'clinic'
-    | 'coaching'
-    | 'competition'
-    | 'hat tournament'
-    | 'function'
-    | 'league'
-    | 'meet'
-    | 'other'
-    | 'pickup'
-    | 'race'
-    | 'season'
-    | 'tournament'
-    | 'training'
-    | 'tryout'
-    | 'practice'
-  )[]; // multiple
-  location: string;
-  region: string;
-  country: string; // 2-char
-  distance: number; // 1..10000
-  distance_unit: 'km' | 'mi';
-  latitude: number; // -90..90
-  longitude: number; // -180..180
-  locality: string;
-  continent: string;
-  is_fixed_bounds: boolean;
-}>;
+export type EventsQuery = Pagination &
+  Partial<{
+    age: number[]; // multiple
+    ancestor_page_id: number;
+    all_tags: boolean;
+    end: string; // YYYY-MM-DD
+    event_series_id: number[]; // multiple
+    event_status: ('registering' | 'happening')[]; // multiple
+    family_id: number;
+    id: number[] | number | string; // single | array | CSV string
+    gender: ('men' | 'mixed' | 'open' | 'women')[]; // multiple
+    order_by: 'date_desc' | 'date_asc' | 'name_asc' | 'start_date_asc';
+    organization_id: number;
+    person_id: number;
+    publicity: 'any' | 'hidden' | 'person' | 'public' | 'coordinator';
+    registration_status: (
+      | 'accepted'
+      | 'waitlisted'
+      | 'pending'
+      | 'incomplete'
+      | 'inactive'
+      | 'interested'
+    )[]; // multiple
+    search: string;
+    service_id: number;
+    site_id: number;
+    site_list_scope: 'site' | 'network' | 'service';
+    sport_id: number[]; // multiple
+    surface: (
+      | 'grass'
+      | 'sand'
+      | 'turf'
+      | 'hard'
+      | 'venue'
+      | 'outdoor_venue'
+      | 'ice'
+      | 'indoor_turf'
+      | 'indoor_pool'
+      | 'outdoor_pool'
+    )[]; // multiple
+    start: UCStartParam; // allowed enum values
+    tag: string[]; // multiple
+    tag_ids: number[]; // multiple
+    team_id: number;
+    through: string; // YYYY-MM-DD
+    type: (
+      | 'administrative'
+      | 'camp'
+      | 'day camp'
+      | 'class'
+      | 'clinic'
+      | 'coaching'
+      | 'competition'
+      | 'hat tournament'
+      | 'function'
+      | 'league'
+      | 'meet'
+      | 'other'
+      | 'pickup'
+      | 'race'
+      | 'season'
+      | 'tournament'
+      | 'training'
+      | 'tryout'
+      | 'practice'
+    )[]; // multiple
+    location: string;
+    region: string;
+    country: string; // 2-char
+    distance: number; // 1..10000
+    distance_unit: 'km' | 'mi';
+    latitude: number; // -90..90
+    longitude: number; // -180..180
+    locality: string;
+    continent: string;
+    is_fixed_bounds: boolean;
+  }>;
 
 /** Serialize EventsQuery to UC-friendly params (arrays → CSV, drop empty/undefined). */
 export function toUcEventsParams(
@@ -269,17 +275,18 @@ export interface UCTeamsResponse {
   errors?: unknown[];
 }
 
-export type TeamsQuery = Partial<{
-  id: number[] | number | string; // single | array | CSV
-  event_id: number; // 👈 primary we’ll use
-  team_id: number[]; // multiple allowed
-  team: string; // slug
-  site_id: number;
-  division_id: number;
-  person_id: number;
-  order_by: string; // UC allows arbitrary field list
-  status: string; // not strictly enumerated here
-}>;
+export type TeamsQuery = Pagination &
+  Partial<{
+    id: number[] | number | string; // single | array | CSV
+    event_id: number; // 👈 primary we’ll use
+    team_id: number[]; // multiple allowed
+    team: string; // slug
+    site_id: number;
+    division_id: number;
+    person_id: number;
+    order_by: string; // UC allows arbitrary field list
+    status: string; // not strictly enumerated here
+  }>;
 
 export function toUcTeamsParams(
   q?: TeamsQuery,
@@ -342,57 +349,58 @@ export const UC_GAME_STATUS = [
 ] as const;
 export type UCGameStatus = (typeof UC_GAME_STATUS)[number];
 
-export type GamesQuery = Partial<{
-  id: number[] | number | string;
-  site_id: number;
-  network_id: number;
-  event_id: number; // 👈 primary we’ll use
-  stage_id: number;
-  team_id: number[]; // multiple
-  team: string; // slug
-  field_id: number;
-  field: string; // slug
-  division_id: number;
-  person_id: number;
-  schedule_group_id: number;
-  allow_hidden: boolean;
-  active_events_only: boolean;
-  recent_events_only: boolean;
-  status: UCGameStatus[]; // multiple
-  referee_id: number;
-  date: string; // 'YYYY-MM-DD'
-  time: string; // 'HH:mm:ss'
-  min_date: string;
-  max_date: string;
-  min_end_date: string;
-  max_end_date: string;
-  min_time: string;
-  max_time: string;
-  min_end_time: string;
-  max_end_time: string;
-  weekday: number; // 0..6
-  min_start_diff_minutes: number;
-  max_start_diff_minutes: number;
-  min_end_diff_minutes: number;
-  max_end_diff_minutes: number;
-  allow_unplayed_ties: boolean;
-  limit_returned_fields: boolean;
-  order_by: string;
-  game_type:
-    | 'all'
-    | 'missing_result'
-    | 'with_result'
-    | 'upcoming'
-    | 'played'
-    | 'live_scoreboard'
-    | 'low_game_report'
-    | 'conflicting'
-    | 'missing_spirit'
-    | 'missing_score';
-  field_reservation_id: number;
-  field_number: string;
-  is_practice: boolean;
-}>;
+export type GamesQuery = Pagination &
+  Partial<{
+    id: number[] | number | string;
+    site_id: number;
+    network_id: number;
+    event_id: number; // 👈 primary we’ll use
+    stage_id: number;
+    team_id: number[]; // multiple
+    team: string; // slug
+    field_id: number;
+    field: string; // slug
+    division_id: number;
+    person_id: number;
+    schedule_group_id: number;
+    allow_hidden: boolean;
+    active_events_only: boolean;
+    recent_events_only: boolean;
+    status: UCGameStatus[]; // multiple
+    referee_id: number;
+    date: string; // 'YYYY-MM-DD'
+    time: string; // 'HH:mm:ss'
+    min_date: string;
+    max_date: string;
+    min_end_date: string;
+    max_end_date: string;
+    min_time: string;
+    max_time: string;
+    min_end_time: string;
+    max_end_time: string;
+    weekday: number; // 0..6
+    min_start_diff_minutes: number;
+    max_start_diff_minutes: number;
+    min_end_diff_minutes: number;
+    max_end_diff_minutes: number;
+    allow_unplayed_ties: boolean;
+    limit_returned_fields: boolean;
+    order_by: string;
+    game_type:
+      | 'all'
+      | 'missing_result'
+      | 'with_result'
+      | 'upcoming'
+      | 'played'
+      | 'live_scoreboard'
+      | 'low_game_report'
+      | 'conflicting'
+      | 'missing_spirit'
+      | 'missing_score';
+    field_reservation_id: number;
+    field_number: string;
+    is_practice: boolean;
+  }>;
 
 export function toUcGamesParams(
   q?: GamesQuery,
