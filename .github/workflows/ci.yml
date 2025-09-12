@@ -13,9 +13,6 @@ permissions:
 jobs:
   api-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/api
     env:
       NODE_ENV: test
       PORT: 3000
@@ -24,19 +21,35 @@ jobs:
       UC_CLIENT_SECRET: test
     steps:
       - uses: actions/checkout@v4
+
+      # 1) Install pnpm first so setup-node's cache step can call it
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      # 2) Now enable Node + cache for pnpm (points at the lockfile in repo root)
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: pnpm
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-          run_install: true
+          cache-dependency-path: pnpm-lock.yaml
 
-      - run: pnpm build # type check/compile
-      - run: pnpm lint
-      - run: pnpm test -- --coverage --runInBand
-      - run: pnpm test:e2e -- --runInBand --logHeapUsage
+      # 3) Install deps at the repo root (workspace)
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 4) Run app tasks inside apps/api
+      - name: Build
+        run: pnpm -C apps/api build
+
+      - name: Lint
+        run: pnpm -C apps/api lint
+
+      - name: Test
+        run: pnpm -C apps/api test -- --coverage --runInBand
+
+      - name: E2E
+        run: pnpm -C apps/api test:e2e -- --runInBand --logHeapUsage
 
       - name: Upload coverage
         if: always()
