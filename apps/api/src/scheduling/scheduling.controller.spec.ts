@@ -2,7 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SchedulingController } from './scheduling.controller';
 import { PodSchedulerService } from './pod-scheduler.service';
 import { FixturesService } from '../fixtures/fixtures.service';
-import { UCService } from 'src/integrations/uc.service';
+
+// ✅ Inject the provider-agnostic Teams port
+import { TEAMS_PROVIDER } from '../integrations/ports';
 
 let allocateMock: jest.Mock;
 
@@ -27,7 +29,9 @@ describe('SchedulingController', () => {
   const fixturesMock = {
     getTeams: jest.fn(),
   };
-  const ucMock = {
+
+  // 👇 Provider-agnostic Teams port mock (backs UC today via UCAdapter)
+  const teamsProviderMock = {
     listTeams: jest.fn(),
   };
 
@@ -40,7 +44,7 @@ describe('SchedulingController', () => {
       providers: [
         { provide: PodSchedulerService, useValue: schedulerMock },
         { provide: FixturesService, useValue: fixturesMock },
-        { provide: UCService, useValue: ucMock },
+        { provide: TEAMS_PROVIDER, useValue: teamsProviderMock }, // 👈 inject token
       ],
     }).compile();
 
@@ -207,15 +211,14 @@ describe('SchedulingController', () => {
   });
 
   describe('POST /schedule/pods/by-uc-event (buildPodsByUcEvent)', () => {
-    it('fetches UC teams, maps to pod IDs, and names teams from UC data', async () => {
-      ucMock.listTeams.mockResolvedValueOnce({
-        result: [
-          { id: 10, name: 'UC Red' },
-          { id: 20, name: 'UC Blue' },
-          { id: 30, name: 'UC Green' },
-          { id: 40, name: 'UC Yellow' },
-        ],
-      });
+    it('fetches teams via provider port, maps to pod IDs, and names teams from response', async () => {
+      // Port returns TeamSummary[] (provider-agnostic)
+      teamsProviderMock.listTeams.mockResolvedValueOnce([
+        { id: '10', name: 'UC Red', division: null },
+        { id: '20', name: 'UC Blue', division: null },
+        { id: '30', name: 'UC Green', division: null },
+        { id: '40', name: 'UC Yellow', division: null },
+      ]);
 
       schedulerMock.build.mockReturnValueOnce({
         rounds: [
@@ -243,7 +246,7 @@ describe('SchedulingController', () => {
       // leagueId is uc:event:<eventId>
       expect(out.leagueId).toBe('uc:event:123');
 
-      // names mapped from UC response
+      // names mapped from TeamSummary[]
       expect(out.rounds[0].games[0].home.teamName).toBe('UC Red + UC Blue');
       expect(out.rounds[0].games[0].away.teamName).toBe('UC Green + UC Yellow');
 

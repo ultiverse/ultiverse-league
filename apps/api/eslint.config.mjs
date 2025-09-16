@@ -25,6 +25,21 @@ export default tseslint.config(
     },
   },
   {
+   files: ['**/*.ts', '**/*.tsx'],
+   languageOptions: {
+     parserOptions: {
+       // Explicit projects so types are 100% available to the rules
+       project: [
+         './tsconfig.json',
+         './apps/api/tsconfig.json',        // <— adjust if your path differs
+         // add more here if you lint multiple packages/apps
+       ],
+       tsconfigRootDir: import.meta.dirname,
+       projectService: false,               // prefer explicit "project" for TS files
+     },
+   },
+},
+  {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',

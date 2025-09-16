@@ -5,7 +5,7 @@ import { PodSchedulerService } from './pod-scheduler.service';
 import { MatchingService } from './matching.service';
 import { CostService } from './cost.service';
 import { FixturesService } from 'src/fixtures/fixtures.service';
-import { UCService } from 'src/integrations/uc.service';
+import { UCModule } from 'src/integrations/uc/uc.module';
 
 @Module({
   controllers: [SchedulingController],
@@ -15,7 +15,7 @@ import { UCService } from 'src/integrations/uc.service';
     MatchingService,
     CostService,
     FixturesService,
-    UCService,
   ],
+  imports: [UCModule],
 })
 export class SchedulingModule {}

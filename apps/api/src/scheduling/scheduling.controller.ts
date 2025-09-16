@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { FixturesService } from '../fixtures/fixtures.service';
 import { PodSchedulerService } from './pod-scheduler.service';
 import {
@@ -14,7 +14,9 @@ import {
   type RoundView,
   type ScheduleOutput,
 } from './types';
-import { UCService } from 'src/integrations/uc.service';
+
+import { TEAMS_PROVIDER } from '../integrations/ports';
+import type { ITeamsProvider, TeamSummary } from '../integrations/ports';
 
 @Controller('schedule')
 export class SchedulingController {
@@ -23,7 +25,7 @@ export class SchedulingController {
   constructor(
     private readonly podScheduler: PodSchedulerService,
     private readonly fixtures: FixturesService,
-    private readonly uc: UCService,
+    @Inject(TEAMS_PROVIDER) private readonly teamsProvider: ITeamsProvider,
   ) {
     this.allocator = new FieldAllocator(fixtures);
   }
@@ -68,19 +70,20 @@ export class SchedulingController {
     return this.mapBlocksToView(raw, dto.leagueId);
   }
 
-  // 🆕 Build pod schedule using UC teams for an event (each UC team is treated as a pod)
+  /**
+   * Build pod schedule using provider teams for an external event.
+   * Today we pass a UC event id, but this is wired through the generic Teams port.
+   * Each external team becomes a "pod".
+   */
   @Post('pods/by-uc-event')
   async buildPodsByUcEvent(@Body() dto: PodScheduleByUcEventDto) {
-    // 1) Load UC teams
-    const teamsRes = await this.uc.listTeams({ event_id: dto.eventId });
-    const ucTeams = teamsRes.result;
+    const teamSummaries: TeamSummary[] = await this.teamsProvider.listTeams(
+      String(dto.eventId),
+    );
 
-    // 2) Map UC teams -> pods (ids + friendly names). We use stable string IDs:
-    //    podId = `uc:team:${id}`
-    const podIds = ucTeams.map((t) => `uc:team:${t.id}`);
+    const podIds = teamSummaries.map((t) => `uc:team:${t.id}`);
 
-    // 3) Build schedule (2 pods per side)
-    const raw = this.podScheduler.build({
+    const raw: ScheduleOutput = this.podScheduler.build({
       pods: podIds,
       rounds: dto.rounds,
       recencyWindow: dto.recencyWindow,
@@ -89,10 +92,9 @@ export class SchedulingController {
       pairingMode: dto.pairingMode ?? 'each-vs-both',
     });
 
-    // 4) Map to view with fields & names
     const leagueId = `uc:event:${dto.eventId}`;
     const nameByPod: Record<string, string> = {};
-    for (const t of ucTeams) {
+    for (const t of teamSummaries) {
       nameByPod[`uc:team:${t.id}`] = t.name ?? `Team ${t.id}`;
     }
 
