@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { UCController } from './uc.controller';
 import { UCService } from './uc.service';
+import { UCModule } from './uc/uc.module';
 
 @Module({
-  controllers: [UCController],
   providers: [UCService],
   exports: [UCService],
+  imports: [UCModule],
 })
 export class IntegrationsModule {}

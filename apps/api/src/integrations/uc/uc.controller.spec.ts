@@ -3,7 +3,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { UCController } from './uc.controller';
-import { UCService } from './uc.service';
+import { UCService } from '../uc.service';
 
 // ---- Mock uc.types so we control parsing + allowed lists ----
 const parseCsvEnum = jest.fn();
@@ -67,7 +67,7 @@ describe('UCController', () => {
 
       ucMock.listEvents.mockResolvedValueOnce({ result: [] });
 
-      const out = await controller.events(
+      const out = await controller.getEvents(
         'league,tournament', // typeCSV
         'name_asc', // order_by
         '42', // site_id
@@ -91,7 +91,7 @@ describe('UCController', () => {
 
       ucMock.listEvents.mockResolvedValueOnce({ ok: true });
 
-      await controller.events('practice', 'date_desc', '7', 'bogus');
+      await controller.getEvents('practice', 'date_desc', '7', 'bogus');
 
       expect(ucMock.listEvents).toHaveBeenCalledWith({
         // no 'type'
@@ -108,7 +108,7 @@ describe('UCController', () => {
 
       ucMock.listEvents.mockResolvedValueOnce({ ok: 1 });
 
-      await controller.events('practice', 'not_valid', undefined, undefined);
+      await controller.getEvents('practice', 'not_valid', undefined, undefined);
 
       expect(ucMock.listEvents).toHaveBeenCalledWith({
         type: ['practice'],
