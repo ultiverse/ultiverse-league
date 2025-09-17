@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
-import { UCModule } from './uc/uc.module';
+import { UCAdapter } from './uc/uc.adapter';
+import { TEAMS_PROVIDER } from './ports';
 
 @Module({
-  imports: [UCModule],
+  providers: [UCAdapter, { provide: TEAMS_PROVIDER, useExisting: UCAdapter }],
+  exports: [TEAMS_PROVIDER],
 })
 export class IntegrationsModule {}
