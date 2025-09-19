@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UCRegistrationsResponse } from '../types/registrations';
+import { UCRegistrationsResponse } from '@ultiverse/shared-types';
 import { UCClient } from '../uc.client';
 
 type QueryParams = Record<string, string | number | boolean>;

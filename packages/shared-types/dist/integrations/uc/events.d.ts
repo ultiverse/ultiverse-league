@@ -1,0 +1,62 @@
+import { Pagination, UC_EVENT_ORDER_BY, UCStartParam } from './common';
+export interface UCEvent {
+    model: 'event';
+    id: number;
+    type: string;
+    name: string;
+    start?: string;
+    end?: string;
+    slug?: string;
+    organization_id?: number;
+    site_id?: number;
+    is_public?: boolean;
+    images?: Record<string, string>;
+    [k: string]: unknown;
+}
+export interface UCEventsResponse {
+    action: string;
+    status: number;
+    count: number;
+    result: UCEvent[];
+    errors?: unknown[];
+}
+export type EventsQuery = Pagination & Partial<{
+    age: number[];
+    ancestor_page_id: number;
+    all_tags: boolean;
+    end: string;
+    event_series_id: number[];
+    event_status: ('registering' | 'happening')[];
+    family_id: number;
+    id: number[] | number | string;
+    gender: ('men' | 'mixed' | 'open' | 'women')[];
+    order_by: 'date_desc' | 'date_asc' | 'name_asc' | 'start_date_asc';
+    organization_id: number;
+    person_id: number;
+    publicity: 'any' | 'hidden' | 'person' | 'public' | 'coordinator';
+    registration_status: ('accepted' | 'waitlisted' | 'pending' | 'incomplete' | 'inactive' | 'interested')[];
+    search: string;
+    service_id: number;
+    site_id: number;
+    site_list_scope: 'site' | 'network' | 'service';
+    sport_id: number[];
+    surface: ('grass' | 'sand' | 'turf' | 'hard' | 'venue' | 'outdoor_venue' | 'ice' | 'indoor_turf' | 'indoor_pool' | 'outdoor_pool')[];
+    start: UCStartParam;
+    tag: string[];
+    tag_ids: number[];
+    team_id: number;
+    through: string;
+    type: ('administrative' | 'camp' | 'day camp' | 'class' | 'clinic' | 'coaching' | 'competition' | 'hat tournament' | 'function' | 'league' | 'meet' | 'other' | 'pickup' | 'race' | 'season' | 'tournament' | 'training' | 'tryout' | 'practice')[];
+    location: string;
+    region: string;
+    country: string;
+    distance: number;
+    distance_unit: 'km' | 'mi';
+    latitude: number;
+    longitude: number;
+    locality: string;
+    continent: string;
+    is_fixed_bounds: boolean;
+}>;
+export declare function toUcEventsParams(q?: EventsQuery): Record<string, string | number | boolean> | undefined;
+export type UCEventOrderBy = (typeof UC_EVENT_ORDER_BY)[number];

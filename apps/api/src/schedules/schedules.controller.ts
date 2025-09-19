@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { SchedulesService } from './schedules.service';
 import { GeneratePodsDto } from './dto/generate-pods.dto';
-import { ScheduleView } from './schedules.types';
+import { ScheduleView } from '@ultiverse/shared-types';
 
 @Controller()
 export class SchedulesController {

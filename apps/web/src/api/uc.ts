@@ -1,8 +1,6 @@
 import { api } from './client';
+import { UCEventsResponse, UCTeamsResponse } from '@ultiverse/shared-types';
 
-export type UCEvent = { id: number; name: string };
-export type UCTeam  = { id: number; name: string };
-
-export const getLeagues = () => api<UCEvent[]>('/uc/events');
+export const getLeagues = () => api<UCEventsResponse>('/uc/events');
 export const getTeamsByLeague = (eventId: number) =>
-  api<UCTeam[]>(`/uc/teams?event_id=${eventId}`);
+  api<UCTeamsResponse>(`/uc/teams?event_id=${eventId}`);

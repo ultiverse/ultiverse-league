@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { GamesQuery, toUcGamesParams, UCGamesResponse } from '../types/games';
+import {
+  GamesQuery,
+  toUcGamesParams,
+  UCGamesResponse,
+} from '@ultiverse/shared-types';
 import { UCClient } from '../uc.client';
 
 @Injectable()

@@ -1,4 +1,4 @@
-import { League } from '../../domain/models';
+import { League } from '@ultiverse/shared-types';
 
 export interface LeagueRepository {
   findLatest(): Promise<League | null>;

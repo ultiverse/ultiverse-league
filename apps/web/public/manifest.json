@@ -1,0 +1,16 @@
+{
+  "name": "Ultiverse League Manager",
+  "short_name": "Ultiverse",
+  "description": "Ultimate frisbee league management application",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1976d2",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

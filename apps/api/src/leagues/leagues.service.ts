@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { League } from '../domain/models';
+import { League } from '@ultiverse/shared-types';
 import { LEAGUE_REPO, type LeagueRepository } from './ports/league.repository';
 
 @Injectable()

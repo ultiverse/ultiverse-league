@@ -4,7 +4,7 @@ import {
   ScheduleView,
   GenerateOptions,
   Pod,
-} from './schedules.types';
+} from '@ultiverse/shared-types';
 import { PodEngineAdapter } from './pod-engine/adapter.service';
 import type {
   PodEngineSchedule,

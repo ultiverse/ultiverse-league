@@ -4,7 +4,7 @@ import {
   EventsQuery,
   toUcEventsParams,
   UCEventsResponse,
-} from '../types/events';
+} from '@ultiverse/shared-types';
 
 @Injectable()
 export class UCEventsService {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { League, Player, Team, Field } from '../domain/models';
+import { League, Player, Team, Field } from '@ultiverse/shared-types';
 
 @Injectable()
 export class FixturesService {

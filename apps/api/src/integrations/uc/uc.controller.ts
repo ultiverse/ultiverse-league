@@ -4,15 +4,16 @@ import { UCClient } from './uc.client';
 import { UCEventsService } from './uc.events/uc.events.service';
 import { UCRegistrationsService } from './uc.registrations/uc.registrations.service';
 
-import { EventsQuery, UCEventOrderBy } from './types/events';
-import { UCMeResponse } from './types/me';
 import {
+  EventsQuery,
+  UCEventOrderBy,
+  UCMeResponse,
   UC_EVENT_TYPES,
   UC_EVENT_ORDER_BY,
   parseCsvEnum,
   parseOptionalInt,
   parseStart,
-} from './types/common';
+} from '@ultiverse/shared-types';
 
 /**
  * UCController

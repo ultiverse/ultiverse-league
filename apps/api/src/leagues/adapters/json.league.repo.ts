@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { League } from '../../domain/models';
+import { League } from '@ultiverse/shared-types';
 import { LeagueRepository } from '../ports/league.repository';
 import { JsonStore } from '../../persistence/json.store';
 

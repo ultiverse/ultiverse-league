@@ -4,7 +4,8 @@ import {
     Box, Container, Typography, Card, CardActionArea, CardContent,
     Grid, CircularProgress, Alert, Button
 } from '@mui/material';
-import { getLeagues, getTeamsByLeague, UCEvent, UCTeam } from './api/uc';
+import { getLeagues, getTeamsByLeague } from './api/uc';
+import { UCEvent, UCTeam } from '@ultiverse/shared-types';
 
 export function App() {
     const [selectedLeague, setSelectedLeague] = useState<UCEvent | null>(null);
@@ -34,7 +35,7 @@ export function App() {
                     {leaguesQ.isLoading && <CircularProgress />}
                     {leaguesQ.isError && <Alert severity="error">{String(leaguesQ.error)}</Alert>}
                     <Grid container spacing={2}>
-                        {(leaguesQ?.data.result ?? []).map((lg) => (
+                        {(leaguesQ?.data?.result ?? []).map((lg) => (
                             <Grid key={lg.id} size={{ xs: 12, sm: 6 }}>
                                 <Card>
                                     <CardActionArea onClick={() => setSelectedLeague(lg)}>
@@ -59,7 +60,7 @@ export function App() {
                     {teamsQ.isLoading && <CircularProgress />}
                     {teamsQ.isError && <Alert severity="error">{String(teamsQ.error)}</Alert>}
                     <Grid container spacing={2}>
-                        {(teamsQ.data ?? []).map((t: UCTeam) => (
+                        {(teamsQ.data?.result ?? []).map((t: UCTeam) => (
                             <Grid key={t.id} size={{ xs: 12, sm: 6 }}>
                                 <Card>
                                     <CardContent>
@@ -70,7 +71,7 @@ export function App() {
                             </Grid>
                         ))}
                     </Grid>
-                    {teamsQ.data?.length === 0 && (
+                    {teamsQ.data?.result?.length === 0 && (
                         <Alert sx={{ mt: 2 }} severity="info">No teams found for this league.</Alert>
                     )}
                 </Box>
