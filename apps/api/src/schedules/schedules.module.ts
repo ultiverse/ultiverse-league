@@ -4,8 +4,10 @@ import { SchedulesService } from './schedules.service';
 import { PodEngineAdapter } from './pod-engine/adapter.service';
 import { PodSchedulerService } from './pod-engine/podscheduler.service';
 import { POD_SCHEDULER } from './pod-engine/tokens';
+import { IntegrationsModule } from 'src/integrations/integrations.module';
 
 @Module({
+  imports: [IntegrationsModule],
   controllers: [SchedulesController],
   providers: [
     { provide: POD_SCHEDULER, useClass: PodSchedulerService },

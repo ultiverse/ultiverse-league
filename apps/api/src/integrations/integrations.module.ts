@@ -1,9 +1,38 @@
 import { Module } from '@nestjs/common';
 import { UCAdapter } from './uc/uc.adapter';
-import { TEAMS_PROVIDER } from './ports';
+import {
+  GAMES_PROVIDER,
+  LEAGUE_PROVIDER,
+  REGISTRATION_PROVIDER,
+  TEAMS_PROVIDER,
+} from './ports';
+import { UCModule } from './uc/uc.module';
+import { UCEventsService } from './uc/uc.events/uc.events.service';
+import { UCRegistrationsService } from './uc/uc.registrations/uc.registrations.service';
+import { UCTeamsService } from './uc/uc.teams/uc.teams.service';
+import { UCGamesService } from './uc/uc.games/uc.games.service';
 
 @Module({
-  providers: [UCAdapter, { provide: TEAMS_PROVIDER, useExisting: UCAdapter }],
-  exports: [TEAMS_PROVIDER],
+  imports: [UCModule],
+  providers: [
+    // concrete UC services used by the adapter
+    UCEventsService,
+    UCRegistrationsService,
+    UCTeamsService,
+    UCGamesService,
+    // the adapter that implements the ports
+    UCAdapter,
+    // bind all ports to the adapter
+    { provide: LEAGUE_PROVIDER, useExisting: UCAdapter },
+    { provide: TEAMS_PROVIDER, useExisting: UCAdapter },
+    { provide: REGISTRATION_PROVIDER, useExisting: UCAdapter },
+    { provide: GAMES_PROVIDER, useExisting: UCAdapter },
+  ],
+  exports: [
+    LEAGUE_PROVIDER,
+    TEAMS_PROVIDER,
+    REGISTRATION_PROVIDER,
+    GAMES_PROVIDER,
+  ],
 })
 export class IntegrationsModule {}

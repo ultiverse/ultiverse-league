@@ -7,6 +7,11 @@ import type {
   PodEngineSchedule,
 } from './pod-engine.types';
 
+export type PodSchedulerOptions = {
+  recencyWindow?: number;
+  skillWeight?: number;
+};
+
 /**
  * PodSchedulerService: two-stage matching per round
  * Stage A (partners): pods -> pairs
@@ -22,8 +27,8 @@ import type {
  */
 @Injectable()
 export class PodSchedulerService {
-  private recencyWindow: number;
-  private skillWeight: number;
+  private recencyWindow = 2;
+  private skillWeight = 0.5;
   private readonly LARGE = 1e6;
 
   // tracking
@@ -33,10 +38,11 @@ export class PodSchedulerService {
   private opponentLast!: Map<string, Map<string, number>>;
   private gameCount!: Map<string, number>;
 
-  constructor(opts?: { recencyWindow?: number; skillWeight?: number }) {
-    this.recencyWindow = opts?.recencyWindow ?? 2;
-    this.skillWeight = opts?.skillWeight ?? 0.5;
-  }
+  //   constructor(opts?: { recencyWindow?: number; skillWeight?: number }) {
+  //     this.recencyWindow = opts?.recencyWindow ?? 2;
+  //     this.skillWeight = opts?.skillWeight ?? 0.5;
+  //   }
+  constructor() {}
 
   private get _isTest(): boolean {
     return process.env.NODE_ENV === 'test';
@@ -48,26 +54,20 @@ export class PodSchedulerService {
   /** Public API */
   generateSchedule(
     pods: PodRef[],
-    {
-      rounds = 1,
-      gamesPerRound = null,
-      recencyWindow,
-    }: {
+    opts: {
       rounds?: number;
-      gamesPerRound?: number | null;
       recencyWindow?: number;
+      gamesPerRound?: number;
     } = {},
-  ): PodEngineSchedule {
-    if (!Array.isArray(pods) || pods.length < 4) {
-      throw new Error('At least 4 pods required');
-    }
-    if (recencyWindow != null) this.recencyWindow = recencyWindow;
+  ) {
+    if (opts.recencyWindow != null) this.recencyWindow = opts.recencyWindow;
 
     this._initTracking(pods);
 
-    const matchesPerRound = gamesPerRound ?? Math.floor(pods.length / 4);
+    const matchesPerRound = opts.gamesPerRound ?? Math.floor(pods.length / 4);
     const roundsOut: PodEngineRound[] = [];
 
+    const rounds = opts.rounds ?? 1;
     for (let r = 1; r <= rounds; r++) {
       // Sort pods by fewest games (fairness), light shuffle
       const shuffled = [...pods]
