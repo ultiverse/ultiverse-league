@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-
 import { Test, TestingModule } from '@nestjs/testing';
 import { UCController } from './uc.controller';
 
@@ -83,7 +81,12 @@ describe('UCController', () => {
     it('omits type when invalid type provided but includes start as date string', async () => {
       eventsMock.list.mockResolvedValueOnce({ ok: true });
 
-      await controller.getEvents('invalid_type', 'date_desc', '7', 'invalid_start');
+      await controller.getEvents(
+        'invalid_type',
+        'date_desc',
+        '7',
+        'invalid_start',
+      );
 
       expect(eventsMock.list).toHaveBeenCalledWith({
         // no 'type' because invalid_type is not in UC_EVENT_TYPES

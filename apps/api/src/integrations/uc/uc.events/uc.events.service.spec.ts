@@ -1,10 +1,6 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { Test, TestingModule } from '@nestjs/testing';
 import { UCEventsService } from './uc.events.service';
 import { UCClient } from '../uc.client';
-
-// Import the real implementation instead of mocking it
-import { toUcEventsParams } from '@ultiverse/shared-types';
 
 describe('UCEventsService', () => {
   let service: UCEventsService;

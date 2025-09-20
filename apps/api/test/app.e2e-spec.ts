@@ -16,6 +16,6 @@ describe('Health', () => {
 
   it('/health (GET)', async () => {
     const res = await request(app.getHttpServer()).get('/health').expect(200);
-    expect(res.body.status).toBe('ok');
+    expect((res.body as { status: string }).status).toBe('ok');
   });
 });

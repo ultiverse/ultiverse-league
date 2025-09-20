@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { SchedulesService } from './schedules.service';
 import { GeneratePodsDto } from './dto/generate-pods.dto';
-import { ScheduleView } from '@ultiverse/shared-types';
+import type { ScheduleView } from '@ultiverse/shared-types';
 
 @Controller()
 export class SchedulesController {
@@ -34,7 +34,7 @@ export class SchedulesController {
 
   // POST /schedules/pods/generate
   @Post('schedules/pods/generate')
-  async generatePods(@Body() dto: GeneratePodsDto): Promise<ScheduleView> {
+  generatePods(@Body() dto: GeneratePodsDto): ScheduleView {
     return this.service.generatePodsView(dto.pods, {
       rounds: dto.rounds,
       recencyWindow: dto.recencyWindow,

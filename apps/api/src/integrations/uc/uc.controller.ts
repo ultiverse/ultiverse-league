@@ -7,7 +7,6 @@ import { UCTeamsService } from './uc.teams/uc.teams.service';
 
 import {
   EventsQuery,
-  TeamsQuery,
   UCEventOrderBy,
   UCMeResponse,
   UC_EVENT_TYPES,
