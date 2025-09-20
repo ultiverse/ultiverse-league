@@ -3,9 +3,11 @@ import { Controller, Get, Query, Param, ParseIntPipe } from '@nestjs/common';
 import { UCClient } from './uc.client';
 import { UCEventsService } from './uc.events/uc.events.service';
 import { UCRegistrationsService } from './uc.registrations/uc.registrations.service';
+import { UCTeamsService } from './uc.teams/uc.teams.service';
 
 import {
   EventsQuery,
+  TeamsQuery,
   UCEventOrderBy,
   UCMeResponse,
   UC_EVENT_TYPES,
@@ -32,6 +34,7 @@ export class UCController {
     private readonly client: UCClient,
     private readonly events: UCEventsService,
     private readonly regs: UCRegistrationsService,
+    private readonly teamsService: UCTeamsService,
   ) {}
 
   /**
@@ -103,5 +106,14 @@ export class UCController {
   ) {
     const inc = includePerson !== 'false';
     return this.regs.list(eventId, inc);
+  }
+
+  /**
+   * GET /uc/teams?event_id=...
+   * Lists teams for an event (league).
+   */
+  @Get('teams')
+  async teams(@Query('event_id', ParseIntPipe) event_id: number) {
+    return this.teamsService.list({ event_id });
   }
 }
