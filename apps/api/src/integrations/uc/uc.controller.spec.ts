@@ -6,22 +6,7 @@ import { UCController } from './uc.controller';
 import { UCClient } from './uc.client';
 import { UCEventsService } from './uc.events/uc.events.service';
 import { UCRegistrationsService } from './uc.registrations/uc.registrations.service';
-
-// ---- Mock types/common so we control parsing + allow-lists ----
-const parseCsvEnum = jest.fn();
-const parseOptionalInt = jest.fn();
-const parseStart = jest.fn();
-
-jest.mock('./types/common', () => ({
-  __esModule: true,
-  // allow-list constants used by the controller for validation
-  UC_EVENT_TYPES: ['league', 'tournament', 'practice'],
-  UC_EVENT_ORDER_BY: ['date_desc', 'date_asc', 'name_asc', 'start_date_asc'],
-  // parsers we can steer per-test
-  parseCsvEnum: (...args: any[]) => parseCsvEnum(...args),
-  parseOptionalInt: (...args: any[]) => parseOptionalInt(...args),
-  parseStart: (...args: any[]) => parseStart(...args),
-}));
+import { UCTeamsService } from './uc.teams/uc.teams.service';
 
 describe('UCController', () => {
   let controller: UCController;
@@ -40,11 +25,12 @@ describe('UCController', () => {
     list: jest.fn(),
   };
 
+  const teamsMock = {
+    list: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
-    parseCsvEnum.mockReset();
-    parseOptionalInt.mockReset();
-    parseStart.mockReset();
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UCController],
@@ -52,6 +38,7 @@ describe('UCController', () => {
         { provide: UCClient, useValue: clientMock },
         { provide: UCEventsService, useValue: eventsMock },
         { provide: UCRegistrationsService, useValue: regsMock },
+        { provide: UCTeamsService, useValue: teamsMock },
       ],
     }).compile();
 
@@ -74,11 +61,6 @@ describe('UCController', () => {
 
   describe('GET /uc/events', () => {
     it('builds EventsQuery using parsers and forwards to UCEventsService.list', async () => {
-      // parse inputs -> controller should include all of these
-      parseCsvEnum.mockReturnValueOnce(['league', 'tournament']); // type
-      parseOptionalInt.mockReturnValueOnce(42); // site_id
-      parseStart.mockReturnValueOnce('next_7_days'); // start enum
-
       eventsMock.list.mockResolvedValueOnce({ result: [] });
 
       const out = await controller.getEvents(
@@ -98,35 +80,27 @@ describe('UCController', () => {
       });
     });
 
-    it('omits type when parseCsvEnum returns an empty list', async () => {
-      parseCsvEnum.mockReturnValueOnce([]); // typeCSV -> []
-      parseOptionalInt.mockReturnValueOnce(7); // site_id -> 7
-      parseStart.mockReturnValueOnce(undefined); // start -> undefined (omit)
-
+    it('omits type when invalid type provided but includes start as date string', async () => {
       eventsMock.list.mockResolvedValueOnce({ ok: true });
 
-      await controller.getEvents('practice', 'date_desc', '7', 'bogus');
+      await controller.getEvents('invalid_type', 'date_desc', '7', 'invalid_start');
 
       expect(eventsMock.list).toHaveBeenCalledWith({
-        // no 'type'
+        // no 'type' because invalid_type is not in UC_EVENT_TYPES
         order_by: 'date_desc',
         site_id: 7,
-        // no 'start'
+        start: 'invalid_start', // accepted as UCDateString
       });
     });
 
     it('ignores order_by when not in allow-list', async () => {
-      parseCsvEnum.mockReturnValueOnce(['practice']);
-      parseOptionalInt.mockReturnValueOnce(undefined);
-      parseStart.mockReturnValueOnce(undefined);
-
       eventsMock.list.mockResolvedValueOnce({ ok: 1 });
 
-      await controller.getEvents('practice', 'not_valid', undefined, undefined);
+      await controller.getEvents('league', 'not_valid', undefined, undefined);
 
       expect(eventsMock.list).toHaveBeenCalledWith({
-        type: ['practice'],
-        // no order_by
+        type: ['league'],
+        // no order_by because not_valid is not in UC_EVENT_ORDER_BY
       });
     });
   });

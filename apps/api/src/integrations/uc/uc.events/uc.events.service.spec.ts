@@ -3,11 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UCEventsService } from './uc.events.service';
 import { UCClient } from '../uc.client';
 
-// Map helper mocked so we can assert exact params shape
-jest.mock('../types/events', () => ({
-  __esModule: true,
-  toUcEventsParams: (p: any) => ({ __events: true, ...p }),
-}));
+// Import the real implementation instead of mocking it
+import { toUcEventsParams } from '@ultiverse/shared-types';
 
 describe('UCEventsService', () => {
   let service: UCEventsService;
@@ -37,7 +34,6 @@ describe('UCEventsService', () => {
 
     expect(clientMock.get).toHaveBeenCalledTimes(1);
     expect(clientMock.get).toHaveBeenCalledWith('/api/events', {
-      __events: true,
       search: 'Summer',
       page: 2,
     });
@@ -52,7 +48,6 @@ describe('UCEventsService', () => {
     const row = await service.getById(42);
 
     expect(clientMock.get).toHaveBeenCalledWith('/api/events', {
-      __events: true,
       id: 42,
     });
     expect(row).toEqual({ id: 42, name: 'League 42' });
@@ -64,7 +59,6 @@ describe('UCEventsService', () => {
     const row = await service.getById(123);
 
     expect(clientMock.get).toHaveBeenCalledWith('/api/events', {
-      __events: true,
       id: 123,
     });
     expect(row).toBeNull();

@@ -3,11 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UCGamesService } from './uc.games.service';
 import { UCClient } from '../uc.client';
 
-// Make param mapping deterministic for assertions
-jest.mock('../types/games', () => ({
-  __esModule: true,
-  toUcGamesParams: (p: any) => ({ __games: true, ...p }),
-}));
+// Import the real implementation instead of mocking it
+import { toUcGamesParams } from '@ultiverse/shared-types';
 
 describe('UCGamesService', () => {
   let service: UCGamesService;
@@ -41,10 +38,9 @@ describe('UCGamesService', () => {
 
     expect(clientMock.get).toHaveBeenCalledTimes(1);
     expect(clientMock.get).toHaveBeenCalledWith('/api/games', {
-      __games: true,
       event_id: 42,
       per_page: 5,
-      status: ['scheduled'],
+      status: 'scheduled', // Arrays are converted to comma-separated strings
     });
     expect(res).toEqual({ result: [{ id: 99 }] });
   });
