@@ -12,13 +12,18 @@ export class JsonStore<T extends { id: string }> {
 
   async all(): Promise<T[]> {
     const filePath = this.file();
-    const exists = (await pathExists(filePath)) as boolean;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const exists = await pathExists(filePath);
     if (!exists) return [];
-    return (await readJSON(filePath)) as T[];
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+    const data = await readJSON(filePath);
+    return data as T[];
   }
 
   async saveAll(rows: T[]): Promise<void> {
-    (await ensureDir(join(process.cwd(), 'out'))) as Promise<void>;
-    (await writeJSON(this.file(), rows, { spaces: 2 })) as Promise<void>;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    await ensureDir(join(process.cwd(), 'out'));
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    await writeJSON(this.file(), rows, { spaces: 2 });
   }
 }
