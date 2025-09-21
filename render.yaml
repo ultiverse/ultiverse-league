@@ -13,7 +13,7 @@ services:
       pnpm build:types
       pnpm build:web
       pnpm build:api
-    startCommand: pnpm start:prod
+    startCommand: node dist/main.js
     envVars:
       - key: NODE_VERSION
         value: 20
