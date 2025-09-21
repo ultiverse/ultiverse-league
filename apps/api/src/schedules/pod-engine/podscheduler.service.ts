@@ -173,27 +173,62 @@ export class PodSchedulerService {
           if (solved) break;
         }
 
-        // Last-resort fallback (should not trigger for 12×6; safe for small N too)
+        // Last-resort fallback: try progressively less strict approaches
         if (!finalPairs) {
+          // Try strict partner matching first
           let pairs = this._matchPartners(usable, r, {
             strict: strictPartner,
             jitter: 0,
             banPairs: new Set<string>(),
           });
-          if (pairs.length * 2 !== usable.length)
+
+          // If that fails, try non-strict partner matching
+          if (pairs.length * 2 !== usable.length) {
             pairs = this._matchPartners(usable, r, {
               strict: false,
               jitter: 0,
               banPairs: new Set<string>(),
             });
+          }
+
+          // If we have at least 2 pairs (1 game worth), try opponent matching
           if (pairs.length >= 2) {
+            // Try strict opponent matching first
             let gTry = this._matchOpponents(pairs, r, {
               strict: strictOpponent,
             });
-            if (gTry.length < 1)
+
+            // If strict fails, try non-strict opponent matching
+            if (gTry.length < 1) {
               gTry = this._matchOpponents(pairs, r, { strict: false });
+            }
+
+            // If still no games and we're past strict opponent window, try progressively more permissive approaches
+            if (gTry.length < 1 && !strictOpponent) {
+              // Try with reduced recency window
+              const originalRecency = this.recencyWindow;
+              this.recencyWindow = Math.max(0, this.recencyWindow - 1);
+              gTry = this._matchOpponents(pairs, r, { strict: false });
+
+              // If still nothing, try with no recency constraints at all
+              if (gTry.length < 1) {
+                this.recencyWindow = 0;
+                gTry = this._matchOpponents(pairs, r, { strict: false });
+              }
+
+              this.recencyWindow = originalRecency; // restore
+            }
+
             games = gTry;
             finalPairs = pairs;
+          }
+
+          // Final desperate fallback: if we still have no games, try any possible pairing
+          if (games.length === 0 && usable.length >= 4) {
+            // Just take first 4 pods and make a game
+            const desperate = usable.slice(0, 4);
+            finalPairs = [[desperate[0], desperate[1]], [desperate[2], desperate[3]]];
+            games = [finalPairs as [[PodRef, PodRef], [PodRef, PodRef]]];
           }
         }
 
@@ -210,16 +245,19 @@ export class PodSchedulerService {
         }
       }
 
+      // Push the round result (either empty or with matches)
       if (selected.length === 0) {
+        const podsPlaying: string[] = [];
         const podsSittingOut = usable
           .map((p) => p.id)
           .concat(byes.map((b) => b.id));
         roundsOut.push({
           roundNumber: r,
           matches: [],
-          podsPlaying: [],
+          podsPlaying,
           podsSittingOut,
         });
+        // no continue; loop simply proceeds to next round
       } else {
         this._updateTracking(selected, r);
         const playing = new Set<string>();
@@ -457,8 +495,13 @@ export class PodSchedulerService {
         const count = this._get(this.opponentCount, X.id, Y.id) || 0;
         const last = this._get(this.opponentLast, X.id, Y.id) || 0;
         const ago = last ? roundNumber - last : Infinity;
-        if (ago <= this.recencyWindow) return false; // hard block recency
-        if (strict && count > 0) return false; // hard block early repeats
+
+        // Only hard block if within recency window AND we're in strict mode
+        // This makes recency more flexible when we need games
+        if (strict && ago <= this.recencyWindow) return false;
+
+        // Hard block early repeats only in strict mode
+        if (strict && count > 0) return false;
       }
       return true;
     };
@@ -492,6 +535,17 @@ export class PodSchedulerService {
       for (let j = i + 1; j < m; j++) {
         if (!isAllowed(pairs[i], pairs[j])) continue;
         edges.push([i, j, -pairCost(pairs[i], pairs[j])]);
+      }
+    }
+
+    // If we have no edges and we're in non-strict mode, allow all pairings with cost penalties
+    if (edges.length === 0 && !strict) {
+      // In non-strict mode, allow ANY pairing but with appropriate cost penalties
+      for (let i = 0; i < m; i++) {
+        for (let j = i + 1; j < m; j++) {
+          // Always add the edge in non-strict mode, let cost function handle penalties
+          edges.push([i, j, -pairCost(pairs[i], pairs[j])]);
+        }
       }
     }
 
