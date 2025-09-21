@@ -235,6 +235,7 @@ export class PodSchedulerService {
             }
 
             // Create games from pairs: every 2 pairs = 1 game
+            // Ensure we create games for ALL pairs, not limited by matchesPerRound here
             for (let i = 0; i < allPairs.length - 1; i += 2) {
               allGames.push([allPairs[i], allPairs[i + 1]]);
             }
@@ -709,11 +710,11 @@ export class PodSchedulerService {
     opponentNoRepeatRounds: number;
     partnerNoRepeatRounds: number;
   } {
-    // More pragmatic constraints to ensure all teams can play every round
-    // Rather than strict mathematical limits, use practical windows that allow games
+    // Very conservative approach: only enforce strict constraints for first few rounds
+    // After that, prioritize getting all teams playing over perfect repeat avoidance
     return {
-      opponentNoRepeatRounds: Math.min(2, Math.floor((nPods - 1) / 4)), // More lenient opponent constraints
-      partnerNoRepeatRounds: Math.min(3, Math.floor((nPods - 1) / 2)), // More lenient partner constraints
+      opponentNoRepeatRounds: Math.min(1, Math.floor(nPods / 8)), // Even more lenient - only strict for very early rounds
+      partnerNoRepeatRounds: Math.min(2, Math.floor(nPods / 4)), // More lenient partner constraints
     };
   }
 
