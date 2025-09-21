@@ -1,9 +1,26 @@
 import { api } from './client';
-import { UCEventsResponse, UCTeamsResponse, ScheduleView } from '@ultiverse/shared-types';
+import { ScheduleView } from '@ultiverse/shared-types';
 
-export const getLeagues = () => api<UCEventsResponse>('/uc/events?order_by=date_desc');
-export const getTeamsByLeague = (eventId: number) =>
-  api<UCTeamsResponse>(`/uc/teams?event_id=${eventId}`);
+export interface LeagueSummary {
+  id: string;
+  name: string;
+  start?: string;
+  end?: string;
+  provider?: string;
+  externalId?: string;
+}
+
+export interface TeamSummary {
+  id: string;
+  name: string;
+  division?: string | null;
+}
+
+export const getLeagues = () =>
+  api<LeagueSummary[]>('/api/v1/leagues/recent?integration=external&order_by=date_desc&limit=20');
+
+export const getTeamsByLeague = (eventId: string) =>
+  api<TeamSummary[]>(`/api/v1/leagues/${eventId}/teams?integration=external`);
 
 export interface GenerateScheduleRequest {
   pods: string[];
@@ -15,7 +32,7 @@ export interface GenerateScheduleRequest {
 }
 
 export const generateSchedule = (request: GenerateScheduleRequest) =>
-  api<ScheduleView>('/schedules/pods/generate', {
+  api<ScheduleView>('/api/v1/schedules/pods/generate', {
     method: 'POST',
     body: JSON.stringify(request),
   });

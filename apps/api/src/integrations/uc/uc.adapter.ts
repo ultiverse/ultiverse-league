@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import type { ILeagueProvider, LeagueSummary } from '../ports/leagues.port';
+import type { ILeagueProvider, LeagueSummary, LeagueListOptions } from '../ports/leagues.port';
 import type {
   IRegistrationProvider,
   Registration,
@@ -33,8 +33,14 @@ export class UCAdapter
   ) {}
 
   /** List recent/current league-like events from UC. */
-  async listRecent(): Promise<LeagueSummary[]> {
-    const res = await this.events.list({ start: 'current', type: ['league'] });
+  async listRecent(options?: LeagueListOptions): Promise<LeagueSummary[]> {
+    // Default to 'all' to show more leagues for testing, but allow override
+    const res = await this.events.list({
+      start: (options?.start as any) || 'all',
+      type: ['league'],
+      order_by: (options?.order_by as any) || 'date_desc',
+      per_page: options?.limit || 20 // Show up to 20 recent leagues by default
+    });
     const rows = Array.isArray(res.result) ? res.result : [];
     return rows.map((e) => ({
       id: String(e.id),

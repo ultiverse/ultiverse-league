@@ -25,12 +25,17 @@ export class LeaguesController {
     @Query('limit') limit?: string,
     @Query('integration') integration?: string,
     @Query('order_by') orderBy?: string,
+    @Query('start') start?: string,
   ) {
     const limitNum = limit ? Number(limit) : 10;
 
     if (integration === 'external') {
-      const leagues = await this.leagueProvider.listRecent();
-      return leagues.slice(0, limitNum);
+      const leagues = await this.leagueProvider.listRecent({
+        limit: limitNum,
+        order_by: orderBy,
+        start: start,
+      });
+      return leagues;
     }
 
     const rows = this.fixtures.getLeagues();

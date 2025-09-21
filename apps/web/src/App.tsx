@@ -4,8 +4,8 @@ import {
     Box, Container, Typography, Card, CardActionArea, CardContent,
     Grid, CircularProgress, Alert, Button
 } from '@mui/material';
-import { getLeagues, getTeamsByLeague, generateSchedule } from './api/uc';
-import { UCEvent, UCTeam, ScheduleView, TeamSide } from '@ultiverse/shared-types';
+import { getLeagues, getTeamsByLeague, generateSchedule, LeagueSummary, TeamSummary } from './api/uc';
+import { ScheduleView, TeamSide } from '@ultiverse/shared-types';
 
 function formatStartDate(dateStr?: string): string {
     if (!dateStr) return 'Date not available';
@@ -41,7 +41,7 @@ function getTeamDisplay(teamSide: TeamSide, teamNames?: Record<string, string>):
 }
 
 export function App() {
-    const [selectedLeague, setSelectedLeague] = useState<UCEvent | null>(null);
+    const [selectedLeague, setSelectedLeague] = useState<LeagueSummary | null>(null);
     const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleView | null>(null);
     const [teamNames, setTeamNames] = useState<Record<string, string>>({});
 
@@ -67,25 +67,25 @@ export function App() {
     });
 
     const handleGenerateSchedule = () => {
-        const teams = teamsQ.data?.result || [];
+        const teams = teamsQ.data || [];
         if (teams.length < 4) {
             alert('Need at least 4 teams to generate a schedule');
             return;
         }
 
         const names = teams.reduce((acc, team) => {
-            acc[team.id.toString()] = team.name;
+            acc[team.id] = team.name;
             return acc;
         }, {} as Record<string, string>);
 
         setTeamNames(names);
 
         generateScheduleMutation.mutate({
-            pods: teams.map(team => team.id.toString()),
+            pods: teams.map(team => team.id),
             rounds: 3, // Conservative number that works reliably
             recencyWindow: 0, // Allow any pairing to maximize valid schedules
             names,
-            leagueId: selectedLeague?.id.toString(),
+            leagueId: selectedLeague?.id,
         });
     };
     return (
@@ -102,7 +102,7 @@ export function App() {
                     {leaguesQ.isLoading && <CircularProgress />}
                     {leaguesQ.isError && <Alert severity="error">{String(leaguesQ.error)}</Alert>}
                     <Grid container spacing={2}>
-                        {(leaguesQ?.data?.result ?? []).map((lg) => (
+                        {(leaguesQ?.data ?? []).map((lg) => (
                             <Grid key={lg.id} size={{ xs: 12, sm: 6 }}>
                                 <Card>
                                     <CardActionArea onClick={() => setSelectedLeague(lg)}>
@@ -127,18 +127,18 @@ export function App() {
                     {teamsQ.isLoading && <CircularProgress />}
                     {teamsQ.isError && <Alert severity="error">{String(teamsQ.error)}</Alert>}
                     <Grid container spacing={2}>
-                        {(teamsQ.data?.result ?? []).map((t: UCTeam) => (
+                        {(teamsQ.data ?? []).map((t: TeamSummary) => (
                             <Grid key={t.id} size={{ xs: 12, sm: 6 }}>
                                 <Card>
                                     <CardContent>
                                         <Typography variant="subtitle1">{t.name}</Typography>
-                                        <Typography variant="body2" color="text.secondary">{t.division_name || 'Team'}</Typography>
+                                        <Typography variant="body2" color="text.secondary">{t.division || 'Team'}</Typography>
                                     </CardContent>
                                 </Card>
                             </Grid>
                         ))}
                     </Grid>
-                    {teamsQ.data?.result && teamsQ.data.result.length > 0 && (
+                    {teamsQ.data && teamsQ.data.length > 0 && (
                         <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
                             <Button
                                 variant="contained"
@@ -150,7 +150,7 @@ export function App() {
                             </Button>
                         </Box>
                     )}
-                    {teamsQ.data?.result?.length === 0 && (
+                    {teamsQ.data?.length === 0 && (
                         <Alert sx={{ mt: 2 }} severity="info">No teams found for this league.</Alert>
                     )}
                 </Box>
