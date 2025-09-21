@@ -6,7 +6,6 @@ import { LeaguesModule } from './leagues/leagues.module';
 import { TeamsModule } from './teams/teams.module';
 import { PlayersModule } from './players/players.module';
 import { GamesModule } from './games/games.module';
-import { IntegrationsModule } from './integrations/integrations.module';
 import { ExportsModule } from './exports/exports.module';
 import { FixturesModule } from './fixtures/fixtures.module';
 import { SchedulesModule } from './schedules/schedules.module';
@@ -18,7 +17,6 @@ import { SchedulesModule } from './schedules/schedules.module';
     TeamsModule,
     PlayersModule,
     GamesModule,
-    IntegrationsModule,
     ExportsModule,
     FixturesModule,
     SchedulesModule,

@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, RequestMethod } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
@@ -11,6 +11,12 @@ describe('PodScheduler (e2e)', () => {
       imports: [AppModule],
     }).compile();
     app = mod.createNestApplication();
+
+    // Apply the same global prefix configuration as main.ts
+    app.setGlobalPrefix('api/v1', {
+      exclude: [{ path: 'health', method: RequestMethod.GET }],
+    });
+
     await app.init();
   });
 
@@ -18,7 +24,7 @@ describe('PodScheduler (e2e)', () => {
 
   it('generates blocks with no overlaps (8 pods → 2 blocks per round)', async () => {
     const res = await request(app.getHttpServer())
-      .post('/schedule/pods')
+      .post('/api/v1/schedule/pods')
       .send({ podIds: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], rounds: 1 })
       .expect(201);
 
@@ -38,7 +44,7 @@ describe('PodScheduler (e2e)', () => {
     const podIds = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
     const res = await request(app.getHttpServer())
-      .post('/schedule/pods')
+      .post('/api/v1/schedule/pods')
       .send({
         podIds,
         rounds: 1,

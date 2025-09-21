@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { Test } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, RequestMethod } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 
 describe('Health', () => {
@@ -10,6 +10,12 @@ describe('Health', () => {
       imports: [AppModule],
     }).compile();
     app = mod.createNestApplication();
+
+    // Apply the same global prefix configuration as main.ts
+    app.setGlobalPrefix('api/v1', {
+      exclude: [{ path: 'health', method: RequestMethod.GET }],
+    });
+
     await app.init();
   });
   afterAll(async () => app.close());

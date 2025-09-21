@@ -4,8 +4,10 @@ import { LeaguesService } from './leagues.service';
 import { LEAGUE_REPO } from './ports/league.repository';
 import { JsonLeagueRepository } from './adapters/json.league.repo';
 import { FixturesService } from 'src/fixtures/fixtures.service';
+import { IntegrationsModule } from '../integrations/integrations.module';
 
 @Module({
+  imports: [IntegrationsModule],
   controllers: [LeaguesController],
   providers: [
     LeaguesService,
