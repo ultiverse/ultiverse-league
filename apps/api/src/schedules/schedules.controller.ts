@@ -46,17 +46,20 @@ export class SchedulesController {
 
   // POST /schedule/pods - E2E test endpoint
   @Post('schedule/pods')
-  generatePodsE2E(@Body() body: {
-    podIds: string[];
-    rounds: number;
-    recencyWindow?: number;
-    history?: any;
-    pairingMode?: string;
-  }): ScheduleView {
+  generatePodsE2E(
+    @Body()
+    body: {
+      podIds: string[];
+      rounds: number;
+      recencyWindow?: number;
+      history?: any;
+      pairingMode?: 'each-vs-both' | 'single';
+    },
+  ): ScheduleView {
     return this.service.generatePodsView(body.podIds, {
       rounds: body.rounds,
       recencyWindow: body.recencyWindow,
-      pairingMode: body.pairingMode as any,
+      pairingMode: body.pairingMode,
     });
   }
 }
