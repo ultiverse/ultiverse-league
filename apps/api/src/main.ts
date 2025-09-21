@@ -4,6 +4,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, RequestMethod } from '@nestjs/common';
 import * as express from 'express';
 import { join } from 'path';
+import { statSync, readdirSync } from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,20 @@ async function bootstrap() {
 
   // Serve static files from web app build (at the root)
   const webDistPath = join(__dirname, '..', '..', 'web', 'dist');
+  console.log(`🌐 Serving static files from: ${webDistPath}`);
+
+  // Check if the directory exists
+  try {
+    const stats = statSync(webDistPath);
+    console.log(`📁 Static directory exists: ${stats.isDirectory()}`);
+    const files = readdirSync(webDistPath);
+    console.log(`📄 Files in static directory: ${files.join(', ')}`);
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    console.error(`❌ Error accessing static directory: ${errorMessage}`);
+  }
+
   app.use(express.static(webDistPath));
 
   app.useGlobalPipes(
@@ -28,7 +43,9 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:5173', // Local development
-      'https://ultiverse-league.onrender.com', // Updated for combined service
+      'https://ultiverse-league.onrender.com',
+      'https://ultiverse-api.onrender.com',
+      'https://ultiverse.ca',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
