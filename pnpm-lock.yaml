@@ -41,9 +41,6 @@ importers:
       '@nestjs/platform-express':
         specifier: ^11.0.1
         version: 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)
-      '@nestjs/serve-static':
-        specifier: ^4.0.2
-        version: 4.0.2(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)
       '@ultiverse/shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
@@ -59,6 +56,9 @@ importers:
       edmonds-blossom:
         specifier: ^1.0.0
         version: 1.0.0
+      express:
+        specifier: ^5.1.0
+        version: 5.1.0
       fs-extra:
         specifier: ^11.3.1
         version: 11.3.1
@@ -94,7 +94,7 @@ importers:
         specifier: ^0.2.39
         version: 0.2.39(@swc/core@1.13.5)
       '@types/express':
-        specifier: ^5.0.0
+        specifier: ^5.0.3
         version: 5.0.3
       '@types/jest':
         specifier: ^30.0.0
@@ -1201,22 +1201,6 @@ packages:
     resolution: {integrity: sha512-t8dNYYMwEeEsrlwc2jbkfwCfXczq4AeNEgx1KVQuJ6wYibXk0ZbXbPdfp8scnEAaQv1grpncNV5gWgzi7ZwbvQ==}
     peerDependencies:
       typescript: '>=4.8.2'
-
-  '@nestjs/serve-static@4.0.2':
-    resolution: {integrity: sha512-cT0vdWN5ar7jDI2NKbhf4LcwJzU4vS5sVpMkVrHuyLcltbrz6JdGi1TfIMMatP2pNiq5Ie/uUdPSFDVaZX/URQ==}
-    peerDependencies:
-      '@fastify/static': ^6.5.0 || ^7.0.0
-      '@nestjs/common': ^9.0.0 || ^10.0.0
-      '@nestjs/core': ^9.0.0 || ^10.0.0
-      express: ^4.18.1
-      fastify: ^4.7.0
-    peerDependenciesMeta:
-      '@fastify/static':
-        optional: true
-      express:
-        optional: true
-      fastify:
-        optional: true
 
   '@nestjs/testing@11.1.6':
     resolution: {integrity: sha512-srYzzDNxGvVCe1j0SpTS9/ix75PKt6Sn6iMaH1rpJ6nj2g8vwNrhK0CoJJXvpCYgrnI+2WES2pprYnq8rAMYHA==}
@@ -3786,9 +3770,6 @@ packages:
     resolution: {integrity: sha512-ypGJsmGtdXUOeM5u93TyeIEfEhM6s+ljAhrk5vAvSx8uyY/02OvrZnA0YNGUrPXfpJMgI1ODd3nwz8Npx4O4cg==}
     engines: {node: 20 || >=22}
 
-  path-to-regexp@0.2.5:
-    resolution: {integrity: sha512-l6qtdDPIkmAmzEO6egquYDfqQGPMRNGjYtrU13HAXb3YSRrt7HSb1sJY0pKp6o2bAa86tSB6iwaW2JbthPKr7Q==}
-
   path-to-regexp@8.2.0:
     resolution: {integrity: sha512-TdrF7fW9Rphjq4RjrW0Kp2AW0Ahwu9sRGTkS6bvDi0SCwZlEZYmcfDbEsTz8RVk0EHIS/Vd1bv3JhG+1xZuAyQ==}
     engines: {node: '>=16'}
@@ -5920,12 +5901,6 @@ snapshots:
       typescript: 5.9.2
     transitivePeerDependencies:
       - chokidar
-
-  '@nestjs/serve-static@4.0.2(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)':
-    dependencies:
-      '@nestjs/common': 11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/core': 11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.6)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      path-to-regexp: 0.2.5
 
   '@nestjs/testing@11.1.6(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.6)(@nestjs/platform-express@11.1.6)':
     dependencies:
@@ -8978,8 +8953,6 @@ snapshots:
     dependencies:
       lru-cache: 11.2.1
       minipass: 7.1.2
-
-  path-to-regexp@0.2.5: {}
 
   path-to-regexp@8.2.0: {}
 
