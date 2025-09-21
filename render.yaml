@@ -7,9 +7,11 @@ services:
     branch: main
     rootDir: apps/api
     buildCommand: |
+      cd ../..
       corepack enable
       pnpm install --frozen-lockfile
-      pnpm build
+      pnpm build:types
+      pnpm build:api
     startCommand: pnpm start:prod
     envVars:
       - key: NODE_VERSION
@@ -31,22 +33,27 @@ services:
       ignoredPaths:
         - apps/web/**
 
-  # - type: web
-  #   name: ultiverse-web
-  #   runtime: static
-  #   plan: free
-  #   region: oregon
-  #   branch: main
-  #   rootDir: apps/web
-  #   buildCommand: |
-  #     corepack enable
-  #     pnpm install --frozen-lockfile
-  #     pnpm build
-  #   staticPublishPath: dist
-  #   previews:
-  #     generation: automatic
-  #   buildFilter:
-  #     paths:
-  #       - apps/web/**
-  #     ignoredPaths:
-  #       - apps/api/**
+  - type: web
+    name: ultiverse-web
+    runtime: static
+    plan: free
+    region: oregon
+    branch: main
+    rootDir: apps/web
+    buildCommand: |
+      cd ../..
+      corepack enable
+      pnpm install --frozen-lockfile
+      pnpm build:types
+      pnpm build:web
+    staticPublishPath: apps/web/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://ultiverse-api.onrender.com
+    previews:
+      generation: automatic
+    buildFilter:
+      paths:
+        - apps/web/**
+      ignoredPaths:
+        - apps/api/**
