@@ -59,7 +59,9 @@ describe('PodScheduler – verification (8 pods, 8 rounds)', () => {
           teamsInRound.add(match.team2.pod2.id);
         }
 
-        console.log(`Round ${r + 1}: ${teamsInRound.size} teams playing, ${round.matches.length} games`);
+        console.log(
+          `Round ${r + 1}: ${teamsInRound.size} teams playing, ${round.matches.length} games`,
+        );
 
         // All 8 teams should play every round
         expect(teamsInRound.size).toBe(8);

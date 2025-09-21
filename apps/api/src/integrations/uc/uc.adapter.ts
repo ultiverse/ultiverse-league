@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
-import type { ILeagueProvider, LeagueSummary, LeagueListOptions } from '../ports/leagues.port';
+import type {
+  ILeagueProvider,
+  LeagueSummary,
+  LeagueListOptions,
+} from '../ports/leagues.port';
 import type {
   IRegistrationProvider,
   Registration,
@@ -12,6 +16,7 @@ import { UCEventsService } from './uc.events/uc.events.service';
 import { UCRegistrationsService } from './uc.registrations/uc.registrations.service';
 import { UCTeamsService } from './uc.teams/uc.teams.service';
 import { UCGamesService } from './uc.games/uc.games.service';
+import { UCStartParam, UC_EVENT_ORDER_BY } from '@ultiverse/shared-types';
 
 /**
  * UCAdapter implements all Integration ports using Ultimate Central.
@@ -35,11 +40,23 @@ export class UCAdapter
   /** List recent/current league-like events from UC. */
   async listRecent(options?: LeagueListOptions): Promise<LeagueSummary[]> {
     // Default to 'all' to show more leagues for testing, but allow override
+    const start: UCStartParam =
+      options?.start &&
+      ['all', 'current', 'future', 'ongoing'].includes(options.start)
+        ? (options.start as UCStartParam)
+        : 'all';
+
+    const orderBy =
+      options?.order_by &&
+      (UC_EVENT_ORDER_BY as readonly string[]).includes(options.order_by)
+        ? (options.order_by as (typeof UC_EVENT_ORDER_BY)[number])
+        : 'date_desc';
+
     const res = await this.events.list({
-      start: (options?.start as any) || 'all',
+      start,
       type: ['league'],
-      order_by: (options?.order_by as any) || 'date_desc',
-      per_page: options?.limit || 20 // Show up to 20 recent leagues by default
+      order_by: orderBy,
+      per_page: options?.limit || 20, // Show up to 20 recent leagues by default
     });
     const rows = Array.isArray(res.result) ? res.result : [];
     return rows.map((e) => ({
