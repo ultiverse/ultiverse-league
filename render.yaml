@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: ultiverse-api
+    name: ultiverse-league
     runtime: node
     plan: free
     region: oregon
@@ -11,6 +11,7 @@ services:
       corepack enable
       pnpm install --frozen-lockfile
       pnpm build:types
+      pnpm build:web
       pnpm build:api
     startCommand: pnpm start:prod
     envVars:
@@ -30,30 +31,5 @@ services:
     buildFilter:
       paths:
         - apps/api/**
-      ignoredPaths:
         - apps/web/**
-
-  - type: web
-    name: ultiverse-web
-    runtime: static
-    plan: free
-    region: oregon
-    branch: main
-    rootDir: apps/web
-    buildCommand: |
-      cd ../..
-      corepack enable
-      pnpm install --frozen-lockfile
-      pnpm build:types
-      pnpm build:web
-    staticPublishPath: apps/web/dist
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: https://ultiverse-api.onrender.com
-    previews:
-      generation: automatic
-    buildFilter:
-      paths:
-        - apps/web/**
-      ignoredPaths:
-        - apps/api/**
+        - packages/**

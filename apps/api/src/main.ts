@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, RequestMethod } from '@nestjs/common';
+import * as express from 'express';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,6 +12,10 @@ async function bootstrap() {
   app.setGlobalPrefix('api/v1', {
     exclude: [{ path: 'health', method: RequestMethod.GET }],
   });
+
+  // Serve static files from web app build (at the root)
+  const webDistPath = join(__dirname, '..', '..', 'web', 'dist');
+  app.use(express.static(webDistPath));
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -22,7 +28,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:5173', // Local development
-      'https://ultiverse-web.onrender.com', // Production web app
+      'https://ultiverse-league.onrender.com', // Updated for combined service
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
