@@ -227,7 +227,10 @@ export class PodSchedulerService {
           if (games.length === 0 && usable.length >= 4) {
             // Just take first 4 pods and make a game
             const desperate = usable.slice(0, 4);
-            finalPairs = [[desperate[0], desperate[1]], [desperate[2], desperate[3]]];
+            finalPairs = [
+              [desperate[0], desperate[1]],
+              [desperate[2], desperate[3]],
+            ];
             games = [finalPairs as [[PodRef, PodRef], [PodRef, PodRef]]];
           }
         }
