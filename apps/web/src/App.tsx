@@ -82,8 +82,8 @@ export function App() {
 
         generateScheduleMutation.mutate({
             pods: teams.map(team => team.id),
-            rounds: 3, // Conservative number that works reliably
-            recencyWindow: 0, // Allow any pairing to maximize valid schedules
+            rounds: 8, // Default 8 rounds for comprehensive scheduling
+            recencyWindow: 2, // Allow some recency control for better variety
             names,
             leagueId: selectedLeague?.id,
         });
@@ -146,7 +146,7 @@ export function App() {
                                 onClick={handleGenerateSchedule}
                                 disabled={generateScheduleMutation.isPending}
                             >
-                                {generateScheduleMutation.isPending ? 'Generating Schedule...' : 'Generate Schedule (3 Rounds)'}
+                                {generateScheduleMutation.isPending ? 'Generating Schedule...' : 'Generate Schedule (8 Rounds)'}
                             </Button>
                         </Box>
                     )}

@@ -7,6 +7,9 @@
 /apps/web/node_modules
 /build
 
+# TypeScript build cache
+*.tsbuildinfo
+
 # Logs
 logs
 *.log

@@ -225,13 +225,22 @@ export class PodSchedulerService {
 
           // Final desperate fallback: if we still have no games, try any possible pairing
           if (games.length === 0 && usable.length >= 4) {
-            // Just take first 4 pods and make a game
-            const desperate = usable.slice(0, 4);
-            finalPairs = [
-              [desperate[0], desperate[1]],
-              [desperate[2], desperate[3]],
-            ];
-            games = [finalPairs as [[PodRef, PodRef], [PodRef, PodRef]]];
+            // Create games for ALL available pods, not just first 4
+            const allPairs: [PodRef, PodRef][] = [];
+            const allGames: [[PodRef, PodRef], [PodRef, PodRef]][] = [];
+
+            // Pair up all pods sequentially: 0-1, 2-3, 4-5, 6-7, etc.
+            for (let i = 0; i < usable.length - 1; i += 2) {
+              allPairs.push([usable[i], usable[i + 1]]);
+            }
+
+            // Create games from pairs: every 2 pairs = 1 game
+            for (let i = 0; i < allPairs.length - 1; i += 2) {
+              allGames.push([allPairs[i], allPairs[i + 1]]);
+            }
+
+            finalPairs = allPairs;
+            games = allGames;
           }
         }
 
@@ -700,9 +709,11 @@ export class PodSchedulerService {
     opponentNoRepeatRounds: number;
     partnerNoRepeatRounds: number;
   } {
+    // More pragmatic constraints to ensure all teams can play every round
+    // Rather than strict mathematical limits, use practical windows that allow games
     return {
-      opponentNoRepeatRounds: Math.floor((nPods - 1) / 2),
-      partnerNoRepeatRounds: nPods - 1,
+      opponentNoRepeatRounds: Math.min(2, Math.floor((nPods - 1) / 4)), // More lenient opponent constraints
+      partnerNoRepeatRounds: Math.min(3, Math.floor((nPods - 1) / 2)), // More lenient partner constraints
     };
   }
 

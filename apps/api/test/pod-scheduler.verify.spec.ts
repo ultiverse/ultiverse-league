@@ -44,5 +44,26 @@ describe('PodScheduler – verification (8 pods, 8 rounds)', () => {
     console.log(
       `Generated ${roundsWithGames} rounds with games out of ${result.rounds.length} total rounds`,
     );
+
+    // Check that all 8 teams play in every round (the new requirement)
+    for (let r = 0; r < result.rounds.length; r++) {
+      const round = result.rounds[r];
+      if (round.matches.length > 0) {
+        const teamsInRound = new Set<string>();
+
+        // Count teams in this round
+        for (const match of round.matches) {
+          teamsInRound.add(match.team1.pod1.id);
+          teamsInRound.add(match.team1.pod2.id);
+          teamsInRound.add(match.team2.pod1.id);
+          teamsInRound.add(match.team2.pod2.id);
+        }
+
+        console.log(`Round ${r + 1}: ${teamsInRound.size} teams playing, ${round.matches.length} games`);
+
+        // All 8 teams should play every round
+        expect(teamsInRound.size).toBe(8);
+      }
+    }
   });
 });
