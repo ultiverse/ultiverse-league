@@ -13,6 +13,13 @@ interface UCPersonsResponse {
     last_name?: string;
     gender?: string;
     last_seen?: string;
+    images?: {
+      '20'?: string;
+      '40'?: string;
+      '200'?: string;
+      '280'?: string;
+      '370'?: string;
+    };
     teams?: Array<{
       id: number;
       name: string;
@@ -28,7 +35,8 @@ export class UcUserProvider implements IUserProvider {
 
   async getCurrentUser(): Promise<UserProfile | null> {
     try {
-      const response = await this.ucClient.get<UCPersonsResponse>('/api/persons/me');
+      const response =
+        await this.ucClient.get<UCPersonsResponse>('/api/persons/me');
 
       if (!response?.result?.[0]) {
         return null;
@@ -37,7 +45,9 @@ export class UcUserProvider implements IUserProvider {
       const ucUser = response.result[0];
 
       // Map gender identification to our simplified format
-      const mapGenderIdentification = (genderValue: string): UserProfile['identifies'] => {
+      const mapGenderIdentification = (
+        genderValue: string,
+      ): UserProfile['identifies'] => {
         switch (genderValue?.toLowerCase()) {
           case 'male':
             return 'man';
@@ -49,12 +59,14 @@ export class UcUserProvider implements IUserProvider {
       };
 
       // Process past teams
-      const pastTeams: PastTeam[] = (ucUser.teams || []).map((team: any) => ({
-        id: team.id.toString(),
-        name: team.name,
-        dateJoined: team.created_at,
-        monthYear: this.formatMonthYear(team.created_at),
-      }));
+      const pastTeams: PastTeam[] = (ucUser.teams || []).map(
+        (team: { id: number; name: string; created_at: string }) => ({
+          id: team.id.toString(),
+          name: team.name,
+          dateJoined: team.created_at,
+          monthYear: this.formatMonthYear(team.created_at),
+        }),
+      );
 
       const userProfile: UserProfile = {
         email: ucUser.email_address || '',
@@ -64,6 +76,8 @@ export class UcUserProvider implements IUserProvider {
         pastTeams,
         lastLogin: ucUser.last_seen || '',
         identifies: mapGenderIdentification(ucUser.gender || ''),
+        avatarSmall: ucUser.images?.['40'],
+        avatarLarge: ucUser.images?.['370'],
       };
 
       return userProfile;
@@ -78,7 +92,7 @@ export class UcUserProvider implements IUserProvider {
       const date = new Date(dateStr);
       return date.toLocaleDateString('en-US', {
         month: 'long',
-        year: 'numeric'
+        year: 'numeric',
       });
     } catch {
       return 'Unknown';
