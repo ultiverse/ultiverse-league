@@ -15,11 +15,13 @@ import {
   Logout as LogoutIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
+import { useUser } from '../hooks/useUser';
 
 const DRAWER_WIDTH = 280;
 
 export function TopBar() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { user, isLoading } = useUser();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -47,7 +49,7 @@ export function TopBar() {
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="body2" color="text.secondary">
-            Welcome back
+            {isLoading ? 'Loading...' : user ? `Welcome back, ${user.firstName}` : 'Welcome back'}
           </Typography>
 
           <IconButton
@@ -58,8 +60,14 @@ export function TopBar() {
             onClick={handleMenu}
             color="inherit"
           >
-            <Avatar sx={{ width: 32, height: 32 }}>
-              <AccountCircle />
+            <Avatar
+              src={user?.avatarSmall}
+              sx={{ width: 32, height: 32 }}
+            >
+              {!user?.avatarSmall && user ?
+                `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() :
+                <AccountCircle />
+              }
             </Avatar>
           </IconButton>
 

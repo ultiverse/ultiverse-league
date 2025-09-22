@@ -1,5 +1,5 @@
 import { api } from './client';
-import { ScheduleView } from '@ultiverse/shared-types';
+import { ScheduleView, UserProfile } from '@ultiverse/shared-types';
 
 export interface LeagueSummary {
   id: string;
@@ -36,3 +36,6 @@ export const generateSchedule = (request: GenerateScheduleRequest) =>
     method: 'POST',
     body: JSON.stringify(request),
   });
+
+export const getCurrentUser = () =>
+  api<UserProfile>('/api/v1/user/me');

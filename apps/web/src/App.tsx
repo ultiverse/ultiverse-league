@@ -4,6 +4,7 @@ import { Box, CssBaseline, Modal, Backdrop, Fade, Toolbar, ThemeProvider } from 
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { LeagueProvider } from './context/LeagueContext';
+import { UserProvider } from './context/UserContext';
 import { useLeague } from './hooks/useLeague';
 import { Leagues } from './pages/Leagues';
 import { Teams } from './pages/Teams';
@@ -84,11 +85,13 @@ function AppContent() {
 export function App() {
     return (
         <ThemeProvider theme={theme}>
-            <LeagueProvider>
-                <Router>
-                    <AppContent />
-                </Router>
-            </LeagueProvider>
+            <UserProvider>
+                <LeagueProvider>
+                    <Router>
+                        <AppContent />
+                    </Router>
+                </LeagueProvider>
+            </UserProvider>
         </ThemeProvider>
     );
 }

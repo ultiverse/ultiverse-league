@@ -11,8 +11,8 @@ import {
     Button,
 } from '@mui/material';
 import {
-    Sports as SportsIcon,
-    Games as GamesIcon,
+    Groups as GroupsIcon,
+    CalendarMonth as CalendarMonthIcon,
     Settings as SettingsIcon,
     ArrowDropDown as ArrowDropDownIcon,
 } from '@mui/icons-material';
@@ -30,8 +30,8 @@ export function Sidebar({ selectedLeague, onLeagueClick }: SidebarProps) {
     const location = useLocation();
 
     const menuItems = [
-        { path: '/teams', label: 'Teams', icon: <SportsIcon /> },
-        { path: '/games', label: 'Schedule', icon: <GamesIcon /> },
+        { path: '/teams', label: 'Teams', icon: <GroupsIcon /> },
+        { path: '/games', label: 'Schedule', icon: <CalendarMonthIcon /> },
         { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
     ];
 

@@ -18,5 +18,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./domain"), exports);
 // API types
 __exportStar(require("./api/schedules"), exports);
+__exportStar(require("./api/user"), exports);
 // Integration types
 __exportStar(require("./integrations/uc"), exports);
