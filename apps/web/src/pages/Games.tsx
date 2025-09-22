@@ -1,241 +1,237 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Grid,
-  CircularProgress,
-  Alert,
-  Button,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Checkbox,
-  FormControlLabel,
-  Paper,
+    Box,
+    Typography,
+    Card,
+    CardContent,
+    Grid,
+    CircularProgress,
+    Alert,
+    Button,
+    TextField,
+    Checkbox,
+    FormControlLabel,
+    Paper,
 } from '@mui/material';
 import { getTeamsByLeague, generateSchedule, TeamSummary } from '../api/uc';
-import { useLeague } from '../context/LeagueContext';
+import { useLeague } from '../hooks/useLeague';
 import { ScheduleView, TeamSide } from '@ultiverse/shared-types';
 
 function getTeamDisplay(teamSide: TeamSide, teamNames?: Record<string, string>): string {
-  if ('teamName' in teamSide && teamSide.teamName) {
-    return teamSide.teamName;
-  }
+    if ('teamName' in teamSide && teamSide.teamName) {
+        return teamSide.teamName;
+    }
 
-  if ('pods' in teamSide && teamSide.pods) {
-    const podNames = teamSide.pods.map(podId =>
-      teamNames?.[podId] || `Pod ${podId}`
-    );
-    return podNames.join(' + ');
-  }
+    if ('pods' in teamSide && teamSide.pods) {
+        const podNames = teamSide.pods.map(podId =>
+            teamNames?.[podId] || `Pod ${podId}`
+        );
+        return podNames.join(' + ');
+    }
 
-  if ('teamId' in teamSide) {
-    return teamNames?.[teamSide.teamId] || `Team ${teamSide.teamId}`;
-  }
+    if ('teamId' in teamSide) {
+        return teamNames?.[teamSide.teamId] || `Team ${teamSide.teamId}`;
+    }
 
-  return 'Unknown Team';
+    return 'Unknown Team';
 }
 
 export function Games() {
-  const { selectedLeague } = useLeague();
-  const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
-  const [rounds, setRounds] = useState(8);
-  const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleView | null>(null);
-  const [teamNames, setTeamNames] = useState<Record<string, string>>({});
+    const { selectedLeague } = useLeague();
+    const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
+    const [rounds, setRounds] = useState(8);
+    const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleView | null>(null);
+    const [teamNames, setTeamNames] = useState<Record<string, string>>({});
 
-  const teamsQuery = useQuery({
-    queryKey: ['teams', selectedLeague?.id],
-    queryFn: () => getTeamsByLeague(selectedLeague!.id),
-    enabled: !!selectedLeague
-  });
-
-  const generateScheduleMutation = useMutation({
-    mutationFn: generateSchedule,
-    onSuccess: (schedule) => {
-      setGeneratedSchedule(schedule);
-    },
-    onError: (error) => {
-      console.error('Failed to generate schedule:', error);
-    }
-  });
-
-  const handleTeamToggle = (teamId: string) => {
-    setSelectedTeams(prev =>
-      prev.includes(teamId)
-        ? prev.filter(id => id !== teamId)
-        : [...prev, teamId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedTeams.length === teamsQuery.data?.length) {
-      setSelectedTeams([]);
-    } else {
-      setSelectedTeams(teamsQuery.data?.map(team => team.id) || []);
-    }
-  };
-
-  const handleGenerateSchedule = () => {
-    const teams = teamsQuery.data || [];
-    if (selectedTeams.length < 4) {
-      alert('Need at least 4 teams to generate a schedule');
-      return;
-    }
-
-    const names = teams.reduce((acc, team) => {
-      acc[team.id] = team.name;
-      return acc;
-    }, {} as Record<string, string>);
-
-    setTeamNames(names);
-
-    generateScheduleMutation.mutate({
-      pods: selectedTeams,
-      rounds,
-      recencyWindow: 2,
-      names,
-      leagueId: selectedLeague?.id,
+    const teamsQuery = useQuery({
+        queryKey: ['teams', selectedLeague?.id],
+        queryFn: () => getTeamsByLeague(selectedLeague!.id),
+        enabled: !!selectedLeague
     });
-  };
 
-  if (!selectedLeague) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity="info">
-          Please select a league to generate games.
-        </Alert>
-      </Box>
-    );
-  }
+    const generateScheduleMutation = useMutation({
+        mutationFn: generateSchedule,
+        onSuccess: (schedule) => {
+            setGeneratedSchedule(schedule);
+        },
+        onError: (error) => {
+            console.error('Failed to generate schedule:', error);
+        }
+    });
 
-  return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Schedule
-      </Typography>
+    const handleTeamToggle = (teamId: string) => {
+        setSelectedTeams(prev =>
+            prev.includes(teamId)
+                ? prev.filter(id => id !== teamId)
+                : [...prev, teamId]
+        );
+    };
 
-      {teamsQuery.isLoading && <CircularProgress />}
-      {teamsQuery.isError && (
-        <Alert severity="error">{String(teamsQuery.error)}</Alert>
-      )}
+    const handleSelectAll = () => {
+        if (selectedTeams.length === teamsQuery.data?.length) {
+            setSelectedTeams([]);
+        } else {
+            setSelectedTeams(teamsQuery.data?.map(team => team.id) || []);
+        }
+    };
 
-      {teamsQuery.data && (
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Select Teams for Pod Generation
-          </Typography>
+    const handleGenerateSchedule = () => {
+        const teams = teamsQuery.data || [];
+        if (selectedTeams.length < 4) {
+            alert('Need at least 4 teams to generate a schedule');
+            return;
+        }
 
-          <Box sx={{ mb: 2 }}>
-            <Button
-              variant="outlined"
-              onClick={handleSelectAll}
-              sx={{ mr: 2 }}
-            >
-              {selectedTeams.length === teamsQuery.data.length ? 'Deselect All' : 'Select All'}
-            </Button>
-            <Typography variant="body2" color="text.secondary">
-              {selectedTeams.length} of {teamsQuery.data.length} teams selected
-            </Typography>
-          </Box>
+        const names = teams.reduce((acc, team) => {
+            acc[team.id] = team.name;
+            return acc;
+        }, {} as Record<string, string>);
 
-          <Grid container spacing={1}>
-            {teamsQuery.data.map((team: TeamSummary) => (
-              <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={selectedTeams.includes(team.id)}
-                      onChange={() => handleTeamToggle(team.id)}
-                    />
-                  }
-                  label={team.name}
-                />
-              </Grid>
-            ))}
-          </Grid>
+        setTeamNames(names);
 
-          <Box sx={{ mt: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
-            <TextField
-              label="Number of Rounds"
-              type="number"
-              value={rounds}
-              onChange={(e) => setRounds(Number(e.target.value))}
-              inputProps={{ min: 1, max: 20 }}
-              sx={{ width: 200 }}
-            />
+        generateScheduleMutation.mutate({
+            pods: selectedTeams,
+            rounds,
+            recencyWindow: 2,
+            names,
+            leagueId: selectedLeague?.id,
+        });
+    };
 
-            <Button
-              variant="contained"
-              size="large"
-              onClick={handleGenerateSchedule}
-              disabled={generateScheduleMutation.isPending || selectedTeams.length < 4}
-            >
-              {generateScheduleMutation.isPending ? 'Generating...' : 'Generate Pods'}
-            </Button>
-          </Box>
-
-          {selectedTeams.length < 4 && selectedTeams.length > 0 && (
-            <Alert severity="warning" sx={{ mt: 2 }}>
-              Select at least 4 teams to generate a schedule.
-            </Alert>
-          )}
-        </Paper>
-      )}
-
-      {generatedSchedule && (
-        <Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-            <Button variant="outlined" onClick={() => setGeneratedSchedule(null)}>
-              Clear Schedule
-            </Button>
-            <Typography variant="h6">Generated Schedule</Typography>
-          </Box>
-
-          {generatedSchedule.rounds.filter(round => round.games.length > 0).map((round, roundIndex) => (
-            <Box key={roundIndex} sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>Round {round.round}</Typography>
-              <Grid container spacing={2}>
-                {round.games.map((game, gameIndex) => (
-                  <Grid key={gameIndex} size={{ xs: 12, md: 6 }}>
-                    <Card>
-                      <CardContent>
-                        <Typography variant="subtitle1">
-                          {getTeamDisplay(game.home, teamNames)} vs {getTeamDisplay(game.away, teamNames)}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {new Date(game.start).toLocaleString()}
-                        </Typography>
-                        {game.field && (
-                          <Typography variant="body2" color="text.secondary">
-                            Field: {game.field}
-                          </Typography>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
+    if (!selectedLeague) {
+        return (
+            <Box sx={{ p: 3 }}>
+                <Alert severity="info">
+                    Please select a league to generate games.
+                </Alert>
             </Box>
-          ))}
+        );
+    }
 
-          {generateScheduleMutation.isError && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              Failed to generate schedule: {String(generateScheduleMutation.error)}
-            </Alert>
-          )}
+    return (
+        <Box sx={{ p: 3 }}>
+            <Typography variant="h4" gutterBottom>
+                Schedule
+            </Typography>
+
+            {teamsQuery.isLoading && <CircularProgress />}
+            {teamsQuery.isError && (
+                <Alert severity="error">{String(teamsQuery.error)}</Alert>
+            )}
+
+            {teamsQuery.data && (
+                <Paper sx={{ p: 3, mb: 3 }}>
+                    <Typography variant="h6" gutterBottom>
+                        Select Teams for Pod Generation
+                    </Typography>
+
+                    <Box sx={{ mb: 2 }}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleSelectAll}
+                            sx={{ mr: 2 }}
+                        >
+                            {selectedTeams.length === teamsQuery.data.length ? 'Deselect All' : 'Select All'}
+                        </Button>
+                        <Typography variant="body2" color="text.secondary">
+                            {selectedTeams.length} of {teamsQuery.data.length} teams selected
+                        </Typography>
+                    </Box>
+
+                    <Grid container spacing={1}>
+                        {teamsQuery.data.map((team: TeamSummary) => (
+                            <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={selectedTeams.includes(team.id)}
+                                            onChange={() => handleTeamToggle(team.id)}
+                                        />
+                                    }
+                                    label={team.name}
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+
+                    <Box sx={{ mt: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <TextField
+                            label="Number of Rounds"
+                            type="number"
+                            value={rounds}
+                            onChange={(e) => setRounds(Number(e.target.value))}
+                            inputProps={{ min: 1, max: 20 }}
+                            sx={{ width: 200 }}
+                        />
+
+                        <Button
+                            variant="contained"
+                            size="large"
+                            onClick={handleGenerateSchedule}
+                            disabled={generateScheduleMutation.isPending || selectedTeams.length < 4}
+                        >
+                            {generateScheduleMutation.isPending ? 'Generating...' : 'Generate Pods'}
+                        </Button>
+                    </Box>
+
+                    {selectedTeams.length < 4 && selectedTeams.length > 0 && (
+                        <Alert severity="warning" sx={{ mt: 2 }}>
+                            Select at least 4 teams to generate a schedule.
+                        </Alert>
+                    )}
+                </Paper>
+            )}
+
+            {generatedSchedule && (
+                <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+                        <Button variant="outlined" onClick={() => setGeneratedSchedule(null)}>
+                            Clear Schedule
+                        </Button>
+                        <Typography variant="h6">Generated Schedule</Typography>
+                    </Box>
+
+                    {generatedSchedule.rounds.filter(round => round.games.length > 0).map((round, roundIndex) => (
+                        <Box key={roundIndex} sx={{ mb: 3 }}>
+                            <Typography variant="h6" sx={{ mb: 2 }}>Round {round.round}</Typography>
+                            <Grid container spacing={2}>
+                                {round.games.map((game, gameIndex) => (
+                                    <Grid key={gameIndex} size={{ xs: 12, md: 6 }}>
+                                        <Card>
+                                            <CardContent>
+                                                <Typography variant="subtitle1">
+                                                    {getTeamDisplay(game.home, teamNames)} vs {getTeamDisplay(game.away, teamNames)}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {new Date(game.start).toLocaleString()}
+                                                </Typography>
+                                                {game.field && (
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Field: {game.field}
+                                                    </Typography>
+                                                )}
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </Box>
+                    ))}
+
+                    {generateScheduleMutation.isError && (
+                        <Alert severity="error" sx={{ mt: 2 }}>
+                            Failed to generate schedule: {String(generateScheduleMutation.error)}
+                        </Alert>
+                    )}
+                </Box>
+            )}
+
+            {teamsQuery.data?.length === 0 && (
+                <Alert sx={{ mt: 2 }} severity="info">
+                    No teams found for this league.
+                </Alert>
+            )}
         </Box>
-      )}
-
-      {teamsQuery.data?.length === 0 && (
-        <Alert sx={{ mt: 2 }} severity="info">
-          No teams found for this league.
-        </Alert>
-      )}
-    </Box>
-  );
+    );
 }

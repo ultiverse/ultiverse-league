@@ -9,7 +9,7 @@ import {
   Alert,
 } from '@mui/material';
 import { getTeamsByLeague, TeamSummary } from '../api/uc';
-import { useLeague } from '../context/LeagueContext';
+import { useLeague } from '../hooks/useLeague';
 
 export function Teams() {
   const { selectedLeague } = useLeague();
