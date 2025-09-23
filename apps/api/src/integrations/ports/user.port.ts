@@ -1,9 +1,6 @@
-export interface PastTeam {
-  id: string;
-  name: string;
-  dateJoined: string; // ISO date
-  monthYear: string; // e.g., "June 2023"
-}
+import { TeamSummary } from './teams.port';
+
+export type PastTeam = TeamSummary;
 
 export interface UserProfile {
   email: string;

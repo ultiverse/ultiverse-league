@@ -2,14 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   Grid,
   CircularProgress,
   Alert,
 } from '@mui/material';
 import { getTeamsByLeague, TeamSummary } from '../api/uc';
 import { useLeague } from '../hooks/useLeague';
+import { TeamCard } from '../components/TeamCard';
 
 export function Teams() {
   const { selectedLeague } = useLeague();
@@ -41,17 +40,16 @@ export function Teams() {
         <Alert severity="error">{String(teamsQuery.error)}</Alert>
       )}
 
-      <Grid container spacing={2}>
+      <Grid container spacing={3}>
         {(teamsQuery.data ?? []).map((team: TeamSummary) => (
           <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6">{team.name}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {team.division || 'Team'}
-                </Typography>
-              </CardContent>
-            </Card>
+            <TeamCard
+              team={team}
+              onClick={() => {
+                // Future: Navigate to team detail page
+                console.log('Team clicked:', team.name);
+              }}
+            />
           </Grid>
         ))}
       </Grid>

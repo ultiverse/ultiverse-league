@@ -133,6 +133,8 @@ export class UCAdapter
       id: String(t.id),
       name: t.name,
       division: t.division_name ?? null,
+      colour: typeof t.color === 'string' ? t.color : '#000000',
+      altColour: '#ffffff',
     }));
   }
 
@@ -227,6 +229,8 @@ export class UCAdapter
         (team: { id: number; name: string; created_at: string }) => ({
           id: team.id.toString(),
           name: team.name,
+          colour: '#000000',
+          altColour: '#ffffff',
           dateJoined: team.created_at,
           monthYear: this.formatMonthYear(team.created_at),
         }),
