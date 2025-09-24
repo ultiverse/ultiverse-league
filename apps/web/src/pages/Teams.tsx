@@ -31,7 +31,7 @@ export function Teams() {
     }
 
     return (
-        <Box sx={{ bgcolor: 'var(--mui-palette-background-default)', minHeight: '100vh', p: 3 }}>
+        <Box sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
                 Teams in {selectedLeague.name}
             </Typography>

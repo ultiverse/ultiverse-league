@@ -8,6 +8,7 @@ export const theme = createTheme({
     background: {
       default: '#ffffff',
       paper: '#ffffff',
+      page: '#f0f0f0',
     },
   },
   shape: {

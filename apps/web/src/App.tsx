@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CssBaseline, Modal, Backdrop, Fade, Toolbar, ThemeProvider } from '@mui/material';
+import { Box, CssBaseline, Modal, Backdrop, Fade, Toolbar, ThemeProvider, useTheme } from '@mui/material';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { LeagueProvider } from './context/LeagueContext';
@@ -13,6 +13,7 @@ import { Settings } from './pages/Settings';
 import { theme } from './theme/theme';
 
 function AppContent() {
+    const theme = useTheme();
     const { selectedLeague } = useLeague();
     const [showLeagueModal, setShowLeagueModal] = useState(false);
 
@@ -36,7 +37,9 @@ function AppContent() {
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    width: { sm: 'calc(100% - 280px)' }
+                    width: { sm: 'calc(100% - 280px)' },
+                    bgcolor: theme.palette.background.page,
+                    minHeight: '100vh'
                 }}
             >
                 <Toolbar />
