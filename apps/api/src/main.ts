@@ -15,19 +15,37 @@ async function bootstrap() {
   });
 
   // Serve static files from web app build (at the root)
-  const webDistPath = join(__dirname, '..', '..', 'web', 'dist');
-  console.log(`🌐 Serving static files from: ${webDistPath}`);
+  // Try multiple possible paths to find the web dist directory
+  const possiblePaths = [
+    join(__dirname, '..', '..', '..', 'apps', 'web', 'dist'),
+    join(__dirname, '..', '..', 'web', 'dist'),
+    join(process.cwd(), 'apps', 'web', 'dist'),
+    join(process.cwd(), 'web', 'dist')
+  ];
 
-  // Check if the directory exists
-  try {
-    const stats = statSync(webDistPath);
-    console.log(`📁 Static directory exists: ${stats.isDirectory()}`);
-    const files = readdirSync(webDistPath);
-    console.log(`📄 Files in static directory: ${files.join(', ')}`);
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Unknown error';
-    console.error(`❌ Error accessing static directory: ${errorMessage}`);
+  let webDistPath: string | null = null;
+
+  for (const path of possiblePaths) {
+    try {
+      const stats = statSync(path);
+      if (stats.isDirectory()) {
+        webDistPath = path;
+        console.log(`✅ Found web dist directory at: ${webDistPath}`);
+        const files = readdirSync(webDistPath);
+        console.log(`📄 Files in static directory: ${files.join(', ')}`);
+        break;
+      }
+    } catch (error) {
+      console.log(`❌ Path not found: ${path}`);
+    }
+  }
+
+  if (!webDistPath) {
+    console.error('❌ Could not find web dist directory in any of the expected locations');
+    console.log('Current working directory:', process.cwd());
+    console.log('__dirname:', __dirname);
+    // Fallback to prevent crash
+    webDistPath = join(__dirname, '..', '..', '..', 'apps', 'web', 'dist');
   }
 
   app.use(express.static(webDistPath));
