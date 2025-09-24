@@ -1,6 +1,12 @@
 import { createTheme } from '@mui/material/styles';
 
-export const theme = createTheme({
+declare module '@mui/material/styles' {
+  interface TypeBackground {
+    page: string;
+  }
+}
+
+const baseTheme = createTheme({
   palette: {
     primary: {
       main: '#f05300',
@@ -8,7 +14,6 @@ export const theme = createTheme({
     background: {
       default: '#ffffff',
       paper: '#ffffff',
-      page: '#f0f0f0',
     },
   },
   shape: {
@@ -21,6 +26,17 @@ export const theme = createTheme({
           backgroundColor: '#161919',
         },
       },
+    },
+  },
+});
+
+export const theme = createTheme({
+  ...baseTheme,
+  palette: {
+    ...baseTheme.palette,
+    background: {
+      ...baseTheme.palette.background,
+      page: '#f0f0f0',
     },
   },
 });
