@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, Modal, Backdrop, Fade, Toolbar, ThemeProvider, useTheme } from '@mui/material';
 import { Sidebar } from './components/Sidebar';
@@ -6,6 +6,7 @@ import { TopBar } from './components/TopBar';
 import { LeagueProvider } from './context/LeagueContext';
 import { UserProvider } from './context/UserContext';
 import { useLeague } from './hooks/useLeague';
+import { useLastUrl, useInitialRedirect } from './hooks/useLastUrl';
 import { Leagues } from './pages/Leagues';
 import { Teams } from './pages/Teams';
 import { Games } from './pages/Games';
@@ -16,6 +17,15 @@ function AppContent() {
     const theme = useTheme();
     const { selectedLeague } = useLeague();
     const [showLeagueModal, setShowLeagueModal] = useState(false);
+    const { redirectToLastUrl } = useInitialRedirect();
+
+    // Track URL changes for persistence
+    useLastUrl();
+
+    // Redirect to last URL on initial load
+    useEffect(() => {
+        redirectToLastUrl();
+    }, []);
 
     const handleLeagueClick = () => {
         setShowLeagueModal(true);

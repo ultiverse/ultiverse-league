@@ -68,7 +68,9 @@ export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
 
     const leaguesQuery = useQuery({
         queryKey: ['leagues'],
-        queryFn: getLeagues
+        queryFn: getLeagues,
+        staleTime: 15 * 60 * 1000, // 15 minutes - leagues don't change very often
+        gcTime: 30 * 60 * 1000, // 30 minutes cache retention
     });
 
     const handleLeagueSelect = (league: LeagueSummary) => {
