@@ -3,7 +3,7 @@ services:
     name: ultiverse-league
     runtime: node
     plan: free
-    region: oregon
+    region: ohio
     branch: main
     rootDir: .
     buildCommand: |

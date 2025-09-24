@@ -32,9 +32,9 @@ async function bootstrap() {
 
   app.use(express.static(webDistPath));
 
-  // SPA fallback - serve index.html for any non-API routes
+  // SPA fallback - serve index.html for any non-API and non-health routes
   app.use((req, res, next) => {
-    if (req.path.startsWith('/api/')) {
+    if (req.path.startsWith('/api/') || req.path === '/health') {
       return next();
     }
     res.sendFile(join(webDistPath, 'index.html'));
