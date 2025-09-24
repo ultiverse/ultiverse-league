@@ -9,6 +9,7 @@ import {
 import { getTeamsByLeague, TeamSummary } from '@/api/uc';
 import { useLeague } from '@/hooks/useLeague';
 import { TeamName } from '@/components/TeamName';
+import { Section } from '@/components/Section';
 
 export function Teams() {
     const { selectedLeague } = useLeague();
@@ -30,8 +31,8 @@ export function Teams() {
     }
 
     return (
-        <Box sx={{ p: 3 }}>
-            <Typography variant="h4" gutterBottom>
+        <Box sx={{ bgcolor: 'var(--mui-palette-background-default)', minHeight: '100vh', p: 3 }}>
+            <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
                 Teams in {selectedLeague.name}
             </Typography>
 
@@ -40,21 +41,23 @@ export function Teams() {
                 <Alert severity="error">{String(teamsQuery.error)}</Alert>
             )}
 
-            <Grid container spacing={3}>
-                {(teamsQuery.data ?? []).map((team: TeamSummary) => (
-                    <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                        <TeamName
-                            name={team.name}
-                            primaryColor={team.colour}
-                            onClick={() => {
-                                // Future: Navigate to team detail page
-                                console.log('Team clicked:', team.name);
-                            }}
-                            variant="inline"
-                        />
-                    </Grid>
-                ))}
-            </Grid>
+            <Section>
+                <Grid container spacing={3}>
+                    {(teamsQuery.data ?? []).map((team: TeamSummary) => (
+                        <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                            <TeamName
+                                name={team.name}
+                                primaryColor={team.colour}
+                                onClick={() => {
+                                    // Future: Navigate to team detail page
+                                    console.log('Team clicked:', team.name);
+                                }}
+                                variant="inline"
+                            />
+                        </Grid>
+                    ))}
+                </Grid>
+            </Section>
 
             {teamsQuery.data?.length === 0 && (
                 <Alert sx={{ mt: 2 }} severity="info">

@@ -10,12 +10,12 @@ import {
     TextField,
     Checkbox,
     FormControlLabel,
-    Paper,
 } from '@mui/material';
 import { getTeamsByLeague, generateSchedule, TeamSummary } from '@/api/uc';
 import { useLeague } from '@/hooks/useLeague';
 import { ScheduleView, TeamSide } from '@ultiverse/shared-types';
 import { GameCard } from '@/components/GameCard';
+import { Section } from '@/components/Section';
 
 function getTeamDisplayName(teamSide: TeamSide, teamNames?: Record<string, string>): string {
     if ('teamName' in teamSide && teamSide.teamName) {
@@ -133,8 +133,8 @@ export function Games() {
     }
 
     return (
-        <Box sx={{ p: 3 }}>
-            <Typography variant="h4" gutterBottom>
+        <Box sx={{ bgcolor: 'var(--mui-palette-background-default)', minHeight: '100vh', p: 3 }}>
+            <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
                 Schedule
             </Typography>
 
@@ -144,10 +144,7 @@ export function Games() {
             )}
 
             {teamsQuery.data && (
-                <Paper sx={{ p: 3, mb: 3 }}>
-                    <Typography variant="h6" gutterBottom>
-                        Select Teams for Pod Generation
-                    </Typography>
+                <Section title="Select Teams for Pod Generation">
 
                     <Box sx={{ mb: 2 }}>
                         <Button
@@ -203,17 +200,18 @@ export function Games() {
                             Select at least 4 teams to generate a schedule.
                         </Alert>
                     )}
-                </Paper>
+                </Section>
             )}
 
             {generatedSchedule && (
-                <Box>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
+                <Section
+                    title="Generated Schedule"
+                    headerActions={
                         <Button variant="outlined" onClick={() => setGeneratedSchedule(null)}>
                             Clear Schedule
                         </Button>
-                        <Typography variant="h6">Generated Schedule</Typography>
-                    </Box>
+                    }
+                >
 
                     {generatedSchedule.rounds.filter(round => round.games.length > 0).map((round, roundIndex) => (
                         <Box key={roundIndex} sx={{ mb: 3 }}>
@@ -242,7 +240,7 @@ export function Games() {
                             Failed to generate schedule: {String(generateScheduleMutation.error)}
                         </Alert>
                     )}
-                </Box>
+                </Section>
             )}
 
             {teamsQuery.data?.length === 0 && (
