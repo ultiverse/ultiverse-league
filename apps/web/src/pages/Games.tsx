@@ -36,7 +36,7 @@ function getTeamDisplayName(teamSide: TeamSide, teamNames?: Record<string, strin
     return 'Unknown Team';
 }
 
-function getTeamColor(teamSide: TeamSide, teamData?: Record<string, { id: string; name: string; colour: string }>): string {
+function getTeamColor(teamSide: TeamSide, teamData?: Record<string, { id: string; name: string; colour: string; }>): string {
     // For pods, use default black color
     if ('pods' in teamSide && teamSide.pods) {
         return '#000000';
@@ -55,7 +55,7 @@ export function Games() {
     const [rounds, setRounds] = useState(8);
     const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleView | null>(null);
     const [teamNames, setTeamNames] = useState<Record<string, string>>({});
-    const [teamData, setTeamData] = useState<Record<string, { id: string; name: string; colour: string }>>({});
+    const [teamData, setTeamData] = useState<Record<string, { id: string; name: string; colour: string; }>>({});
 
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
@@ -108,7 +108,7 @@ export function Games() {
                 colour: team.colour
             };
             return acc;
-        }, {} as Record<string, { id: string; name: string; colour: string }>);
+        }, {} as Record<string, { id: string; name: string; colour: string; }>);
 
         setTeamNames(names);
         setTeamData(teamDataMap);
