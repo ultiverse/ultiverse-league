@@ -15,7 +15,7 @@ async function bootstrap() {
   });
 
   // Serve static files from web app build (at the root)
-  const webDistPath = join(__dirname, '..', '..', 'web', 'dist');
+  const webDistPath = join(__dirname, '..', '..', '..', 'apps', 'web', 'dist');
   console.log(`🌐 Serving static files from: ${webDistPath}`);
 
   // Check if the directory exists

@@ -5,15 +5,14 @@ services:
     plan: free
     region: oregon
     branch: main
-    rootDir: apps/api
+    rootDir: .
     buildCommand: |
-      cd ../..
       corepack enable
       pnpm install --frozen-lockfile
       pnpm build:types
       pnpm build:web
       pnpm build:api
-    startCommand: node dist/main.js
+    startCommand: node apps/api/dist/main.js
     envVars:
       - key: NODE_VERSION
         value: 20
