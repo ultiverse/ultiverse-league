@@ -3,8 +3,6 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import {
     Box,
     Typography,
-    Card,
-    CardContent,
     Grid,
     CircularProgress,
     Alert,
@@ -14,11 +12,12 @@ import {
     FormControlLabel,
     Paper,
 } from '@mui/material';
-import { getTeamsByLeague, generateSchedule, TeamSummary } from '../api/uc';
-import { useLeague } from '../hooks/useLeague';
+import { getTeamsByLeague, generateSchedule, TeamSummary } from '@/api/uc';
+import { useLeague } from '@/hooks/useLeague';
 import { ScheduleView, TeamSide } from '@ultiverse/shared-types';
+import { GameCard } from '@/components/GameCard';
 
-function getTeamDisplay(teamSide: TeamSide, teamNames?: Record<string, string>): string {
+function getTeamDisplayName(teamSide: TeamSide, teamNames?: Record<string, string>): string {
     if ('teamName' in teamSide && teamSide.teamName) {
         return teamSide.teamName;
     }
@@ -37,12 +36,26 @@ function getTeamDisplay(teamSide: TeamSide, teamNames?: Record<string, string>):
     return 'Unknown Team';
 }
 
+function getTeamColor(teamSide: TeamSide, teamData?: Record<string, { id: string; name: string; colour: string }>): string {
+    // For pods, use default black color
+    if ('pods' in teamSide && teamSide.pods) {
+        return '#000000';
+    }
+
+    if ('teamId' in teamSide) {
+        return teamData?.[teamSide.teamId]?.colour || '#000000';
+    }
+
+    return '#000000';
+}
+
 export function Games() {
     const { selectedLeague } = useLeague();
     const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
     const [rounds, setRounds] = useState(8);
     const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleView | null>(null);
     const [teamNames, setTeamNames] = useState<Record<string, string>>({});
+    const [teamData, setTeamData] = useState<Record<string, { id: string; name: string; colour: string }>>({});
 
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
@@ -88,7 +101,17 @@ export function Games() {
             return acc;
         }, {} as Record<string, string>);
 
+        const teamDataMap = teams.reduce((acc, team) => {
+            acc[team.id] = {
+                id: team.id,
+                name: team.name,
+                colour: team.colour
+            };
+            return acc;
+        }, {} as Record<string, { id: string; name: string; colour: string }>);
+
         setTeamNames(names);
+        setTeamData(teamDataMap);
 
         generateScheduleMutation.mutate({
             pods: selectedTeams,
@@ -197,22 +220,17 @@ export function Games() {
                             <Typography variant="h6" sx={{ mb: 2 }}>Round {round.round}</Typography>
                             <Grid container spacing={2}>
                                 {round.games.map((game, gameIndex) => (
-                                    <Grid key={gameIndex} size={{ xs: 12, md: 6 }}>
-                                        <Card>
-                                            <CardContent>
-                                                <Typography variant="subtitle1">
-                                                    {getTeamDisplay(game.home, teamNames)} vs {getTeamDisplay(game.away, teamNames)}
-                                                </Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {new Date(game.start).toLocaleString()}
-                                                </Typography>
-                                                {game.field && (
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        Field: {game.field}
-                                                    </Typography>
-                                                )}
-                                            </CardContent>
-                                        </Card>
+                                    <Grid key={gameIndex} size={{ xs: 12, sm: 6, md: 4 }}>
+                                        <GameCard
+                                            game={game}
+                                            homeTeamName={getTeamDisplayName(game.home, teamNames)}
+                                            awayTeamName={getTeamDisplayName(game.away, teamNames)}
+                                            homeTeamColor={getTeamColor(game.home, teamData)}
+                                            awayTeamColor={getTeamColor(game.away, teamData)}
+                                            onClick={() => {
+                                                console.log('Game clicked:', game.gameId);
+                                            }}
+                                        />
                                     </Grid>
                                 ))}
                             </Grid>
