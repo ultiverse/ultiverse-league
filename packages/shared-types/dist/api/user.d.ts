@@ -1,9 +1,13 @@
-export interface PastTeam {
+export interface TeamSummary {
     id: string;
     name: string;
-    dateJoined: string;
-    monthYear: string;
+    division?: string | null;
+    colour: string;
+    altColour: string;
+    dateJoined?: string;
+    monthYear?: string;
 }
+export type PastTeam = TeamSummary;
 export interface UserProfile {
     email: string;
     firstName: string;

@@ -1,9 +1,14 @@
-export interface PastTeam {
+export interface TeamSummary {
   id: string;
   name: string;
-  dateJoined: string; // ISO date
-  monthYear: string; // e.g., "June 2023"
+  division?: string | null;
+  colour: string; // Primary team color, defaults to black
+  altColour: string; // Secondary team color, defaults to white
+  dateJoined?: string; // ISO date (for past teams)
+  monthYear?: string; // e.g., "June 2023" (for past teams)
 }
+
+export type PastTeam = TeamSummary;
 
 export interface UserProfile {
   email: string;
