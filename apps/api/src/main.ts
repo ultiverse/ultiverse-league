@@ -15,7 +15,7 @@ async function bootstrap() {
   });
 
   // Serve static files from web app build (at the root)
-  const webDistPath = join(__dirname, '..', '..', '..', 'apps', 'web', 'dist');
+  const webDistPath = join(__dirname, '..', '..', 'web', 'dist');
   console.log(`🌐 Serving static files from: ${webDistPath}`);
 
   // Check if the directory exists
@@ -31,6 +31,14 @@ async function bootstrap() {
   }
 
   app.use(express.static(webDistPath));
+
+  // SPA fallback - serve index.html for any non-API routes
+  app.use((req, res, next) => {
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+    res.sendFile(join(webDistPath, 'index.html'));
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
