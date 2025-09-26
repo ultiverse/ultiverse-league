@@ -24,9 +24,11 @@ const DRAWER_WIDTH = 280;
 interface SidebarProps {
     selectedLeague: LeagueSummary | null;
     onLeagueClick: () => void;
+    mobileOpen: boolean;
+    onMobileClose: () => void;
 }
 
-export function Sidebar({ selectedLeague, onLeagueClick }: SidebarProps) {
+export function Sidebar({ selectedLeague, onLeagueClick, mobileOpen, onMobileClose }: SidebarProps) {
     const location = useLocation();
 
     const menuItems = [
@@ -35,20 +37,8 @@ export function Sidebar({ selectedLeague, onLeagueClick }: SidebarProps) {
         { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
     ];
 
-    return (
-        <Drawer
-            variant="permanent"
-            sx={{
-                width: DRAWER_WIDTH,
-                flexShrink: 0,
-                '& .MuiDrawer-paper': {
-                    width: DRAWER_WIDTH,
-                    boxSizing: 'border-box',
-                    backgroundColor: '#161919',
-                    color: 'white',
-                },
-            }}
-        >
+    const drawerContent = (
+        <Box>
             <Box sx={{ p: 2 }}>
                 <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
                     <img
@@ -99,6 +89,7 @@ export function Sidebar({ selectedLeague, onLeagueClick }: SidebarProps) {
                             to={item.path}
                             selected={location.pathname === item.path}
                             disabled={!selectedLeague}
+                            onClick={onMobileClose}
                             sx={{
                                 color: 'white',
                                 '&.Mui-selected': {
@@ -121,6 +112,77 @@ export function Sidebar({ selectedLeague, onLeagueClick }: SidebarProps) {
                     </ListItem>
                 ))}
             </List>
-        </Drawer>
+        </Box>
+    );
+
+    return (
+        <Box
+            component="nav"
+            sx={{
+                width: {
+                    md: mobileOpen ? DRAWER_WIDTH : 0,
+                    lg: DRAWER_WIDTH
+                },
+                flexShrink: { md: 0, lg: 0 },
+                transition: 'width 0.3s ease'
+            }}
+        >
+            {/* Small screens: Temporary overlay drawer */}
+            <Drawer
+                variant="temporary"
+                open={mobileOpen}
+                onClose={onMobileClose}
+                ModalProps={{
+                    keepMounted: true, // Better open performance on mobile
+                }}
+                sx={{
+                    display: { xs: 'block', md: 'none' },
+                    '& .MuiDrawer-paper': {
+                        width: DRAWER_WIDTH,
+                        boxSizing: 'border-box',
+                        backgroundColor: '#161919',
+                        color: 'white',
+                    },
+                }}
+            >
+                {drawerContent}
+            </Drawer>
+
+            {/* Medium screens: Toggleable permanent drawer */}
+            <Drawer
+                variant="permanent"
+                sx={{
+                    display: { xs: 'none', md: 'block', lg: 'none' },
+                    '& .MuiDrawer-paper': {
+                        width: mobileOpen ? DRAWER_WIDTH : 0,
+                        boxSizing: 'border-box',
+                        backgroundColor: '#161919',
+                        color: 'white',
+                        overflow: 'hidden',
+                        transition: 'width 0.3s ease',
+                    },
+                }}
+                open
+            >
+                {drawerContent}
+            </Drawer>
+
+            {/* Large screens: Always visible permanent drawer */}
+            <Drawer
+                variant="permanent"
+                sx={{
+                    display: { xs: 'none', md: 'none', lg: 'block' },
+                    '& .MuiDrawer-paper': {
+                        width: DRAWER_WIDTH,
+                        boxSizing: 'border-box',
+                        backgroundColor: '#161919',
+                        color: 'white',
+                    },
+                }}
+                open
+            >
+                {drawerContent}
+            </Drawer>
+        </Box>
     );
 }

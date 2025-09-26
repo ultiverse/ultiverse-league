@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
     Box,
@@ -56,17 +56,27 @@ export function Games() {
     const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleView | null>(null);
     const [teamNames, setTeamNames] = useState<Record<string, string>>({});
     const [teamData, setTeamData] = useState<Record<string, { id: string; name: string; colour: string; }>>({});
+    const scheduleRef = useRef<HTMLDivElement>(null);
 
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
         queryFn: () => getTeamsByLeague(selectedLeague!.id),
-        enabled: !!selectedLeague
+        enabled: !!selectedLeague,
+        staleTime: 30 * 60 * 1000, // 30 minutes - teams rarely change
+        gcTime: 60 * 60 * 1000, // 1 hour cache retention
     });
 
     const generateScheduleMutation = useMutation({
         mutationFn: generateSchedule,
         onSuccess: (schedule) => {
             setGeneratedSchedule(schedule);
+            // Smooth scroll to the generated schedule after a brief delay
+            setTimeout(() => {
+                scheduleRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 100);
         },
         onError: (error) => {
             console.error('Failed to generate schedule:', error);
@@ -205,6 +215,7 @@ export function Games() {
 
             {generatedSchedule && (
                 <Section
+                    ref={scheduleRef}
                     title="Generated Schedule"
                     headerActions={
                         <Button variant="outlined" onClick={() => setGeneratedSchedule(null)}>

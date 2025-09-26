@@ -13,13 +13,16 @@ import {
   AccountCircle,
   Settings as SettingsIcon,
   Logout as LogoutIcon,
+  Menu as MenuIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useUser } from '../hooks/useUser';
 
-const DRAWER_WIDTH = 280;
+interface TopBarProps {
+  onMenuClick?: () => void;
+}
 
-export function TopBar() {
+export function TopBar({ onMenuClick }: TopBarProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { user, isLoading } = useUser();
 
@@ -33,10 +36,8 @@ export function TopBar() {
 
   return (
     <AppBar
-      position="fixed"
+      position="static"
       sx={{
-        width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
-        ml: { sm: `${DRAWER_WIDTH}px` },
         bgcolor: 'background.paper',
         color: 'text.primary',
         boxShadow: 1,
@@ -45,6 +46,16 @@ export function TopBar() {
       }}
     >
       <Toolbar>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={onMenuClick}
+          sx={{ mr: 2, display: { xs: 'block', lg: 'none' } }}
+        >
+          <MenuIcon />
+        </IconButton>
+
         <Box sx={{ flexGrow: 1 }} />
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
