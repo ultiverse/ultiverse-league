@@ -21,6 +21,7 @@ import { FieldSlotStep, FieldSlotData } from './GenerateScheduleWizard/FieldSlot
 import { RangeStep, RangeData } from './GenerateScheduleWizard/RangeStep';
 import { PodsPairingStep, PairingData } from './GenerateScheduleWizard/PodsPairingStep';
 import { PreviewStep } from './GenerateScheduleWizard/PreviewStep';
+import { validateFieldSlots } from '@/helpers/schedule.helper';
 
 interface GenerateScheduleWizardProps {
     open: boolean;
@@ -40,8 +41,15 @@ const steps = [
     'Preview & Conflicts'
 ];
 
+
 export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTeams = [] }: GenerateScheduleWizardProps) {
     const [activeStep, setActiveStep] = useState(0);
+
+    const getNextOccurrenceOfDay = (dayOfWeek: number) => {
+        const today = dayjs();
+        const daysUntilTarget = (dayOfWeek - today.day() + 7) % 7;
+        return daysUntilTarget === 0 ? today.add(7, 'day') : today.add(daysUntilTarget, 'day');
+    };
 
     // Step 1: Field Slot
     const [fieldSlot, setFieldSlot] = useState<FieldSlotData>({
@@ -55,7 +63,7 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
     // Step 2: Range
     const [range, setRange] = useState<RangeData>({
         rangeMode: 'rounds',
-        firstDate: null,
+        firstDate: getNextOccurrenceOfDay(3), // Initialize to next Wednesday
         numberOfRounds: 8,
         endDate: null,
         blackoutDates: []
@@ -87,12 +95,6 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
         onClose();
     };
 
-    const getNextOccurrenceOfDay = (dayOfWeek: number) => {
-        const today = dayjs();
-        const daysUntilTarget = (dayOfWeek - today.day() + 7) % 7;
-        return daysUntilTarget === 0 ? today.add(7, 'day') : today.add(daysUntilTarget, 'day');
-    };
-
     const handleDayOfWeekChange = (dayOfWeek: number) => {
         const nextOccurrence = getNextOccurrenceOfDay(dayOfWeek);
         setRange(prev => ({ ...prev, firstDate: nextOccurrence }));
@@ -109,8 +111,7 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
             case 2: // Pairing
                 return true; // All pairing options are optional
             case 3: { // Preview & Generate
-                const podsNeeded = Math.max(1, fieldSlot.subfields.length) * 4;
-                return availableTeams.length >= podsNeeded;
+                return validateFieldSlots(fieldSlot.subfields.length, availableTeams.length);
             }
             default:
                 return true;
@@ -125,6 +126,7 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
                         fieldSlot={fieldSlot}
                         onFieldSlotChange={setFieldSlot}
                         onDayOfWeekChange={handleDayOfWeekChange}
+                        availableTeamsCount={availableTeams.length}
                     />
                 );
 

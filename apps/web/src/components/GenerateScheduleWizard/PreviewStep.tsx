@@ -9,6 +9,7 @@ import {
 import { TeamName } from '@/components/TeamName';
 import { FieldSlotData } from './FieldSlotStep';
 import { RangeData } from './RangeStep';
+import { getFieldSlotValidationMessage } from '@/helpers/schedule.helper';
 
 interface PreviewStepProps {
     fieldSlot: FieldSlotData;
@@ -26,14 +27,18 @@ const DAYS_OF_WEEK = [
     'Saturday'
 ];
 
+
 export function PreviewStep({ fieldSlot, range, availableTeams }: PreviewStepProps) {
     const totalRounds = range.rangeMode === 'rounds'
         ? range.numberOfRounds
         : range.firstDate && range.endDate
             ? Math.ceil(range.endDate.diff(range.firstDate, 'week', true))
             : 0;
-    const podsNeeded = Math.max(1, fieldSlot.subfields.length) * 4;
+    const actualSlots = Math.max(1, fieldSlot.subfields.length);
+    const requiredTeams = actualSlots * 4;
     const availableTeamsCount = availableTeams.length;
+    const validationMessage = getFieldSlotValidationMessage(fieldSlot.subfields.length, availableTeamsCount);
+    const isValid = validationMessage === null;
 
     return (
         <Stack spacing={3}>
@@ -62,16 +67,23 @@ export function PreviewStep({ fieldSlot, range, availableTeams }: PreviewStepPro
                 </Typography>
             </Paper>
 
-            <Alert severity={availableTeamsCount >= podsNeeded ? "info" : "warning"}>
+            <Alert severity={isValid ? "success" : "error"}>
                 <Typography variant="body2">
-                    <strong>Teams Required:</strong> {podsNeeded} teams needed ({Math.max(1, fieldSlot.subfields.length)} {fieldSlot.subfields.length === 0 ? 'game' : 'subfields'} × 4 teams each)
+                    <strong>Field Slots:</strong> {actualSlots} slot{actualSlots > 1 ? 's' : ''} ({actualSlots} × 4 teams each = {requiredTeams} teams needed)
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 1 }}>
                     <strong>Available Teams:</strong> {availableTeamsCount} teams
-                    {availableTeamsCount < podsNeeded && (
-                        <span style={{ color: 'error.main' }}> - Not enough teams! Need {podsNeeded - availableTeamsCount} more.</span>
-                    )}
                 </Typography>
+                {validationMessage && (
+                    <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
+                        {validationMessage}
+                    </Typography>
+                )}
+                {isValid && (
+                    <Typography variant="body2" sx={{ mt: 1, color: 'success.main', fontWeight: 'bold' }}>
+                        ✓ Perfect match! Ready to generate schedule.
+                    </Typography>
+                )}
             </Alert>
 
             {totalRounds > 0 && (

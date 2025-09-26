@@ -10,6 +10,7 @@ import {
     Chip,
     Stack,
     Button,
+    Alert,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
@@ -28,6 +29,7 @@ interface FieldSlotStepProps {
     fieldSlot: FieldSlotData;
     onFieldSlotChange: (fieldSlot: FieldSlotData) => void;
     onDayOfWeekChange?: (dayOfWeek: number) => void;
+    availableTeamsCount?: number;
 }
 
 const DAYS_OF_WEEK = [
@@ -40,7 +42,7 @@ const DAYS_OF_WEEK = [
     'Saturday'
 ];
 
-export function FieldSlotStep({ fieldSlot, onFieldSlotChange, onDayOfWeekChange }: FieldSlotStepProps) {
+export function FieldSlotStep({ fieldSlot, onFieldSlotChange, onDayOfWeekChange, availableTeamsCount = 0 }: FieldSlotStepProps) {
     const [newSubfield, setNewSubfield] = useState('');
 
     const handleAddSubfield = () => {
@@ -59,6 +61,12 @@ export function FieldSlotStep({ fieldSlot, onFieldSlotChange, onDayOfWeekChange 
             subfields: fieldSlot.subfields.filter(sf => sf !== subfieldToRemove)
         });
     };
+
+    // Validation logic for field slots vs available teams
+    const actualSlots = Math.max(1, fieldSlot.subfields.length);
+    const requiredTeams = actualSlots * 4;
+    const hasInsufficientSlots = availableTeamsCount > requiredTeams;
+    const neededSlots = Math.ceil(availableTeamsCount / 4);
 
     return (
         <Stack spacing={3}>
@@ -144,6 +152,17 @@ export function FieldSlotStep({ fieldSlot, onFieldSlotChange, onDayOfWeekChange 
                     ))}
                 </Stack>
             </Box>
+
+            {hasInsufficientSlots && availableTeamsCount > 0 && (
+                <Alert severity="warning">
+                    <Typography variant="body2">
+                        <strong>Field Slot Warning:</strong> You have {availableTeamsCount} teams available but only {actualSlots} field slot{actualSlots > 1 ? 's' : ''}.
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                        Each field slot requires exactly 4 teams (2 vs 2). Consider adding {neededSlots - actualSlots} more subfield{neededSlots - actualSlots > 1 ? 's' : ''} to accommodate all teams.
+                    </Typography>
+                </Alert>
+            )}
         </Stack>
     );
 }

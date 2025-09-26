@@ -16,44 +16,14 @@ import {
 import { Download, CalendarMonth, Schedule, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { getTeamsByLeague, generateSchedule, TeamSummary } from '@/api/uc';
 import { useLeague } from '@/hooks/useLeague';
-import { ScheduleView, TeamSide } from '@ultiverse/shared-types';
+import { ScheduleView } from '@ultiverse/shared-types';
 import { GameCard } from '@/components/GameCard';
 import { Section } from '@/components/Section';
 import { GenerateScheduleWizard } from '@/components/GenerateScheduleWizard';
-import { exportPodScheduleToCSV } from '@/helpers/podScheduleCSV.helper';
+import { exportPodScheduleToCSV } from '@/helpers/schedule.helper';
+import { getTeamDisplayName, getTeamColor } from '@/helpers/teams.helper';
 import dayjs from 'dayjs';
 
-function getTeamDisplayName(teamSide: TeamSide, teamNames?: Record<string, string>): string {
-    if ('teamName' in teamSide && teamSide.teamName) {
-        return teamSide.teamName;
-    }
-
-    if ('pods' in teamSide && teamSide.pods) {
-        const podNames = teamSide.pods.map(podId =>
-            teamNames?.[podId] || `Pod ${podId}`
-        );
-        return podNames.join(' + ');
-    }
-
-    if ('teamId' in teamSide) {
-        return teamNames?.[teamSide.teamId] || `Team ${teamSide.teamId}`;
-    }
-
-    return 'Unknown Team';
-}
-
-function getTeamColor(teamSide: TeamSide, teamData?: Record<string, { id: string; name: string; colour: string; }>): string {
-    // For pods, use default black color
-    if ('pods' in teamSide && teamSide.pods) {
-        return '#000000';
-    }
-
-    if ('teamId' in teamSide) {
-        return teamData?.[teamSide.teamId]?.colour || '#000000';
-    }
-
-    return '#000000';
-}
 
 export function Games() {
     const { selectedLeague } = useLeague();
@@ -63,6 +33,7 @@ export function Games() {
     const [teamNames, setTeamNames] = useState<Record<string, string>>({});
     const [teamData, setTeamData] = useState<Record<string, { id: string; name: string; colour: string; }>>({});
     const [venue, setVenue] = useState<string>('');
+    const [fieldSlots, setFieldSlots] = useState<string[]>([]);
     const scheduleRef = useRef<HTMLDivElement>(null);
 
     // Wizard state
@@ -70,7 +41,7 @@ export function Games() {
 
     const handleExportCSV = () => {
         if (!generatedSchedule) return;
-        exportPodScheduleToCSV(generatedSchedule, teamNames, selectedLeague?.name, venue);
+        exportPodScheduleToCSV(generatedSchedule, teamNames, selectedLeague?.name, venue, fieldSlots);
     };
 
     const handleExportICS = () => {
@@ -143,8 +114,9 @@ export function Games() {
 
         const { fieldSlot, range } = scheduleData;
 
-        // Store venue for CSV export
+        // Store venue and field slots for CSV export
         setVenue(fieldSlot.venue);
+        setFieldSlots(fieldSlot.subfields);
 
         // Prepare the team IDs for the schedule generation
         const selectedTeamIds = selectedTeams.length > 0 ? selectedTeams : teamsQuery.data?.map(team => team.id) || [];
@@ -377,6 +349,8 @@ export function Games() {
                                             awayTeamName={getTeamDisplayName(game.away, teamNames)}
                                             homeTeamColor={getTeamColor(game.home, teamData)}
                                             awayTeamColor={getTeamColor(game.away, teamData)}
+                                            venue={venue}
+                                            fieldSlot={game.field || undefined}
                                             onClick={() => {
                                                 console.log('Game clicked:', game.gameId);
                                             }}
