@@ -22,6 +22,7 @@ import { RangeStep, RangeData } from './GenerateScheduleWizard/RangeStep';
 import { PodsPairingStep, PairingData } from './GenerateScheduleWizard/PodsPairingStep';
 import { PreviewStep } from './GenerateScheduleWizard/PreviewStep';
 import { validateFieldSlots } from '@/helpers/schedule.helper';
+import { getNextOccurrenceOfDay } from '@/helpers/date.helper';
 
 interface GenerateScheduleWizardProps {
     open: boolean;
@@ -44,12 +45,6 @@ const steps = [
 
 export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTeams = [] }: GenerateScheduleWizardProps) {
     const [activeStep, setActiveStep] = useState(0);
-
-    const getNextOccurrenceOfDay = (dayOfWeek: number) => {
-        const today = dayjs();
-        const daysUntilTarget = (dayOfWeek - today.day() + 7) % 7;
-        return daysUntilTarget === 0 ? today.add(7, 'day') : today.add(daysUntilTarget, 'day');
-    };
 
     // Step 1: Field Slot
     const [fieldSlot, setFieldSlot] = useState<FieldSlotData>({

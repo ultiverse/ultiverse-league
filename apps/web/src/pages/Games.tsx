@@ -7,9 +7,6 @@ import {
     CircularProgress,
     Alert,
     Button,
-    TextField,
-    Checkbox,
-    FormControlLabel,
     Stack,
     Divider,
 } from '@mui/material';
@@ -27,8 +24,6 @@ import dayjs from 'dayjs';
 
 export function Games() {
     const { selectedLeague } = useLeague();
-    const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
-    const [rounds, setRounds] = useState(8);
     const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleView | null>(null);
     const [teamNames, setTeamNames] = useState<Record<string, string>>({});
     const [teamData, setTeamData] = useState<Record<string, { id: string; name: string; colour: string; }>>({});
@@ -81,21 +76,6 @@ export function Games() {
         }
     });
 
-    const handleTeamToggle = (teamId: string) => {
-        setSelectedTeams(prev =>
-            prev.includes(teamId)
-                ? prev.filter(id => id !== teamId)
-                : [...prev, teamId]
-        );
-    };
-
-    const handleSelectAll = () => {
-        if (selectedTeams.length === teamsQuery.data?.length) {
-            setSelectedTeams([]);
-        } else {
-            setSelectedTeams(teamsQuery.data?.map(team => team.id) || []);
-        }
-    };
 
     const handleGenerateSchedule = () => {
         setWizardOpen(true);
@@ -118,8 +98,8 @@ export function Games() {
         setVenue(fieldSlot.venue);
         setFieldSlots(fieldSlot.subfields);
 
-        // Prepare the team IDs for the schedule generation
-        const selectedTeamIds = selectedTeams.length > 0 ? selectedTeams : teamsQuery.data?.map(team => team.id) || [];
+        // Use all available teams from the league
+        const selectedTeamIds = teamsQuery.data?.map(team => team.id) || [];
 
         // Calculate the number of rounds
         const numberOfRounds = range.rangeMode === 'rounds'
@@ -266,65 +246,6 @@ export function Games() {
                 <Alert severity="error">{String(teamsQuery.error)}</Alert>
             )}
 
-            {generatedSchedule && teamsQuery.data && (
-                <Section title="Select Teams for Pod Generation">
-
-                    <Box sx={{ mb: 2 }}>
-                        <Button
-                            variant="outlined"
-                            onClick={handleSelectAll}
-                            sx={{ mr: 2 }}
-                        >
-                            {selectedTeams.length === teamsQuery.data.length ? 'Deselect All' : 'Select All'}
-                        </Button>
-                        <Typography variant="body2" color="text.secondary">
-                            {selectedTeams.length} of {teamsQuery.data.length} teams selected
-                        </Typography>
-                    </Box>
-
-                    <Grid container spacing={1}>
-                        {teamsQuery.data.map((team: TeamSummary) => (
-                            <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={selectedTeams.includes(team.id)}
-                                            onChange={() => handleTeamToggle(team.id)}
-                                        />
-                                    }
-                                    label={team.name}
-                                />
-                            </Grid>
-                        ))}
-                    </Grid>
-
-                    <Box sx={{ mt: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <TextField
-                            label="Number of Rounds"
-                            type="number"
-                            value={rounds}
-                            onChange={(e) => setRounds(Number(e.target.value))}
-                            slotProps={{ htmlInput: { min: 1, max: 20 } }}
-                            sx={{ width: 200 }}
-                        />
-
-                        <Button
-                            variant="contained"
-                            size="large"
-                            onClick={handleGenerateSchedule}
-                            disabled={generateScheduleMutation.isPending || selectedTeams.length < 4}
-                        >
-                            {generateScheduleMutation.isPending ? 'Generating...' : 'Generate Pods'}
-                        </Button>
-                    </Box>
-
-                    {selectedTeams.length < 4 && selectedTeams.length > 0 && (
-                        <Alert severity="warning" sx={{ mt: 2 }}>
-                            Select at least 4 teams to generate a schedule.
-                        </Alert>
-                    )}
-                </Section>
-            )}
 
             {generatedSchedule && (
                 <Section
