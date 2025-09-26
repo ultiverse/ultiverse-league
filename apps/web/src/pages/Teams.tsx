@@ -17,7 +17,9 @@ export function Teams() {
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
         queryFn: () => getTeamsByLeague(selectedLeague!.id),
-        enabled: !!selectedLeague
+        enabled: !!selectedLeague,
+        staleTime: 30 * 60 * 1000, // 30 minutes - teams rarely change
+        gcTime: 60 * 60 * 1000, // 1 hour cache retention
     });
 
     if (!selectedLeague) {
