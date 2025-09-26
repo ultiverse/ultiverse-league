@@ -17,7 +17,7 @@ import { GameCard } from '@/components/GameCard';
 import { Section } from '@/components/Section';
 import { GenerateScheduleWizard } from '@/components/GenerateScheduleWizard';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
-import { exportPodScheduleToCSV } from '@/helpers/schedule.helper';
+import { exportPodScheduleToCSV, exportPodScheduleToICS } from '@/helpers/schedule.helper';
 import { getTeamDisplayName, getTeamColor } from '@/helpers/teams.helper';
 import dayjs from 'dayjs';
 
@@ -44,8 +44,7 @@ export function Games() {
 
     const handleExportICS = () => {
         if (!generatedSchedule) return;
-        // TODO: Implement ICS export
-        console.log('Export ICS');
+        exportPodScheduleToICS(generatedSchedule, teamNames, selectedLeague?.name, venue, fieldSlots);
     };
 
 

@@ -5,7 +5,8 @@ import {
     calculateRequiredTeams,
     isScheduleGenerationValid,
     getSuggestedFieldSlots,
-    exportPodScheduleToCSV
+    exportPodScheduleToCSV,
+    exportPodScheduleToICS
 } from '../schedule.helper';
 import { ScheduleView } from '@ultiverse/shared-types';
 
@@ -25,6 +26,12 @@ vi.mock('../teams.helper', () => ({
 
 vi.mock('../fields.helper', () => ({
     formatFieldName: vi.fn(() => 'Venue - Field A')
+}));
+
+vi.mock('@/utils/ics.util', () => ({
+    createICSContent: vi.fn(() => 'mocked,ics,content'),
+    downloadICS: vi.fn(),
+    generateICSFileName: vi.fn(() => 'mock_file.ics')
 }));
 
 describe('schedule.helper', () => {
@@ -242,6 +249,96 @@ describe('schedule.helper', () => {
             expect(createCSVContent).toHaveBeenCalledWith([
                 ['Round', 'Date', 'Time', 'Field', 'Home Team 1', 'Home Team 2', 'Away Team 1', 'Away Team 2', 'Game ID']
             ]);
+        });
+    });
+
+    describe('exportPodScheduleToICS', () => {
+        const mockSchedule: ScheduleView = {
+            rounds: [
+                {
+                    round: 1,
+                    games: [
+                        {
+                            gameId: 'game1',
+                            start: '2023-06-01T18:00:00Z',
+                            durationMins: 90,
+                            field: 'Field A',
+                            home: { pods: ['team1', 'team2'] },
+                            away: { pods: ['team3', 'team4'] }
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const mockTeamNames = {
+            team1: 'Team One',
+            team2: 'Team Two',
+            team3: 'Team Three',
+            team4: 'Team Four'
+        };
+
+        beforeEach(() => {
+            vi.clearAllMocks();
+        });
+
+        it('should call ICS helper functions correctly', async () => {
+            const { createICSContent, downloadICS, generateICSFileName } = await import('@/utils/ics.util');
+
+            exportPodScheduleToICS(mockSchedule, mockTeamNames, 'Test League', 'Test Venue', ['Field A']);
+
+            expect(createICSContent).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        uid: 'game1@ultiverse.app',
+                        title: 'Round 1: Team 1 & Team 2 vs Team 1 & Team 2',
+                        location: 'Venue - Field A'
+                    })
+                ]),
+                'Test League Schedule'
+            );
+
+            expect(generateICSFileName).toHaveBeenCalledWith('schedule', 'Test League');
+            expect(downloadICS).toHaveBeenCalledWith('mocked,ics,content', 'mock_file.ics');
+        });
+
+        it('should create events with correct structure', async () => {
+            const { createICSContent } = await import('@/utils/ics.util');
+
+            exportPodScheduleToICS(mockSchedule, mockTeamNames, 'Test League');
+
+            expect(createICSContent).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    expect.objectContaining({
+                        uid: expect.stringContaining('@ultiverse.app'),
+                        title: expect.stringContaining('Round 1:'),
+                        description: expect.stringContaining('League: Test League'),
+                        start: expect.any(Date),
+                        end: expect.any(Date)
+                    })
+                ]),
+                'Test League Schedule'
+            );
+        });
+
+        it('should handle empty schedule', async () => {
+            const { createICSContent } = await import('@/utils/ics.util');
+            const emptySchedule: ScheduleView = { rounds: [] };
+
+            exportPodScheduleToICS(emptySchedule, {});
+
+            expect(createICSContent).toHaveBeenCalledWith([], 'Schedule');
+        });
+
+        it('should use default calendar name when no league name provided', async () => {
+            const { createICSContent } = await import('@/utils/ics.util');
+
+            exportPodScheduleToICS(mockSchedule, mockTeamNames);
+
+            expect(createICSContent).toHaveBeenCalledWith(
+                expect.any(Array),
+                'Schedule'
+            );
         });
     });
 });

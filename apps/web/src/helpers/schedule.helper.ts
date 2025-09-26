@@ -1,7 +1,9 @@
 import { ScheduleView } from '@ultiverse/shared-types';
 import { createCSVContent, downloadCSV, generateCSVFileName } from '@/utils/csv.util';
+import { createICSContent, downloadICS, generateICSFileName, ICSEvent } from '@/utils/ics.util';
 import { getFirstTeamName, getSecondTeamName } from './teams.helper';
 import { formatFieldName } from './fields.helper';
+import dayjs from 'dayjs';
 
 /**
  * Validation functions for field slots and teams
@@ -136,4 +138,61 @@ export function getSuggestedFieldSlots(teamCount: number): {
         requiredSlots,
         message: `${teamCount} teams need ${requiredSlots} field slot${requiredSlots > 1 ? 's' : ''}, but you'll need ${teamsToAdd} more team${teamsToAdd > 1 ? 's' : ''} for a perfect match.`
     };
+}
+
+/**
+ * Exports pod schedule to ICS calendar format
+ */
+export function exportPodScheduleToICS(
+    schedule: ScheduleView,
+    teamNames: Record<string, string>,
+    leagueName?: string,
+    venue?: string,
+    fieldSlots?: string[]
+): void {
+    const events: ICSEvent[] = [];
+
+    schedule.rounds.forEach(round => {
+        round.games.forEach(game => {
+            const startTime = dayjs(game.start);
+            const endTime = startTime.add(game.durationMins, 'minute');
+
+            const homeTeam1 = getFirstTeamName(game.home, teamNames);
+            const homeTeam2 = getSecondTeamName(game.home, teamNames);
+            const awayTeam1 = getFirstTeamName(game.away, teamNames);
+            const awayTeam2 = getSecondTeamName(game.away, teamNames);
+
+            const title = `Round ${round.round}: ${homeTeam1} & ${homeTeam2} vs ${awayTeam1} & ${awayTeam2}`;
+
+            let description = `League: ${leagueName || 'Unknown League'}\n`;
+            description += `Round: ${round.round}\n`;
+            description += `Home Team: ${homeTeam1} & ${homeTeam2}\n`;
+            description += `Away Team: ${awayTeam1} & ${awayTeam2}\n`;
+            description += `Duration: ${game.durationMins} minutes`;
+
+            let location = '';
+            if (venue && game.field) {
+                location = formatFieldName(venue, game.field, fieldSlots || []);
+            } else if (venue) {
+                location = venue;
+            } else if (game.field) {
+                location = `Field ${game.field}`;
+            }
+
+            events.push({
+                uid: `${game.gameId}@ultiverse.app`,
+                title,
+                description,
+                location,
+                start: startTime.toDate(),
+                end: endTime.toDate()
+            });
+        });
+    });
+
+    const calendarName = leagueName ? `${leagueName} Schedule` : 'Schedule';
+    const icsContent = createICSContent(events, calendarName);
+    const filename = generateICSFileName('schedule', leagueName);
+
+    downloadICS(icsContent, filename);
 }
