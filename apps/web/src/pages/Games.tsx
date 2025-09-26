@@ -8,15 +8,15 @@ import {
     Alert,
     Button,
     Stack,
-    Divider,
 } from '@mui/material';
-import { Download, CalendarMonth, Schedule, ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { Download, CalendarMonth, Schedule } from '@mui/icons-material';
 import { getTeamsByLeague, generateSchedule, TeamSummary } from '@/api/uc';
 import { useLeague } from '@/hooks/useLeague';
 import { ScheduleView } from '@ultiverse/shared-types';
 import { GameCard } from '@/components/GameCard';
 import { Section } from '@/components/Section';
 import { GenerateScheduleWizard } from '@/components/GenerateScheduleWizard';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { exportPodScheduleToCSV } from '@/helpers/schedule.helper';
 import { getTeamDisplayName, getTeamColor } from '@/helpers/teams.helper';
 import dayjs from 'dayjs';
@@ -34,6 +34,9 @@ export function Games() {
     // Wizard state
     const [wizardOpen, setWizardOpen] = useState(false);
 
+    // Clear confirmation state
+    const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+
     const handleExportCSV = () => {
         if (!generatedSchedule) return;
         exportPodScheduleToCSV(generatedSchedule, teamNames, selectedLeague?.name, venue, fieldSlots);
@@ -45,11 +48,6 @@ export function Games() {
         console.log('Export ICS');
     };
 
-    const handleShiftRounds = (direction: 'forward' | 'backward') => {
-        if (!generatedSchedule) return;
-        // TODO: Implement round shifting
-        console.log(`Shift rounds ${direction}`);
-    };
 
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
@@ -83,6 +81,18 @@ export function Games() {
 
     const handleCloseWizard = () => {
         setWizardOpen(false);
+    };
+
+    const handleClearScheduleClick = () => {
+        setClearConfirmOpen(true);
+    };
+
+    const handleClearConfirm = () => {
+        setGeneratedSchedule(null);
+    };
+
+    const handleClearCancel = () => {
+        setClearConfirmOpen(false);
     };
 
     const handleWizardGenerate = async (scheduleData: {
@@ -187,27 +197,6 @@ export function Games() {
                         Export ICS
                     </Button>
 
-                    <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-
-                    <Button
-                        variant="outlined"
-                        startIcon={<ChevronLeft />}
-                        onClick={() => handleShiftRounds('backward')}
-                        disabled={!generatedSchedule}
-                        size="small"
-                    >
-                        -1 Week
-                    </Button>
-
-                    <Button
-                        variant="outlined"
-                        startIcon={<ChevronRight />}
-                        onClick={() => handleShiftRounds('forward')}
-                        disabled={!generatedSchedule}
-                        size="small"
-                    >
-                        +1 Week
-                    </Button>
                 </Stack>
             </Box>
 
@@ -252,7 +241,7 @@ export function Games() {
                     ref={scheduleRef}
                     title="Generated Schedule"
                     headerActions={
-                        <Button variant="outlined" onClick={() => setGeneratedSchedule(null)}>
+                        <Button variant="outlined" onClick={handleClearScheduleClick}>
                             Clear Schedule
                         </Button>
                     }
@@ -302,6 +291,17 @@ export function Games() {
                 onClose={handleCloseWizard}
                 onGenerate={handleWizardGenerate}
                 availableTeams={teamsQuery.data || []}
+            />
+
+            {/* Clear Schedule Confirmation Dialog */}
+            <ConfirmationDialog
+                open={clearConfirmOpen}
+                onClose={handleClearCancel}
+                onConfirm={handleClearConfirm}
+                title="Clear Schedule"
+                message="Are you sure you want to clear the generated schedule? This action cannot be undone and you'll need to regenerate the schedule from scratch."
+                confirmText="Clear Schedule"
+                confirmColor="error"
             />
         </Box>
     );
