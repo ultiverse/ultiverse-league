@@ -20,6 +20,8 @@ import { ScheduleView, TeamSide } from '@ultiverse/shared-types';
 import { GameCard } from '@/components/GameCard';
 import { Section } from '@/components/Section';
 import { GenerateScheduleWizard } from '@/components/GenerateScheduleWizard';
+import { exportPodScheduleToCSV } from '@/helpers/podScheduleCSV.helper';
+import dayjs from 'dayjs';
 
 function getTeamDisplayName(teamSide: TeamSide, teamNames?: Record<string, string>): string {
     if ('teamName' in teamSide && teamSide.teamName) {
@@ -60,6 +62,7 @@ export function Games() {
     const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleView | null>(null);
     const [teamNames, setTeamNames] = useState<Record<string, string>>({});
     const [teamData, setTeamData] = useState<Record<string, { id: string; name: string; colour: string; }>>({});
+    const [venue, setVenue] = useState<string>('');
     const scheduleRef = useRef<HTMLDivElement>(null);
 
     // Wizard state
@@ -67,8 +70,7 @@ export function Games() {
 
     const handleExportCSV = () => {
         if (!generatedSchedule) return;
-        // TODO: Implement CSV export
-        console.log('Export CSV');
+        exportPodScheduleToCSV(generatedSchedule, teamNames, selectedLeague?.name, venue);
     };
 
     const handleExportICS = () => {
@@ -132,10 +134,17 @@ export function Games() {
         setWizardOpen(false);
     };
 
-    const handleWizardGenerate = async (scheduleData: any) => {
+    const handleWizardGenerate = async (scheduleData: {
+        fieldSlot: { venue: string; dayOfWeek: number; startTime: unknown; duration: number; subfields: string[]; };
+        range: { rangeMode: 'rounds' | 'endDate'; firstDate: unknown; numberOfRounds: number; endDate: unknown; blackoutDates: unknown[]; };
+        pairing: { avoidRematches: boolean; balancePartners: boolean; balanceOpponents: boolean; };
+    }) => {
         console.log('Generating schedule with data:', scheduleData);
 
         const { fieldSlot, range } = scheduleData;
+
+        // Store venue for CSV export
+        setVenue(fieldSlot.venue);
 
         // Prepare the team IDs for the schedule generation
         const selectedTeamIds = selectedTeams.length > 0 ? selectedTeams : teamsQuery.data?.map(team => team.id) || [];
@@ -143,7 +152,7 @@ export function Games() {
         // Calculate the number of rounds
         const numberOfRounds = range.rangeMode === 'rounds'
             ? range.numberOfRounds
-            : Math.ceil((range.endDate?.diff(range.firstDate, 'week', true) || 0));
+            : Math.ceil(dayjs(range.endDate as string).diff(dayjs(range.firstDate as string), 'week', true));
 
         try {
             // Use the actual generateSchedule API

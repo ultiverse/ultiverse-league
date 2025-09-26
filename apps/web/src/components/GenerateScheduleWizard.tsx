@@ -33,8 +33,6 @@ interface GenerateScheduleWizardProps {
     availableTeams?: Array<{ id: string; name: string; colour?: string; }>;
 }
 
-
-
 const steps = [
     'Field Slot',
     'Range',
