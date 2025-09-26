@@ -1,0 +1,231 @@
+import { useState } from 'react';
+import {
+    Box,
+    Typography,
+    Drawer,
+    AppBar,
+    Toolbar,
+    IconButton,
+    Stepper,
+    Step,
+    StepLabel,
+    Button,
+    Stack,
+    Divider,
+} from '@mui/material';
+import { Close } from '@mui/icons-material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import { FieldSlotStep, FieldSlotData } from './GenerateScheduleWizard/FieldSlotStep';
+import { RangeStep, RangeData } from './GenerateScheduleWizard/RangeStep';
+import { PodsPairingStep, PairingData } from './GenerateScheduleWizard/PodsPairingStep';
+import { PreviewStep } from './GenerateScheduleWizard/PreviewStep';
+
+interface GenerateScheduleWizardProps {
+    open: boolean;
+    onClose: () => void;
+    onGenerate?: (scheduleData: {
+        fieldSlot: FieldSlotData;
+        range: RangeData;
+        pairing: PairingData;
+    }) => void;
+    availableTeams?: Array<{ id: string; name: string; colour?: string; }>;
+}
+
+
+
+const steps = [
+    'Field Slot',
+    'Range',
+    'Pods & Pairing Rules',
+    'Preview & Conflicts'
+];
+
+export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTeams = [] }: GenerateScheduleWizardProps) {
+    const [activeStep, setActiveStep] = useState(0);
+
+    // Step 1: Field Slot
+    const [fieldSlot, setFieldSlot] = useState<FieldSlotData>({
+        venue: '',
+        dayOfWeek: 3, // Wednesday
+        startTime: dayjs().hour(17).minute(30), // 5:30 PM
+        duration: 90,
+        subfields: []
+    });
+
+    // Step 2: Range
+    const [range, setRange] = useState<RangeData>({
+        rangeMode: 'rounds',
+        firstDate: null,
+        numberOfRounds: 8,
+        endDate: null,
+        blackoutDates: []
+    });
+
+    // Step 3: Pairing
+    const [pairing, setPairing] = useState<PairingData>({
+        avoidRematches: true,
+        balancePartners: true,
+        balanceOpponents: true
+    });
+
+    const handleNext = () => {
+        setActiveStep((prevStep) => prevStep + 1);
+    };
+
+    const handleBack = () => {
+        setActiveStep((prevStep) => prevStep - 1);
+    };
+
+    const handleGenerate = () => {
+        if (onGenerate) {
+            onGenerate({
+                fieldSlot,
+                range,
+                pairing
+            });
+        }
+        onClose();
+    };
+
+    const getNextOccurrenceOfDay = (dayOfWeek: number) => {
+        const today = dayjs();
+        const daysUntilTarget = (dayOfWeek - today.day() + 7) % 7;
+        return daysUntilTarget === 0 ? today.add(7, 'day') : today.add(daysUntilTarget, 'day');
+    };
+
+    const handleDayOfWeekChange = (dayOfWeek: number) => {
+        const nextOccurrence = getNextOccurrenceOfDay(dayOfWeek);
+        setRange(prev => ({ ...prev, firstDate: nextOccurrence }));
+    };
+
+    const canProceedFromStep = (step: number): boolean => {
+        switch (step) {
+            case 0: // Field Slot
+                return fieldSlot.venue.trim() !== '' &&
+                    fieldSlot.startTime !== null;
+            case 1: // Range
+                return range.firstDate !== null &&
+                    (range.rangeMode === 'rounds' ? range.numberOfRounds >= 1 : range.endDate !== null);
+            case 2: // Pairing
+                return true; // All pairing options are optional
+            case 3: { // Preview & Generate
+                const podsNeeded = Math.max(1, fieldSlot.subfields.length) * 4;
+                return availableTeams.length >= podsNeeded;
+            }
+            default:
+                return true;
+        }
+    };
+
+    const renderStepContent = (step: number) => {
+        switch (step) {
+            case 0:
+                return (
+                    <FieldSlotStep
+                        fieldSlot={fieldSlot}
+                        onFieldSlotChange={setFieldSlot}
+                        onDayOfWeekChange={handleDayOfWeekChange}
+                    />
+                );
+
+            case 1:
+                return (
+                    <RangeStep
+                        range={range}
+                        onRangeChange={setRange}
+                        dayOfWeek={fieldSlot.dayOfWeek}
+                    />
+                );
+
+            case 2:
+                return (
+                    <PodsPairingStep
+                        pairing={pairing}
+                        onPairingChange={setPairing}
+                        availableTeams={availableTeams}
+                    />
+                );
+
+            case 3:
+                return (
+                    <PreviewStep
+                        fieldSlot={fieldSlot}
+                        range={range}
+                        availableTeams={availableTeams}
+                    />
+                );
+
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <Drawer
+                anchor="right"
+                open={open}
+                onClose={onClose}
+                slotProps={{
+                    paper: {
+                        sx: {
+                            width: { xs: '100%', sm: 480, md: 600 },
+                            maxWidth: '100vw',
+                            backgroundColor: 'background.paper'
+                        }
+                    }
+                }}
+            >
+                <AppBar position="static" elevation={0} sx={{ bgcolor: 'background.paper', borderBottom: 1, borderColor: 'divider' }}>
+                    <Toolbar>
+                        <Typography variant="h6" sx={{ flexGrow: 1, color: 'text.primary' }}>
+                            Generate Schedule
+                        </Typography>
+                        <IconButton
+                            edge="end"
+                            onClick={onClose}
+                            sx={{ color: 'text.primary' }}
+                        >
+                            <Close />
+                        </IconButton>
+                    </Toolbar>
+                </AppBar>
+
+                <Box sx={{ p: 3, height: '100%', overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+                    <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
+                        {steps.map((label) => (
+                            <Step key={label}>
+                                <StepLabel>{label}</StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
+
+                    <Box sx={{ flexGrow: 1, mb: 3 }}>
+                        {renderStepContent(activeStep)}
+                    </Box>
+
+                    <Divider sx={{ mb: 2 }} />
+
+                    <Stack direction="row" justifyContent="space-between">
+                        <Button
+                            disabled={activeStep === 0}
+                            onClick={handleBack}
+                        >
+                            Back
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            onClick={activeStep === steps.length - 1 ? handleGenerate : handleNext}
+                            disabled={!canProceedFromStep(activeStep)}
+                        >
+                            {activeStep === steps.length - 1 ? 'Generate' : 'Next'}
+                        </Button>
+                    </Stack>
+                </Box>
+            </Drawer>
+        </LocalizationProvider>
+    );
+}
