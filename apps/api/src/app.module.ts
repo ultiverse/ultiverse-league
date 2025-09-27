@@ -10,6 +10,7 @@ import { ExportsModule } from './exports/exports.module';
 import { FixturesModule } from './fixtures/fixtures.module';
 import { SchedulesModule } from './schedules/schedules.module';
 import { UserModule } from './user/user.module';
+import { FieldsModule } from './fields/fields.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UserModule } from './user/user.module';
     FixturesModule,
     SchedulesModule,
     UserModule,
+    FieldsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

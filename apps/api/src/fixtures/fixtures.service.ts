@@ -54,15 +54,31 @@ export class FixturesService {
       id: 'F1',
       name: 'Field 1',
       venue: 'Central Park',
+      subfields: [
+        { id: 'F1A', name: 'Field 1A' },
+        { id: 'F1B', name: 'Field 1B' }
+      ],
       meta: { lights: false },
     },
     {
       id: 'F2',
       name: 'Field 2',
       venue: 'Central Park',
+      subfields: [
+        { id: 'F2A', name: 'Field 2A' }
+      ],
       meta: { lights: false },
     },
-    { id: 'F3', name: 'Field 3', venue: 'Riverside', meta: { lights: true } },
+    {
+      id: 'F3',
+      name: 'Field 3',
+      venue: 'Riverside',
+      subfields: [
+        { id: 'F3A', name: 'Field 3A' },
+        { id: 'F3B', name: 'Field 3B' }
+      ],
+      meta: { lights: true }
+    },
   ];
 
   getLeagues(): League[] {
