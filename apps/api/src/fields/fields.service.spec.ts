@@ -147,5 +147,21 @@ describe('FieldsService', () => {
       expect(result[0].subfields[0].name).toBe('Central Park - Field 1');
       expect(result[0].subfields[1].name).toBe('Central Park - Field 2');
     });
+
+    it('should extract venue names correctly', () => {
+      // Test the private extractVenueName method via the public interface
+      const testCases = [
+        { input: 'Bowring Park - Jamie Morry Soccer Pitch', expected: 'Bowring Park' },
+        { input: 'Jamie Morrey Field', expected: null },
+        { input: 'Central Park Field 1', expected: 'Central Park' },
+        { input: 'Memorial Stadium Pitch A', expected: 'Memorial Stadium' },
+      ];
+
+      testCases.forEach(({ input, expected }) => {
+        // Access the private method for testing
+        const actual = (service as any).extractVenueName(input);
+        expect(actual).toBe(expected);
+      });
+    });
   });
 });

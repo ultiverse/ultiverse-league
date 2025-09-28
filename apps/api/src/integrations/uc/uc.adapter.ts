@@ -188,10 +188,9 @@ export class UCAdapter
     const venueMap = new Map<string, UCField[]>();
 
     ucResponse.result.forEach((ucField) => {
-      // Extract venue name from field name or use organization as fallback
+      // Extract venue name from field name or use field name as fallback
       const venueName =
-        this.extractVenueName(ucField.name) ||
-        `Organization ${ucField.organization_id}`;
+        this.extractVenueName(ucField.name) || ucField.name;
 
       if (!venueMap.has(venueName)) {
         venueMap.set(venueName, []);
@@ -249,14 +248,22 @@ export class UCAdapter
     }
 
     // If no pattern matches, return the first part before common field indicators
-    const fieldIndicators = ['Field', 'Pitch', 'Court', '-'];
-    for (const indicator of fieldIndicators) {
-      const index = fieldName.indexOf(indicator);
-      if (index > 0) {
-        return fieldName.substring(0, index).trim();
+    // Only if they clearly indicate a field subdivision (i.e., followed by a number or letter)
+    const fieldIndicators = [
+      { indicator: 'Field', pattern: /^(.+?)\s+Field\s+[A-Z0-9]/i },
+      { indicator: 'Pitch', pattern: /^(.+?)\s+Pitch\s+[A-Z0-9]/i },
+      { indicator: 'Court', pattern: /^(.+?)\s+Court\s+[A-Z0-9]/i },
+    ];
+
+    for (const { pattern } of fieldIndicators) {
+      const match = fieldName.match(pattern);
+      if (match) {
+        return match[1].trim();
       }
     }
 
+    // If the field name ends with just "Field", "Pitch", or "Court" without subdivision,
+    // treat the entire name as the venue
     return null;
   }
 
