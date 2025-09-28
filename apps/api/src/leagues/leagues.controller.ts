@@ -1,7 +1,15 @@
 import { Controller, Get, Param, Query, Inject } from '@nestjs/common';
 import { FixturesService } from '../fixtures/fixtures.service';
-import { LEAGUE_PROVIDER, TEAMS_PROVIDER } from '../integrations/ports';
-import type { ILeagueProvider, ITeamsProvider } from '../integrations/ports';
+import {
+  LEAGUE_PROVIDER,
+  TEAMS_PROVIDER,
+  FIELDS_PROVIDER,
+} from '../integrations/ports';
+import type {
+  ILeagueProvider,
+  ITeamsProvider,
+  IFieldsProvider,
+} from '../integrations/ports';
 
 @Controller('leagues')
 export class LeaguesController {
@@ -9,6 +17,7 @@ export class LeaguesController {
     private fixtures: FixturesService,
     @Inject(LEAGUE_PROVIDER) private leagueProvider: ILeagueProvider,
     @Inject(TEAMS_PROVIDER) private teamsProvider: ITeamsProvider,
+    @Inject(FIELDS_PROVIDER) private fieldsProvider: IFieldsProvider,
   ) {}
 
   @Get('latest')
@@ -66,5 +75,19 @@ export class LeaguesController {
 
     const kind = pods === 'true' ? 'pod' : undefined;
     return this.fixtures.getTeams(id, kind as any);
+  }
+
+  @Get(':id/fields')
+  async byIdFields(
+    @Param('id') id: string,
+    @Query('integration') integration?: string,
+  ) {
+    if (integration === 'external') {
+      return await this.fieldsProvider.listFields(id);
+    }
+
+    // For now, return empty array for internal data
+    // Later we can implement fixtures.getFields(id) if needed
+    return [];
   }
 }

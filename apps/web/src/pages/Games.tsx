@@ -7,56 +7,46 @@ import {
     CircularProgress,
     Alert,
     Button,
-    TextField,
-    Checkbox,
-    FormControlLabel,
+    Stack,
 } from '@mui/material';
+import { Download, CalendarMonth, Schedule } from '@mui/icons-material';
 import { getTeamsByLeague, generateSchedule, TeamSummary } from '@/api/uc';
 import { useLeague } from '@/hooks/useLeague';
-import { ScheduleView, TeamSide } from '@ultiverse/shared-types';
+import { ScheduleView } from '@ultiverse/shared-types';
 import { GameCard } from '@/components/GameCard';
 import { Section } from '@/components/Section';
+import { GenerateScheduleWizard } from '@/components/GenerateScheduleWizard';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
+import { exportPodScheduleToCSV, exportPodScheduleToICS } from '@/helpers/schedule.helper';
+import { getTeamDisplayName, getTeamColor } from '@/helpers/teams.helper';
+import dayjs from 'dayjs';
 
-function getTeamDisplayName(teamSide: TeamSide, teamNames?: Record<string, string>): string {
-    if ('teamName' in teamSide && teamSide.teamName) {
-        return teamSide.teamName;
-    }
-
-    if ('pods' in teamSide && teamSide.pods) {
-        const podNames = teamSide.pods.map(podId =>
-            teamNames?.[podId] || `Pod ${podId}`
-        );
-        return podNames.join(' + ');
-    }
-
-    if ('teamId' in teamSide) {
-        return teamNames?.[teamSide.teamId] || `Team ${teamSide.teamId}`;
-    }
-
-    return 'Unknown Team';
-}
-
-function getTeamColor(teamSide: TeamSide, teamData?: Record<string, { id: string; name: string; colour: string; }>): string {
-    // For pods, use default black color
-    if ('pods' in teamSide && teamSide.pods) {
-        return '#000000';
-    }
-
-    if ('teamId' in teamSide) {
-        return teamData?.[teamSide.teamId]?.colour || '#000000';
-    }
-
-    return '#000000';
-}
 
 export function Games() {
     const { selectedLeague } = useLeague();
-    const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
-    const [rounds, setRounds] = useState(8);
     const [generatedSchedule, setGeneratedSchedule] = useState<ScheduleView | null>(null);
     const [teamNames, setTeamNames] = useState<Record<string, string>>({});
     const [teamData, setTeamData] = useState<Record<string, { id: string; name: string; colour: string; }>>({});
+    const [venue, setVenue] = useState<string>('');
+    const [fieldSlots, setFieldSlots] = useState<string[]>([]);
     const scheduleRef = useRef<HTMLDivElement>(null);
+
+    // Wizard state
+    const [wizardOpen, setWizardOpen] = useState(false);
+
+    // Clear confirmation state
+    const [clearConfirmOpen, setClearConfirmOpen] = useState(false);
+
+    const handleExportCSV = () => {
+        if (!generatedSchedule) return;
+        exportPodScheduleToCSV(generatedSchedule, teamNames, selectedLeague?.name, venue, fieldSlots);
+    };
+
+    const handleExportICS = () => {
+        if (!generatedSchedule) return;
+        exportPodScheduleToICS(generatedSchedule, teamNames, selectedLeague?.name, venue, fieldSlots);
+    };
+
 
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
@@ -83,53 +73,77 @@ export function Games() {
         }
     });
 
-    const handleTeamToggle = (teamId: string) => {
-        setSelectedTeams(prev =>
-            prev.includes(teamId)
-                ? prev.filter(id => id !== teamId)
-                : [...prev, teamId]
-        );
-    };
-
-    const handleSelectAll = () => {
-        if (selectedTeams.length === teamsQuery.data?.length) {
-            setSelectedTeams([]);
-        } else {
-            setSelectedTeams(teamsQuery.data?.map(team => team.id) || []);
-        }
-    };
 
     const handleGenerateSchedule = () => {
-        const teams = teamsQuery.data || [];
-        if (selectedTeams.length < 4) {
-            alert('Need at least 4 teams to generate a schedule');
-            return;
+        setWizardOpen(true);
+    };
+
+    const handleCloseWizard = () => {
+        setWizardOpen(false);
+    };
+
+    const handleClearScheduleClick = () => {
+        setClearConfirmOpen(true);
+    };
+
+    const handleClearConfirm = () => {
+        setGeneratedSchedule(null);
+    };
+
+    const handleClearCancel = () => {
+        setClearConfirmOpen(false);
+    };
+
+    const handleWizardGenerate = async (scheduleData: {
+        fieldSlot: { venue: string; dayOfWeek: number; startTime: unknown; duration: number; subfields: string[]; };
+        range: { rangeMode: 'rounds' | 'endDate'; firstDate: unknown; numberOfRounds: number; endDate: unknown; blackoutDates: unknown[]; };
+        pairing: { avoidRematches: boolean; balancePartners: boolean; balanceOpponents: boolean; };
+    }) => {
+        console.log('Generating schedule with data:', scheduleData);
+
+        const { fieldSlot, range } = scheduleData;
+
+        // Store venue and field slots for CSV export
+        setVenue(fieldSlot.venue);
+        setFieldSlots(fieldSlot.subfields);
+
+        // Use all available teams from the league
+        const selectedTeamIds = teamsQuery.data?.map(team => team.id) || [];
+
+        // Calculate the number of rounds
+        const numberOfRounds = range.rangeMode === 'rounds'
+            ? range.numberOfRounds
+            : Math.ceil(dayjs(range.endDate as string).diff(dayjs(range.firstDate as string), 'week', true));
+
+        try {
+            // Use the actual generateSchedule API
+            const result = await generateScheduleMutation.mutateAsync({
+                pods: selectedTeamIds,
+                rounds: numberOfRounds
+            });
+
+            // Build team name and data mappings from the available teams
+            if (teamsQuery.data) {
+                const teamNameMap: Record<string, string> = {};
+                const teamDataMap: Record<string, { id: string; name: string; colour: string; }> = {};
+
+                teamsQuery.data.forEach((team: TeamSummary) => {
+                    teamNameMap[team.id] = team.name;
+                    teamDataMap[team.id] = {
+                        id: team.id,
+                        name: team.name,
+                        colour: team.colour || '#000000'
+                    };
+                });
+
+                setTeamNames(teamNameMap);
+                setTeamData(teamDataMap);
+            }
+
+            setGeneratedSchedule(result);
+        } catch (error) {
+            console.error('Failed to generate schedule:', error);
         }
-
-        const names = teams.reduce((acc, team) => {
-            acc[team.id] = team.name;
-            return acc;
-        }, {} as Record<string, string>);
-
-        const teamDataMap = teams.reduce((acc, team) => {
-            acc[team.id] = {
-                id: team.id,
-                name: team.name,
-                colour: team.colour
-            };
-            return acc;
-        }, {} as Record<string, { id: string; name: string; colour: string; }>);
-
-        setTeamNames(names);
-        setTeamData(teamDataMap);
-
-        generateScheduleMutation.mutate({
-            pods: selectedTeams,
-            rounds,
-            recencyWindow: 2,
-            names,
-            leagueId: selectedLeague?.id,
-        });
     };
 
     if (!selectedLeague) {
@@ -144,81 +158,89 @@ export function Games() {
 
     return (
         <Box sx={{ p: 3 }}>
-            <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-                Schedule
-            </Typography>
+            {/* Admin Header */}
+            <Box sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                mb: 3
+            }}>
+                <Typography variant="h4">
+                    Schedule
+                </Typography>
 
-            {teamsQuery.isLoading && <CircularProgress />}
-            {teamsQuery.isError && (
-                <Alert severity="error">{String(teamsQuery.error)}</Alert>
-            )}
+                <Stack direction="row" spacing={1}>
+                    <Button
+                        variant="contained"
+                        startIcon={<Schedule />}
+                        onClick={handleGenerateSchedule}
+                    >
+                        Generate Schedule
+                    </Button>
 
-            {teamsQuery.data && (
-                <Section title="Select Teams for Pod Generation">
+                    <Button
+                        variant="outlined"
+                        startIcon={<Download />}
+                        onClick={handleExportCSV}
+                        disabled={!generatedSchedule}
+                    >
+                        Export CSV
+                    </Button>
 
-                    <Box sx={{ mb: 2 }}>
-                        <Button
-                            variant="outlined"
-                            onClick={handleSelectAll}
-                            sx={{ mr: 2 }}
-                        >
-                            {selectedTeams.length === teamsQuery.data.length ? 'Deselect All' : 'Select All'}
-                        </Button>
-                        <Typography variant="body2" color="text.secondary">
-                            {selectedTeams.length} of {teamsQuery.data.length} teams selected
+                    <Button
+                        variant="outlined"
+                        startIcon={<CalendarMonth />}
+                        onClick={handleExportICS}
+                        disabled={!generatedSchedule}
+                    >
+                        Export ICS
+                    </Button>
+
+                </Stack>
+            </Box>
+
+            {/* Empty State - No Rounds Yet */}
+            {!generatedSchedule && (
+                <Section>
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        py: 8,
+                        textAlign: 'center'
+                    }}>
+                        <Schedule sx={{ fontSize: 64, color: 'text.secondary', mb: 2 }} />
+                        <Typography variant="h5" gutterBottom>
+                            No rounds yet
                         </Typography>
-                    </Box>
-
-                    <Grid container spacing={1}>
-                        {teamsQuery.data.map((team: TeamSummary) => (
-                            <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                                <FormControlLabel
-                                    control={
-                                        <Checkbox
-                                            checked={selectedTeams.includes(team.id)}
-                                            onChange={() => handleTeamToggle(team.id)}
-                                        />
-                                    }
-                                    label={team.name}
-                                />
-                            </Grid>
-                        ))}
-                    </Grid>
-
-                    <Box sx={{ mt: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <TextField
-                            label="Number of Rounds"
-                            type="number"
-                            value={rounds}
-                            onChange={(e) => setRounds(Number(e.target.value))}
-                            inputProps={{ min: 1, max: 20 }}
-                            sx={{ width: 200 }}
-                        />
-
+                        <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500 }}>
+                            Use Generate Schedule to define your weekly slot and we'll fill in the rounds.
+                        </Typography>
                         <Button
                             variant="contained"
                             size="large"
+                            startIcon={<Schedule />}
                             onClick={handleGenerateSchedule}
-                            disabled={generateScheduleMutation.isPending || selectedTeams.length < 4}
                         >
-                            {generateScheduleMutation.isPending ? 'Generating...' : 'Generate Pods'}
+                            Generate Schedule
                         </Button>
                     </Box>
-
-                    {selectedTeams.length < 4 && selectedTeams.length > 0 && (
-                        <Alert severity="warning" sx={{ mt: 2 }}>
-                            Select at least 4 teams to generate a schedule.
-                        </Alert>
-                    )}
                 </Section>
             )}
+
+            {/* Development/Legacy UI - will be replaced by Rounds View */}
+            {generatedSchedule && teamsQuery.isLoading && <CircularProgress />}
+            {generatedSchedule && teamsQuery.isError && (
+                <Alert severity="error">{String(teamsQuery.error)}</Alert>
+            )}
+
 
             {generatedSchedule && (
                 <Section
                     ref={scheduleRef}
                     title="Generated Schedule"
                     headerActions={
-                        <Button variant="outlined" onClick={() => setGeneratedSchedule(null)}>
+                        <Button variant="outlined" onClick={handleClearScheduleClick}>
                             Clear Schedule
                         </Button>
                     }
@@ -236,6 +258,8 @@ export function Games() {
                                             awayTeamName={getTeamDisplayName(game.away, teamNames)}
                                             homeTeamColor={getTeamColor(game.home, teamData)}
                                             awayTeamColor={getTeamColor(game.away, teamData)}
+                                            venue={venue}
+                                            fieldSlot={game.field || undefined}
                                             onClick={() => {
                                                 console.log('Game clicked:', game.gameId);
                                             }}
@@ -259,6 +283,25 @@ export function Games() {
                     No teams found for this league.
                 </Alert>
             )}
+
+            {/* Generate Schedule Wizard */}
+            <GenerateScheduleWizard
+                open={wizardOpen}
+                onClose={handleCloseWizard}
+                onGenerate={handleWizardGenerate}
+                availableTeams={teamsQuery.data || []}
+            />
+
+            {/* Clear Schedule Confirmation Dialog */}
+            <ConfirmationDialog
+                open={clearConfirmOpen}
+                onClose={handleClearCancel}
+                onConfirm={handleClearConfirm}
+                title="Clear Schedule"
+                message="Are you sure you want to clear the generated schedule? This action cannot be undone and you'll need to regenerate the schedule from scratch."
+                confirmText="Clear Schedule"
+                confirmColor="error"
+            />
         </Box>
     );
 }

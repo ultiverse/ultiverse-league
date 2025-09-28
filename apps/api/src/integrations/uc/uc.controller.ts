@@ -4,6 +4,7 @@ import { UCClient } from './uc.client';
 import { UCEventsService } from './uc.events/uc.events.service';
 import { UCRegistrationsService } from './uc.registrations/uc.registrations.service';
 import { UCTeamsService } from './uc.teams/uc.teams.service';
+import { UCFieldsService } from './uc.fields/uc.fields.service';
 
 import {
   EventsQuery,
@@ -34,6 +35,7 @@ export class UCController {
     private readonly events: UCEventsService,
     private readonly regs: UCRegistrationsService,
     private readonly teamsService: UCTeamsService,
+    private readonly fieldsService: UCFieldsService,
   ) {}
 
   /**
@@ -114,5 +116,14 @@ export class UCController {
   @Get('teams')
   async teams(@Query('event_id', ParseIntPipe) event_id: number) {
     return this.teamsService.list({ event_id });
+  }
+
+  /**
+   * GET /uc/fields?event_id=...
+   * Lists fields for an event (league).
+   */
+  @Get('fields')
+  async fields(@Query('event_id', ParseIntPipe) event_id: number) {
+    return this.fieldsService.list({ event_id });
   }
 }
