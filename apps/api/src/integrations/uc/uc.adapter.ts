@@ -189,8 +189,7 @@ export class UCAdapter
 
     ucResponse.result.forEach((ucField) => {
       // Extract venue name from field name or use field name as fallback
-      const venueName =
-        this.extractVenueName(ucField.name) || ucField.name;
+      const venueName = this.extractVenueName(ucField.name) || ucField.name;
 
       if (!venueMap.has(venueName)) {
         venueMap.set(venueName, []);

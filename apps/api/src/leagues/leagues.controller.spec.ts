@@ -4,7 +4,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LeaguesController } from './leagues.controller';
 import { FixturesService } from '../fixtures/fixtures.service';
-import { LEAGUE_PROVIDER, TEAMS_PROVIDER, FIELDS_PROVIDER } from '../integrations/ports';
+import {
+  LEAGUE_PROVIDER,
+  TEAMS_PROVIDER,
+  FIELDS_PROVIDER,
+} from '../integrations/ports';
 
 describe('LeaguesController', () => {
   let controller: LeaguesController;

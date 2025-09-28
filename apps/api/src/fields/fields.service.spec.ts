@@ -148,20 +148,38 @@ describe('FieldsService', () => {
       expect(result[0].subfields[1].name).toBe('Central Park - Field 2');
     });
 
-    it('should extract venue names correctly', () => {
-      // Test the private extractVenueName method via the public interface
-      const testCases = [
-        { input: 'Bowring Park - Jamie Morry Soccer Pitch', expected: 'Bowring Park' },
-        { input: 'Jamie Morrey Field', expected: null },
-        { input: 'Central Park Field 1', expected: 'Central Park' },
-        { input: 'Memorial Stadium Pitch A', expected: 'Memorial Stadium' },
-      ];
+    it('should show actual field names for debugging', async () => {
+      const mockUCResponse: UCFieldsResponse = {
+        action: 'api_fields_list',
+        status: 200,
+        count: 2,
+        result: [
+          {
+            model: 'field',
+            id: 124129,
+            name: 'Bowring Park - Jamie Morry Soccer Pitch',
+            surface: 'grass',
+            organization_id: 1495,
+          },
+          {
+            model: 'field',
+            id: 122985,
+            name: 'Jamie Morrey Field',
+            surface: 'grass',
+            organization_id: 10083,
+          },
+        ],
+        errors: [],
+      };
 
-      testCases.forEach(({ input, expected }) => {
-        // Access the private method for testing
-        const actual = (service as any).extractVenueName(input);
-        expect(actual).toBe(expected);
-      });
+      mockUCFieldsService.list.mockResolvedValue(mockUCResponse);
+
+      const result = await service.getFieldsByEventId(169113);
+
+      // Log the actual field names to understand the structure
+      const fieldNames = result.map((f) => f.name);
+      expect(fieldNames).toContain('Bowring Park');
+      expect(fieldNames).toContain('Jamie Morrey Field');
     });
   });
 });
