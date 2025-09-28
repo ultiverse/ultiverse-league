@@ -5,12 +5,14 @@ import { UCFieldsResponse } from '../integrations/uc/types/fields';
 
 describe('FieldsService', () => {
   let service: FieldsService;
-  let mockUCFieldsService: jest.Mocked<UCFieldsService>;
+  let mockUCFieldsService: {
+    list: jest.Mock<Promise<UCFieldsResponse>, [any]>;
+  };
 
   beforeEach(async () => {
     mockUCFieldsService = {
-      list: jest.fn(),
-    } as any;
+      list: jest.fn<Promise<UCFieldsResponse>, [any]>(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -67,20 +69,26 @@ describe('FieldsService', () => {
 
       const result = await service.getFieldsByEventId(169113);
 
-      expect(mockUCFieldsService.list).toHaveBeenCalledWith({ event_id: 169113 });
+      expect(mockUCFieldsService.list).toHaveBeenCalledWith({
+        event_id: 169113,
+      });
       expect(result).toHaveLength(2); // Two different venues
 
       // Check first venue (Bowring Park)
-      const bowringPark = result.find(f => f.name === 'Bowring Park');
+      const bowringPark = result.find((f) => f.name === 'Bowring Park');
       expect(bowringPark).toBeDefined();
       expect(bowringPark!.venue).toBe('Bowring Park');
       expect(bowringPark!.subfields).toHaveLength(1);
-      expect(bowringPark!.subfields[0].name).toBe('Bowring Park - Jamie Morry Soccer Pitch');
-      expect(bowringPark!.map).toBe('https://maps.app.goo.gl/4g7hp6suyq1kkpny9');
+      expect(bowringPark!.subfields[0].name).toBe(
+        'Bowring Park - Jamie Morry Soccer Pitch',
+      );
+      expect(bowringPark!.map).toBe(
+        'https://maps.app.goo.gl/4g7hp6suyq1kkpny9',
+      );
       expect(bowringPark!.surface).toBe('grass');
 
       // Check second venue (Jamie Morrey Field - should be treated as its own venue)
-      const jamieMorrey = result.find(f => f.name === 'Jamie Morrey Field');
+      const jamieMorrey = result.find((f) => f.name === 'Jamie Morrey Field');
       expect(jamieMorrey).toBeDefined();
       expect(jamieMorrey!.venue).toBe('Jamie Morrey Field');
       expect(jamieMorrey!.subfields).toHaveLength(1);
@@ -125,7 +133,7 @@ describe('FieldsService', () => {
             organization_id: 100,
             location_id: 1000,
           },
-        ] as any,
+        ],
         errors: [],
       };
 

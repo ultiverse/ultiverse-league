@@ -5,12 +5,14 @@ import { UCFieldsResponse } from '../types/fields';
 
 describe('UCFieldsService', () => {
   let service: UCFieldsService;
-  let mockUCClient: jest.Mocked<UCClient>;
+  let mockUCClient: {
+    get: jest.Mock<Promise<UCFieldsResponse>, [string, any?]>;
+  };
 
   beforeEach(async () => {
     mockUCClient = {
-      get: jest.fn(),
-    } as any;
+      get: jest.fn<Promise<UCFieldsResponse>, [string, any?]>(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -68,7 +70,9 @@ describe('UCFieldsService', () => {
       const params = { event_id: 169113 };
       const result = await service.list(params);
 
-      expect(mockUCClient.get).toHaveBeenCalledWith('/api/fields', { event_id: 169113 });
+      expect(mockUCClient.get).toHaveBeenCalledWith('/api/fields', {
+        event_id: 169113,
+      });
       expect(result).toEqual(mockResponse);
     });
 

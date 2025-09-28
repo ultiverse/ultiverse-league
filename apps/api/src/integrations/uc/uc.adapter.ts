@@ -179,15 +179,19 @@ export class UCAdapter
 
   /** List UC fields for a league. */
   async listFields(leagueExternalId: string): Promise<Field[]> {
-    const ucResponse = await this.fields.list({ event_id: Number(leagueExternalId) });
+    const ucResponse = await this.fields.list({
+      event_id: Number(leagueExternalId),
+    });
 
     // Group UC fields by venue (for now, each UC field becomes a subfield)
     // Later we can implement more sophisticated venue grouping logic
     const venueMap = new Map<string, UCField[]>();
 
-    ucResponse.result.forEach(ucField => {
+    ucResponse.result.forEach((ucField) => {
       // Extract venue name from field name or use organization as fallback
-      const venueName = this.extractVenueName(ucField.name) || `Organization ${ucField.organization_id}`;
+      const venueName =
+        this.extractVenueName(ucField.name) ||
+        `Organization ${ucField.organization_id}`;
 
       if (!venueMap.has(venueName)) {
         venueMap.set(venueName, []);
@@ -198,7 +202,7 @@ export class UCAdapter
     // Transform to our domain model
     const fields: Field[] = [];
     venueMap.forEach((ucFields, venueName) => {
-      const subfields = ucFields.map(ucField => ({
+      const subfields = ucFields.map((ucField) => ({
         id: ucField.id.toString(),
         name: ucField.name,
         surface: ucField.surface,
@@ -232,9 +236,9 @@ export class UCAdapter
     // Try to extract venue name from field name
     // Common patterns: "Venue Name - Field Name", "Venue Name Field N"
     const patterns = [
-      /^(.+?)\s*-\s*.+$/,  // "Venue - Field"
-      /^(.+?)\s+Field\s+\d+$/,  // "Venue Field N"
-      /^(.+?)\s+Pitch\s*\d*$/,  // "Venue Pitch N"
+      /^(.+?)\s*-\s*.+$/, // "Venue - Field"
+      /^(.+?)\s+Field\s+\d+$/, // "Venue Field N"
+      /^(.+?)\s+Pitch\s*\d*$/, // "Venue Pitch N"
     ];
 
     for (const pattern of patterns) {

@@ -5,18 +5,18 @@ import { Field } from '../domain/models';
 
 describe('FieldsController', () => {
   let controller: FieldsController;
-  let mockFieldsService: jest.Mocked<FieldsService>;
+  let mockFieldsService: {
+    getFieldsByEventId: jest.Mock<Promise<Field[]>, [number]>;
+  };
 
   beforeEach(async () => {
     mockFieldsService = {
-      getFieldsByEventId: jest.fn(),
-    } as any;
+      getFieldsByEventId: jest.fn<Promise<Field[]>, [number]>(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [FieldsController],
-      providers: [
-        { provide: FieldsService, useValue: mockFieldsService },
-      ],
+      providers: [{ provide: FieldsService, useValue: mockFieldsService }],
     }).compile();
 
     controller = module.get<FieldsController>(FieldsController);
@@ -40,10 +40,8 @@ describe('FieldsController', () => {
               surface: 'grass',
               externalRefs: {
                 uc: {
-                  fieldId: 124129,
-                  organizationId: 1495,
-                  locationId: 1026955,
-                  pageId: 1642103,
+                  eventId: 169113,
+                  orgId: 1495,
                   slug: 'bowring-park-jamie-morry-soccer-pitch',
                 },
               },
@@ -56,8 +54,8 @@ describe('FieldsController', () => {
           surface: 'grass',
           externalRefs: {
             uc: {
-              organizationId: 1495,
-              locationId: 1026955,
+              orgId: 1495,
+              eventId: 169113,
             },
           },
           meta: {

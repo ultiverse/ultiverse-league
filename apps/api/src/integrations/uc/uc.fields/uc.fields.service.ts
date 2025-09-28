@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { FieldsQuery, toUcFieldsParams, UCFieldsResponse } from '../types/fields';
+import {
+  FieldsQuery,
+  toUcFieldsParams,
+  UCFieldsResponse,
+} from '../types/fields';
 import { UCClient } from '../uc.client';
 
 @Injectable()

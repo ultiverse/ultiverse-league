@@ -14,9 +14,11 @@ export class FieldsService {
     // Later we can implement more sophisticated venue grouping logic
     const venueMap = new Map<string, UCField[]>();
 
-    ucResponse.result.forEach(ucField => {
+    ucResponse.result.forEach((ucField) => {
       // Extract venue name from field name or use organization as fallback
-      const venueName = this.extractVenueName(ucField.name) || `Organization ${ucField.organization_id}`;
+      const venueName =
+        this.extractVenueName(ucField.name) ||
+        `Organization ${ucField.organization_id}`;
 
       if (!venueMap.has(venueName)) {
         venueMap.set(venueName, []);
@@ -27,7 +29,7 @@ export class FieldsService {
     // Transform to our domain model
     const fields: Field[] = [];
     venueMap.forEach((ucFields, venueName) => {
-      const subfields: Subfield[] = ucFields.map(ucField => ({
+      const subfields: Subfield[] = ucFields.map((ucField) => ({
         id: ucField.id.toString(),
         name: ucField.name,
         surface: ucField.surface,
@@ -73,9 +75,9 @@ export class FieldsService {
     // Try to extract venue name from field name
     // Common patterns: "Venue Name - Field Name", "Venue Name Field N"
     const patterns = [
-      /^(.+?)\s*-\s*.+$/,  // "Venue - Field"
-      /^(.+?)\s+Field\s+\d+$/,  // "Venue Field N"
-      /^(.+?)\s+Pitch\s*\d*$/,  // "Venue Pitch N"
+      /^(.+?)\s*-\s*.+$/, // "Venue - Field"
+      /^(.+?)\s+Field\s+\d+$/, // "Venue Field N"
+      /^(.+?)\s+Pitch\s*\d*$/, // "Venue Pitch N"
     ];
 
     for (const pattern of patterns) {
@@ -98,16 +100,18 @@ export class FieldsService {
   }
 
   private getCommonSurface(ucFields: UCField[]): string | undefined {
-    const surfaces = ucFields.map(f => f.surface).filter(Boolean);
+    const surfaces = ucFields.map((f) => f.surface).filter(Boolean);
     if (surfaces.length === 0) return undefined;
 
     // Return the most common surface, or the first one if all are the same
-    const surfaceCount = surfaces.reduce((acc, surface) => {
-      acc[surface!] = (acc[surface!] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const surfaceCount = surfaces.reduce(
+      (acc, surface) => {
+        acc[surface!] = (acc[surface!] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
-    return Object.entries(surfaceCount)
-      .sort(([,a], [,b]) => b - a)[0][0];
+    return Object.entries(surfaceCount).sort(([, a], [, b]) => b - a)[0][0];
   }
 }

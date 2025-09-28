@@ -1,7 +1,15 @@
 import { Controller, Get, Param, Query, Inject } from '@nestjs/common';
 import { FixturesService } from '../fixtures/fixtures.service';
-import { LEAGUE_PROVIDER, TEAMS_PROVIDER, FIELDS_PROVIDER } from '../integrations/ports';
-import type { ILeagueProvider, ITeamsProvider, IFieldsProvider } from '../integrations/ports';
+import {
+  LEAGUE_PROVIDER,
+  TEAMS_PROVIDER,
+  FIELDS_PROVIDER,
+} from '../integrations/ports';
+import type {
+  ILeagueProvider,
+  ITeamsProvider,
+  IFieldsProvider,
+} from '../integrations/ports';
 
 @Controller('leagues')
 export class LeaguesController {
