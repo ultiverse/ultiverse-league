@@ -87,12 +87,12 @@ describe('FieldsService', () => {
       );
       expect(bowringPark!.surface).toBe('grass');
 
-      // Check second venue (Jamie Morrey Field - should be treated as its own venue)
+      // Check second venue (Jamie Morrey Field - should be treated as a single venue)
       const jamieMorrey = result.find((f) => f.name === 'Jamie Morrey Field');
       expect(jamieMorrey).toBeDefined();
       expect(jamieMorrey!.venue).toBe('Jamie Morrey Field');
-      expect(jamieMorrey!.subfields).toHaveLength(1);
-      expect(jamieMorrey!.subfields[0].name).toBe('Jamie Morrey Field');
+      expect(jamieMorrey!.subfields).toHaveLength(0); // Single venue, no subfields
+      expect(jamieMorrey!.meta?.isSingleField).toBe(true);
     });
 
     it('should handle empty UC response', async () => {
@@ -176,10 +176,17 @@ describe('FieldsService', () => {
 
       const result = await service.getFieldsByEventId(169113);
 
-      // Log the actual field names to understand the structure
+      // Verify the field structure is correct
       const fieldNames = result.map((f) => f.name);
       expect(fieldNames).toContain('Bowring Park');
       expect(fieldNames).toContain('Jamie Morrey Field');
+
+      // Verify subfield behavior
+      const bowringPark = result.find((f) => f.name === 'Bowring Park');
+      const jamieMorrey = result.find((f) => f.name === 'Jamie Morrey Field');
+
+      expect(bowringPark?.subfields).toHaveLength(1); // Has subfields
+      expect(jamieMorrey?.subfields).toHaveLength(0); // Single venue, no subfields
     });
   });
 });

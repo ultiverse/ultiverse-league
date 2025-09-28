@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -23,6 +23,7 @@ import { PodsPairingStep, PairingData } from './GenerateScheduleWizard/PodsPairi
 import { PreviewStep } from './GenerateScheduleWizard/PreviewStep';
 import { validateFieldSlots } from '@/helpers/schedule.helper';
 import { getNextOccurrenceOfDay } from '@/helpers/date.helper';
+import { areTeamsReadyForScheduling, type Team } from '@/helpers/team.helper';
 
 interface GenerateScheduleWizardProps {
     open: boolean;
@@ -32,19 +33,25 @@ interface GenerateScheduleWizardProps {
         range: RangeData;
         pairing: PairingData;
     }) => void;
-    availableTeams?: Array<{ id: string; name: string; colour?: string; }>;
+    availableTeams?: Team[];
 }
 
 const steps = [
+    'Teams',
     'Field Slot',
     'Range',
-    'Pods & Pairing Rules',
     'Preview & Conflicts'
 ];
 
 
 export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTeams = [] }: GenerateScheduleWizardProps) {
     const [activeStep, setActiveStep] = useState(0);
+    const [teams, setTeams] = useState<Team[]>(availableTeams);
+
+    // Sync teams when availableTeams prop changes
+    useEffect(() => {
+        setTeams(availableTeams);
+    }, [availableTeams]);
 
     // Step 1: Field Slot
     const [fieldSlot, setFieldSlot] = useState<FieldSlotData>({
@@ -97,16 +104,16 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
 
     const canProceedFromStep = (step: number): boolean => {
         switch (step) {
-            case 0: // Field Slot
+            case 0: // Teams
+                return areTeamsReadyForScheduling(teams);
+            case 1: // Field Slot
                 return fieldSlot.venue.trim() !== '' &&
                     fieldSlot.startTime !== null;
-            case 1: // Range
+            case 2: // Range
                 return range.firstDate !== null &&
                     (range.rangeMode === 'rounds' ? range.numberOfRounds >= 1 : range.endDate !== null);
-            case 2: // Pairing
-                return true; // All pairing options are optional
             case 3: { // Preview & Generate
-                return validateFieldSlots(fieldSlot.subfields.length, availableTeams.length);
+                return validateFieldSlots(fieldSlot.subfields.length, teams.length);
             }
             default:
                 return true;
@@ -117,15 +124,25 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
         switch (step) {
             case 0:
                 return (
-                    <FieldSlotStep
-                        fieldSlot={fieldSlot}
-                        onFieldSlotChange={setFieldSlot}
-                        onDayOfWeekChange={handleDayOfWeekChange}
-                        availableTeamsCount={availableTeams.length}
+                    <PodsPairingStep
+                        pairing={pairing}
+                        onPairingChange={setPairing}
+                        availableTeams={teams}
+                        onTeamsChange={setTeams}
                     />
                 );
 
             case 1:
+                return (
+                    <FieldSlotStep
+                        fieldSlot={fieldSlot}
+                        onFieldSlotChange={setFieldSlot}
+                        onDayOfWeekChange={handleDayOfWeekChange}
+                        availableTeamsCount={teams.length}
+                    />
+                );
+
+            case 2:
                 return (
                     <RangeStep
                         range={range}
@@ -134,21 +151,12 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
                     />
                 );
 
-            case 2:
-                return (
-                    <PodsPairingStep
-                        pairing={pairing}
-                        onPairingChange={setPairing}
-                        availableTeams={availableTeams}
-                    />
-                );
-
             case 3:
                 return (
                     <PreviewStep
                         fieldSlot={fieldSlot}
                         range={range}
-                        availableTeams={availableTeams}
+                        availableTeams={teams}
                     />
                 );
 

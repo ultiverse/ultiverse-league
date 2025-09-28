@@ -27,26 +27,30 @@ export class FieldsService {
     // Transform to our domain model
     const fields: Field[] = [];
     venueMap.forEach((ucFields, venueName) => {
-      const subfields: Subfield[] = ucFields.map((ucField) => ({
-        id: ucField.id.toString(),
-        name: ucField.name,
-        surface: ucField.surface,
-        externalRefs: {
-          uc: {
-            fieldId: ucField.id,
-            organizationId: ucField.organization_id,
-            locationId: ucField.location_id,
-            pageId: ucField.page_id,
-            slug: ucField.slug,
-          },
-        },
-        meta: {
-          contactPhone: ucField.contact_phone_number,
-        },
-      }));
-
-      // Use the first field's ID as the venue ID for now
       const primaryField = ucFields[0];
+
+      // Determine if this venue has subfields or is a single field
+      const hasSubfields = ucFields.length > 1 ||
+        (ucFields.length === 1 && this.extractVenueName(ucFields[0].name) !== null);
+
+      const subfields: Subfield[] = hasSubfields
+        ? ucFields.map((ucField) => ({
+            id: ucField.id.toString(),
+            name: ucField.name,
+            surface: ucField.surface,
+            externalRefs: {
+              uc: {
+                eventId: eventId,
+                orgId: ucField.organization_id,
+                slug: ucField.slug,
+              },
+            },
+            meta: {
+              contactPhone: ucField.contact_phone_number,
+            },
+          }))
+        : []; // No subfields for single venues
+
       fields.push({
         id: `venue-${primaryField.organization_id}-${venueName.replace(/\s+/g, '-').toLowerCase()}`,
         name: venueName,
@@ -61,7 +65,8 @@ export class FieldsService {
           },
         },
         meta: {
-          fieldCount: subfields.length,
+          fieldCount: hasSubfields ? subfields.length : 1,
+          isSingleField: !hasSubfields,
         },
       });
     });
