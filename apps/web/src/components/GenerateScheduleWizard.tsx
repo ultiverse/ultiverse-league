@@ -59,7 +59,8 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
         dayOfWeek: 3, // Wednesday
         startTime: dayjs().hour(17).minute(30), // 5:30 PM
         duration: 90,
-        subfields: []
+        subfields: [],
+        fieldSlots: []
     });
 
     // Step 2: Range
@@ -113,7 +114,7 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
                 return range.firstDate !== null &&
                     (range.rangeMode === 'rounds' ? range.numberOfRounds >= 1 : range.endDate !== null);
             case 3: { // Preview & Generate
-                return validateFieldSlots(fieldSlot.subfields.length, teams.length);
+                return validateFieldSlots(fieldSlot.fieldSlots?.length || 0, teams.length);
             }
             default:
                 return true;

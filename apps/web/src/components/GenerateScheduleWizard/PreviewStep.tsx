@@ -34,10 +34,10 @@ export function PreviewStep({ fieldSlot, range, availableTeams }: PreviewStepPro
         : range.firstDate && range.endDate
             ? Math.ceil(range.endDate.diff(range.firstDate, 'week', true))
             : 0;
-    const actualSlots = Math.max(1, fieldSlot.subfields.length);
+    const actualSlots = Math.max(1, fieldSlot.fieldSlots?.length || 0);
     const requiredTeams = actualSlots * 4;
     const availableTeamsCount = availableTeams.length;
-    const validationMessage = getFieldSlotValidationMessage(fieldSlot.subfields.length, availableTeamsCount);
+    const validationMessage = getFieldSlotValidationMessage(fieldSlot.fieldSlots?.length || 0, availableTeamsCount);
     const isValid = validationMessage === null;
 
     return (
@@ -60,7 +60,9 @@ export function PreviewStep({ fieldSlot, range, availableTeams }: PreviewStepPro
                     <strong>Duration:</strong> {fieldSlot.duration} minutes
                 </Typography>
                 <Typography variant="body2">
-                    <strong>Subfields:</strong> {fieldSlot.subfields.join(', ')}
+                    <strong>Field Slots:</strong> {fieldSlot.fieldSlots?.map(slot =>
+                        slot.subfield ? `${slot.venue} - ${slot.subfield}` : slot.venue
+                    ).join(', ') || 'None configured'}
                 </Typography>
                 <Typography variant="body2">
                     <strong>Dates:</strong> {range.firstDate?.format('MMM D, YYYY')} - {totalRounds} rounds
@@ -100,17 +102,20 @@ export function PreviewStep({ fieldSlot, range, availableTeams }: PreviewStepPro
                                 } • {fieldSlot.startTime?.format('h:mm A')} — {fieldSlot.venue}
                             </Typography>
 
-                            {(fieldSlot.subfields.length > 0 ? fieldSlot.subfields : ['Main Field']).map((subfield, idx) => {
+                            {(fieldSlot.fieldSlots && fieldSlot.fieldSlots.length > 0
+                                ? fieldSlot.fieldSlots.map(slot => slot.subfield || slot.venue)
+                                : ['Main Field']
+                            ).map((slotName, idx) => {
                                 const team1 = availableTeams[idx * 4];
                                 const team2 = availableTeams[idx * 4 + 1];
                                 const team3 = availableTeams[idx * 4 + 2];
                                 const team4 = availableTeams[idx * 4 + 3];
 
                                 return (
-                                    <Box key={subfield} sx={{ py: 1 }}>
+                                    <Box key={slotName} sx={{ py: 1 }}>
                                         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
                                             <Typography variant="body2" sx={{ minWidth: 80, fontWeight: 'medium' }}>
-                                                {subfield}
+                                                {slotName}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
                                                 — {fieldSlot.startTime?.format('h:mm A')}

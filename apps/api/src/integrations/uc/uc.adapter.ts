@@ -203,8 +203,10 @@ export class UCAdapter
       const primaryField = ucFields[0];
 
       // Determine if this venue has subfields or is a single field
-      const hasSubfields = ucFields.length > 1 ||
-        (ucFields.length === 1 && this.extractVenueName(ucFields[0].name) !== null);
+      const hasSubfields =
+        ucFields.length > 1 ||
+        (ucFields.length === 1 &&
+          this.extractVenueName(ucFields[0].name) !== null);
 
       const subfields = hasSubfields
         ? ucFields.map((ucField) => ({
