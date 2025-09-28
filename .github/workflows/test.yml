@@ -1,0 +1,79 @@
+name: Tests
+
+on:
+  workflow_call:
+  pull_request:
+    paths: ['apps/**', 'packages/**', '.github/workflows/**']
+  push:
+    branches: [main]
+    paths: ['apps/**', 'packages/**', '.github/workflows/**']
+
+permissions:
+  contents: read
+
+jobs:
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      UC_API_DOMAIN: http://localhost
+      UC_CLIENT_ID: test
+      UC_CLIENT_SECRET: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test API
+        run: pnpm -C apps/api test -- --coverage --runInBand
+
+      - name: Upload API coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-api
+          path: apps/api/coverage
+          if-no-files-found: ignore
+
+  web-tests:
+    name: Web Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test Web
+        run: pnpm -C apps/web test:run
+
+      - name: Upload Web coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-web
+          path: apps/web/coverage
+          if-no-files-found: ignore
