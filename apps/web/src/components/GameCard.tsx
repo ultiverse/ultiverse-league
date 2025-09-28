@@ -15,13 +15,34 @@ interface GameCardProps {
     awayTeamName: string;
     homeTeamColor?: string;
     awayTeamColor?: string;
+    venue?: string;
+    fieldSlot?: string;
     onClick?: () => void;
 }
 
-export function GameCard({ game, homeTeamName, awayTeamName, homeTeamColor, awayTeamColor, onClick }: GameCardProps) {
+export function GameCard({ game, homeTeamName, awayTeamName, homeTeamColor, awayTeamColor, venue, fieldSlot, onClick }: GameCardProps) {
     const gameDate = new Date(game.start);
     const timeDisplay = gameDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, });
     const dateDisplay = gameDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', });
+
+    // Build field display text
+    const getFieldDisplayText = () => {
+        if (venue && fieldSlot) {
+            return `${venue} - ${fieldSlot}`;
+        }
+        if (venue) {
+            return venue;
+        }
+        if (fieldSlot) {
+            return fieldSlot;
+        }
+        if (game.field) {
+            return `Field ${game.field}`;
+        }
+        return null;
+    };
+
+    const fieldDisplayText = getFieldDisplayText();
 
     return (
         <Card
@@ -79,9 +100,9 @@ export function GameCard({ game, homeTeamName, awayTeamName, homeTeamColor, away
                 </Typography>
 
                 {/* Field Chip */}
-                {game.field && (
+                {fieldDisplayText && (
                     <Chip
-                        label={`Field ${game.field}`}
+                        label={fieldDisplayText}
                         variant="outlined"
                         size="small"
                         sx={{ mt: 1 }}

@@ -6,12 +6,14 @@ import {
   REGISTRATION_PROVIDER,
   TEAMS_PROVIDER,
   USER_PROVIDER,
+  FIELDS_PROVIDER,
 } from './ports';
 import { UCModule } from './uc/uc.module';
 import { UCEventsService } from './uc/uc.events/uc.events.service';
 import { UCRegistrationsService } from './uc/uc.registrations/uc.registrations.service';
 import { UCTeamsService } from './uc/uc.teams/uc.teams.service';
 import { UCGamesService } from './uc/uc.games/uc.games.service';
+import { UCFieldsService } from './uc/uc.fields/uc.fields.service';
 
 @Module({
   imports: [UCModule],
@@ -21,6 +23,7 @@ import { UCGamesService } from './uc/uc.games/uc.games.service';
     UCRegistrationsService,
     UCTeamsService,
     UCGamesService,
+    UCFieldsService,
     // the adapter that implements the ports
     UCAdapter,
     // bind all ports to the adapter
@@ -29,6 +32,7 @@ import { UCGamesService } from './uc/uc.games/uc.games.service';
     { provide: REGISTRATION_PROVIDER, useExisting: UCAdapter },
     { provide: GAMES_PROVIDER, useExisting: UCAdapter },
     { provide: USER_PROVIDER, useExisting: UCAdapter },
+    { provide: FIELDS_PROVIDER, useExisting: UCAdapter },
   ],
   exports: [
     LEAGUE_PROVIDER,
@@ -36,6 +40,7 @@ import { UCGamesService } from './uc/uc.games/uc.games.service';
     REGISTRATION_PROVIDER,
     GAMES_PROVIDER,
     USER_PROVIDER,
+    FIELDS_PROVIDER,
   ],
 })
 export class IntegrationsModule {}

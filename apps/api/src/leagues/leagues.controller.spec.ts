@@ -4,7 +4,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LeaguesController } from './leagues.controller';
 import { FixturesService } from '../fixtures/fixtures.service';
-import { LEAGUE_PROVIDER, TEAMS_PROVIDER } from '../integrations/ports';
+import {
+  LEAGUE_PROVIDER,
+  TEAMS_PROVIDER,
+  FIELDS_PROVIDER,
+} from '../integrations/ports';
 
 describe('LeaguesController', () => {
   let controller: LeaguesController;
@@ -24,6 +28,10 @@ describe('LeaguesController', () => {
     listTeams: jest.fn(),
   };
 
+  const fieldsProviderMock = {
+    listFields: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -33,6 +41,7 @@ describe('LeaguesController', () => {
         { provide: FixturesService, useValue: fixturesMock },
         { provide: LEAGUE_PROVIDER, useValue: leagueProviderMock },
         { provide: TEAMS_PROVIDER, useValue: teamsProviderMock },
+        { provide: FIELDS_PROVIDER, useValue: fieldsProviderMock },
       ],
     }).compile();
 
