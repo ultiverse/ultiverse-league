@@ -8,8 +8,8 @@ import {
 } from '@mui/material';
 import { getTeamsByLeague, TeamSummary } from '@/api/uc';
 import { useLeague } from '@/hooks/useLeague';
-import { TeamName } from '@/components/TeamName';
-import { Section } from '@/components/Section';
+import { TeamName } from '@/components/TeamName.component';
+import { Section } from '@/components/Section.component';
 
 export function Teams() {
     const { selectedLeague } = useLeague();

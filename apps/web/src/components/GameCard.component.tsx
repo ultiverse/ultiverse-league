@@ -7,7 +7,7 @@ import {
     Divider,
 } from '@mui/material';
 import { ScheduleGameView } from '@ultiverse/shared-types';
-import { TeamName } from '@/components/TeamName';
+import { TeamName } from '@/components/TeamName.component';
 
 interface GameCardProps {
     game: ScheduleGameView;

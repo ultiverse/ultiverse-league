@@ -1,5 +1,5 @@
 import { vi } from 'vitest';
-import { ConfirmationDialog } from '../ConfirmationDialog';
+import { ConfirmationDialog } from '../ConfirmationDialog.component';
 
 // Simple unit tests for ConfirmationDialog component
 describe('ConfirmationDialog', () => {

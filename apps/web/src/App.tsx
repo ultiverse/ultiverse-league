@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, Modal, Backdrop, Fade, ThemeProvider, useTheme } from '@mui/material';
-import { Sidebar } from './components/Sidebar';
-import { TopBar } from './components/TopBar';
+import { Sidebar } from './components/Sidebar.component';
+import { TopBar } from './components/TopBar.component';
 import { LeagueProvider } from './context/LeagueContext';
 import { UserProvider } from './context/UserContext';
 import { useLeague } from './hooks/useLeague';

@@ -8,7 +8,7 @@ import {
     SxProps,
     Theme,
 } from '@mui/material';
-import { JerseyIcon } from '@/components/JerseyIcon';
+import { JerseyIcon } from '@/assets/jersey-icon';
 
 export interface TeamNameProps {
     name: string;

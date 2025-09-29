@@ -6,9 +6,9 @@ import {
     Alert,
     Chip,
 } from '@mui/material';
-import { TeamName } from '@/components/TeamName';
-import { FieldSlotData } from './FieldSlotStep';
-import { RangeData } from './RangeStep';
+import { TeamName } from '@/components/TeamName.component';
+import { FieldSlotData } from './FieldSlotStep.component';
+import { RangeData } from './RangeStep.component';
 import { getFieldSlotValidationMessage } from '@/helpers/schedule.helper';
 
 interface PreviewStepProps {
