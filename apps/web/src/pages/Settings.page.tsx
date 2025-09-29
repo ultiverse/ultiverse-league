@@ -1,4 +1,4 @@
-import { Page } from '../components/Page.component';
+import { Page } from '../components/layout/Page.component';
 import { PageAlert } from '../types/components';
 
 export function Settings() {

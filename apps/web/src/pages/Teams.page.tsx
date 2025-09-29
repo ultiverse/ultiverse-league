@@ -7,8 +7,8 @@ import { getTeamsByLeague } from '../api/uc';
 import { TeamSummary } from '../types/api';
 import { useLeague } from '../hooks/useLeague';
 import { TeamName } from '../components/TeamName.component';
-import { Section } from '../components/Section.component';
-import { Page } from '../components/Page.component';
+import { Section } from '../components/layout/Section.component';
+import { Page } from '../components/layout/Page.component';
 import { PageAlert } from '../types/components';
 
 export function Teams() {

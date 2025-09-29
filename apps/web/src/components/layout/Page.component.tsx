@@ -8,7 +8,7 @@ import {
     Link,
 } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
-import { PageProps } from '../types/components';
+import { PageProps } from '../../types/components';
 
 export function Page({
     children,

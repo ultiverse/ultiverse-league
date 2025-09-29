@@ -17,7 +17,7 @@ import {
     ArrowDropDown as ArrowDropDownIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
-import { SidebarProps } from '../types/components';
+import { SidebarProps } from '../../types/components';
 
 const DRAWER_WIDTH = 280;
 

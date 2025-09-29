@@ -16,8 +16,8 @@ import {
   Menu as MenuIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
-import { useUser } from '../hooks/useUser';
-import { TopBarProps } from '../types/components';
+import { useUser } from '../../hooks/useUser';
+import { TopBarProps } from '../../types/components';
 
 export function TopBar({ onMenuClick }: TopBarProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
