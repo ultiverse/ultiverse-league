@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import { UserContextType } from '@/types/context';
+import { UserContextType } from '../types/context';
 
 // Re-export for backward compatibility
 export { UserContextType };

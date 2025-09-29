@@ -2,7 +2,7 @@
  * Team utility functions for managing teams in the application
  */
 
-import { Team } from '@/types/utils';
+import { Team } from '../types/utils';
 
 // Re-export for backward compatibility
 export { Team };

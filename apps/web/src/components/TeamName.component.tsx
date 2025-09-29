@@ -6,8 +6,8 @@ import {
     Chip,
     alpha,
 } from '@mui/material';
-import { JerseyIcon } from '@/assets/jersey-icon';
-import { TeamNameProps } from '@/types/components';
+import { JerseyIcon } from '../assets/jersey-icon';
+import { TeamNameProps } from '../types/components';
 
 
 export function TeamName({

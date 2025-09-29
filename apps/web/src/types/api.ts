@@ -1,4 +1,3 @@
-
 export interface LeagueSummary {
     id: string;
     name: string;

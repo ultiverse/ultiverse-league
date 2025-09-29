@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { localStorage } from '@/utils/localStorage.util';
-import { STORAGE_KEYS } from '@/constants/storage';
-import { LeagueSummary } from '@/types/api';
+import { localStorage } from '../utils/localStorage.util';
+import { STORAGE_KEYS } from '../constants/storage';
+import { LeagueSummary } from '../types/api';
 
 /**
  * Hook for managing league-specific localStorage operations

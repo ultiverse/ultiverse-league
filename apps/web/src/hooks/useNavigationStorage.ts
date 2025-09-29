@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
-import { localStorage } from '@/utils/localStorage.util';
-import { STORAGE_KEYS } from '@/constants/storage';
+import { localStorage } from '../utils/localStorage.util';
+import { STORAGE_KEYS } from '../constants/storage';
 
 /**
  * Hook for managing navigation-specific localStorage operations

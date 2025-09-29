@@ -2,7 +2,7 @@
  * ICS (iCalendar) utility functions for exporting calendar events
  */
 
-import { ICSEvent } from '@/types/utils';
+import { ICSEvent } from '../types/utils';
 
 // Re-export for backward compatibility
 export { ICSEvent };

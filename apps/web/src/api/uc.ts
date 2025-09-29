@@ -1,6 +1,6 @@
 import { api } from './client';
 import { ScheduleView, UserProfile, Field } from '@ultiverse/shared-types';
-import { LeagueSummary, TeamSummary, GenerateScheduleRequest } from '@/types/api';
+import { LeagueSummary, TeamSummary, GenerateScheduleRequest } from '../types/api';
 
 // Re-export types for backward compatibility
 export { LeagueSummary, TeamSummary, GenerateScheduleRequest };

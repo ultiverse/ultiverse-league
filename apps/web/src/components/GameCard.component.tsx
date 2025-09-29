@@ -6,8 +6,8 @@ import {
     Chip,
     Divider,
 } from '@mui/material';
-import { TeamName } from '@/components/TeamName.component';
-import { GameCardProps } from '@/types/components';
+import { TeamName } from './TeamName.component';
+import { GameCardProps } from '../types/components';
 
 export function GameCard({ game, homeTeamName, awayTeamName, homeTeamColor, awayTeamColor, venue, fieldSlot, onClick }: GameCardProps) {
     const gameDate = new Date(game.start);
