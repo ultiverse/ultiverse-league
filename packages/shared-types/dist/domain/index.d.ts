@@ -56,11 +56,20 @@ export interface Game {
     meta?: Meta;
     externalRefs?: ExternalRefs;
 }
+export interface Subfield {
+    id: string;
+    name: string;
+    surface?: string;
+    externalRefs?: ExternalRefs;
+    meta?: Meta;
+}
 export interface Field {
     id: string;
     name: string;
-    venue?: string;
-    slots?: string[];
+    venue: string;
+    subfields: Subfield[];
+    map?: string;
+    surface?: string;
     externalRefs?: ExternalRefs;
     meta?: Meta;
 }

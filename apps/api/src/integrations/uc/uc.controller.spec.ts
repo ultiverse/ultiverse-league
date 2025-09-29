@@ -5,6 +5,7 @@ import { UCClient } from './uc.client';
 import { UCEventsService } from './uc.events/uc.events.service';
 import { UCRegistrationsService } from './uc.registrations/uc.registrations.service';
 import { UCTeamsService } from './uc.teams/uc.teams.service';
+import { UCFieldsService } from './uc.fields/uc.fields.service';
 
 describe('UCController', () => {
   let controller: UCController;
@@ -27,6 +28,10 @@ describe('UCController', () => {
     list: jest.fn(),
   };
 
+  const fieldsMock = {
+    list: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -37,6 +42,7 @@ describe('UCController', () => {
         { provide: UCEventsService, useValue: eventsMock },
         { provide: UCRegistrationsService, useValue: regsMock },
         { provide: UCTeamsService, useValue: teamsMock },
+        { provide: UCFieldsService, useValue: fieldsMock },
       ],
     }).compile();
 

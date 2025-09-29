@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CssBaseline, Modal, Backdrop, Fade, Toolbar, ThemeProvider, useTheme } from '@mui/material';
+import { Box, CssBaseline, Modal, Backdrop, Fade, ThemeProvider, useTheme } from '@mui/material';
 import { Sidebar } from './components/Sidebar';
 import { TopBar } from './components/TopBar';
 import { LeagueProvider } from './context/LeagueContext';
 import { UserProvider } from './context/UserContext';
 import { useLeague } from './hooks/useLeague';
+import { useLastUrl, useInitialRedirect } from './hooks/useLastUrl';
 import { Leagues } from './pages/Leagues';
 import { Teams } from './pages/Teams';
 import { Games } from './pages/Games';
@@ -16,6 +17,16 @@ function AppContent() {
     const theme = useTheme();
     const { selectedLeague } = useLeague();
     const [showLeagueModal, setShowLeagueModal] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const { redirectToLastUrl } = useInitialRedirect();
+
+    // Track URL changes for persistence
+    useLastUrl();
+
+    // Redirect to last URL on initial load
+    useEffect(() => {
+        redirectToLastUrl();
+    }, []);
 
     const handleLeagueClick = () => {
         setShowLeagueModal(true);
@@ -25,31 +36,43 @@ function AppContent() {
         setShowLeagueModal(false);
     };
 
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
+    };
+
+    const handleMobileClose = () => {
+        setMobileOpen(false);
+    };
+
     return (
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
-            <TopBar />
             <Sidebar
                 selectedLeague={selectedLeague}
                 onLeagueClick={handleLeagueClick}
+                mobileOpen={mobileOpen}
+                onMobileClose={handleMobileClose}
             />
             <Box
                 component="main"
                 sx={{
                     flexGrow: 1,
-                    width: { sm: 'calc(100% - 280px)' },
+                    display: 'flex',
+                    flexDirection: 'column',
                     bgcolor: theme.palette.background.page,
                     minHeight: '100vh'
                 }}
             >
-                <Toolbar />
-                <Routes>
-                    <Route path="/" element={<Navigate to="/teams" replace />} />
-                    <Route path="/leagues" element={<Leagues />} />
-                    <Route path="/teams" element={<Teams />} />
-                    <Route path="/games" element={<Games />} />
-                    <Route path="/settings" element={<Settings />} />
-                </Routes>
+                <TopBar onMenuClick={handleDrawerToggle} />
+                <Box sx={{ flexGrow: 1 }}>
+                    <Routes>
+                        <Route path="/" element={<Navigate to="/teams" replace />} />
+                        <Route path="/leagues" element={<Leagues />} />
+                        <Route path="/teams" element={<Teams />} />
+                        <Route path="/games" element={<Games />} />
+                        <Route path="/settings" element={<Settings />} />
+                    </Routes>
+                </Box>
             </Box>
 
             <Modal
