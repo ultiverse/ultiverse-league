@@ -1,11 +1,7 @@
 import { createContext } from 'react';
-import { UserProfile } from '@ultiverse/shared-types';
+import { UserContextType } from '@/types/context';
 
-export interface UserContextType {
-  user: UserProfile | null;
-  setUser: (user: UserProfile | null) => void;
-  isLoading: boolean;
-  setIsLoading: (loading: boolean) => void;
-}
+// Re-export for backward compatibility
+export { UserContextType };
 
 export const UserContext = createContext<UserContextType | undefined>(undefined);

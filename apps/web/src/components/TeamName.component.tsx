@@ -5,20 +5,9 @@ import {
     Stack,
     Chip,
     alpha,
-    SxProps,
-    Theme,
 } from '@mui/material';
 import { JerseyIcon } from '@/assets/jersey-icon';
-
-export interface TeamNameProps {
-    name: string;
-    primaryColor?: string;
-    size?: 'sm' | 'md' | 'lg';
-    variant?: 'inline' | 'chip';
-    onClick?: () => void;
-    subtitle?: string;
-    sx?: SxProps<Theme>;
-}
+import { TeamNameProps } from '@/types/components';
 
 
 export function TeamName({

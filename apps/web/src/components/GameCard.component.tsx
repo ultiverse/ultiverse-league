@@ -6,19 +6,8 @@ import {
     Chip,
     Divider,
 } from '@mui/material';
-import { ScheduleGameView } from '@ultiverse/shared-types';
 import { TeamName } from '@/components/TeamName.component';
-
-interface GameCardProps {
-    game: ScheduleGameView;
-    homeTeamName: string;
-    awayTeamName: string;
-    homeTeamColor?: string;
-    awayTeamColor?: string;
-    venue?: string;
-    fieldSlot?: string;
-    onClick?: () => void;
-}
+import { GameCardProps } from '@/types/components';
 
 export function GameCard({ game, homeTeamName, awayTeamName, homeTeamColor, awayTeamColor, venue, fieldSlot, onClick }: GameCardProps) {
     const gameDate = new Date(game.start);

@@ -2,17 +2,16 @@
  * Team utility functions for managing teams in the application
  */
 
-export interface Team {
-  id: string;
-  name: string;
-  colour?: string;
-}
+import { Team } from '@/types/utils';
+
+// Re-export for backward compatibility
+export { Team };
 
 /**
  * Generates a unique team ID
  */
 export const generateTeamId = (): string => {
-  return `team-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  return `team-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
 };
 
 /**

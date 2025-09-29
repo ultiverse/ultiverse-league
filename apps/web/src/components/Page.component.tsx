@@ -1,53 +1,17 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import {
     Box,
     Typography,
     Stack,
     Alert,
-    AlertColor,
     Breadcrumbs,
     Link,
-    SxProps,
-    Theme,
 } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
+import { PageProps, PageAlert, BreadcrumbItem, PageMeta } from '@/types/components';
 
-export interface PageAlert {
-    id: string;
-    severity: AlertColor;
-    message: string;
-    action?: React.ReactNode;
-    onClose?: () => void;
-}
-
-export interface BreadcrumbItem {
-    label: string;
-    href?: string;
-    onClick?: () => void;
-}
-
-export interface PageMeta {
-    title: string;
-    description?: string;
-    keywords?: string;
-    ogTitle?: string;
-    ogDescription?: string;
-    ogImage?: string;
-    canonicalUrl?: string;
-}
-
-export interface PageProps {
-    children?: React.ReactNode;
-    title: string;
-    subtitle?: string;
-    actions?: React.ReactNode;
-    alerts?: PageAlert[];
-    breadcrumbs?: BreadcrumbItem[];
-    meta?: Partial<PageMeta>;
-    loading?: boolean;
-    sx?: SxProps<Theme>;
-    maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false;
-}
+// Re-export for backward compatibility
+export { PageAlert, BreadcrumbItem, PageMeta };
 
 export function Page({
     children,
