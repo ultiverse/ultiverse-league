@@ -9,11 +9,15 @@ import {
     exportPodScheduleToICS
 } from '../schedule.helper';
 import { ScheduleView } from '@ultiverse/shared-types';
+import { createCSVContent, downloadCSV, generateCSVFileName } from '../../utils/csv.util';
+import { createICSContent, downloadICS, generateICSFileName } from '../../utils/ics.util';
+import { getFirstTeamName, getSecondTeamName } from '../teams.helper';
+import { formatFieldName } from '../fields.helper';
 
 import { vi } from 'vitest';
 
 // Mock the CSV and team helper dependencies
-vi.mock('@/utils/csv.util', () => ({
+vi.mock('../../utils/csv.util', () => ({
     createCSVContent: vi.fn(() => 'mocked,csv,content'),
     downloadCSV: vi.fn(),
     generateCSVFileName: vi.fn(() => 'mock_file.csv')
@@ -28,7 +32,7 @@ vi.mock('../fields.helper', () => ({
     formatFieldName: vi.fn(() => 'Venue - Field A')
 }));
 
-vi.mock('@/utils/ics.util', () => ({
+vi.mock('../../utils/ics.util', () => ({
     createICSContent: vi.fn(() => 'mocked,ics,content'),
     downloadICS: vi.fn(),
     generateICSFileName: vi.fn(() => 'mock_file.ics')
@@ -201,10 +205,7 @@ describe('schedule.helper', () => {
             vi.clearAllMocks();
         });
 
-        it('should call helper functions correctly', async () => {
-            const { getFirstTeamName, getSecondTeamName } = await import('../teams.helper');
-            const { formatFieldName } = await import('../fields.helper');
-
+        it('should call helper functions correctly', () => {
             exportPodScheduleToCSV(mockSchedule, mockTeamNames, 'Test League', 'Test Venue', ['Field A']);
 
             expect(getFirstTeamName).toHaveBeenCalledWith(
@@ -218,9 +219,7 @@ describe('schedule.helper', () => {
             expect(formatFieldName).toHaveBeenCalledWith('Test Venue', 'Field A', ['Field A']);
         });
 
-        it('should create CSV with correct structure', async () => {
-            const { createCSVContent } = await import('@/utils/csv.util');
-
+        it('should create CSV with correct structure', () => {
             exportPodScheduleToCSV(mockSchedule, mockTeamNames, 'Test League');
 
             expect(createCSVContent).toHaveBeenCalledWith(
@@ -231,17 +230,14 @@ describe('schedule.helper', () => {
             );
         });
 
-        it('should generate filename and download CSV', async () => {
-            const { generateCSVFileName, downloadCSV } = await import('@/utils/csv.util');
-
+        it('should generate filename and download CSV', () => {
             exportPodScheduleToCSV(mockSchedule, mockTeamNames, 'Test League');
 
             expect(generateCSVFileName).toHaveBeenCalledWith('schedule', 'Test League');
             expect(downloadCSV).toHaveBeenCalledWith('mocked,csv,content', 'mock_file.csv');
         });
 
-        it('should handle empty schedule', async () => {
-            const { createCSVContent } = await import('@/utils/csv.util');
+        it('should handle empty schedule', () => {
             const emptySchedule: ScheduleView = { rounds: [] };
 
             exportPodScheduleToCSV(emptySchedule, {});
@@ -282,9 +278,7 @@ describe('schedule.helper', () => {
             vi.clearAllMocks();
         });
 
-        it('should call ICS helper functions correctly', async () => {
-            const { createICSContent, downloadICS, generateICSFileName } = await import('@/utils/ics.util');
-
+        it('should call ICS helper functions correctly', () => {
             exportPodScheduleToICS(mockSchedule, mockTeamNames, 'Test League', 'Test Venue', ['Field A']);
 
             expect(createICSContent).toHaveBeenCalledWith(
@@ -302,9 +296,7 @@ describe('schedule.helper', () => {
             expect(downloadICS).toHaveBeenCalledWith('mocked,ics,content', 'mock_file.ics');
         });
 
-        it('should create events with correct structure', async () => {
-            const { createICSContent } = await import('@/utils/ics.util');
-
+        it('should create events with correct structure', () => {
             exportPodScheduleToICS(mockSchedule, mockTeamNames, 'Test League');
 
             expect(createICSContent).toHaveBeenCalledWith(
@@ -321,8 +313,7 @@ describe('schedule.helper', () => {
             );
         });
 
-        it('should handle empty schedule', async () => {
-            const { createICSContent } = await import('@/utils/ics.util');
+        it('should handle empty schedule', () => {
             const emptySchedule: ScheduleView = { rounds: [] };
 
             exportPodScheduleToICS(emptySchedule, {});
@@ -330,9 +321,7 @@ describe('schedule.helper', () => {
             expect(createICSContent).toHaveBeenCalledWith([], 'Schedule');
         });
 
-        it('should use default calendar name when no league name provided', async () => {
-            const { createICSContent } = await import('@/utils/ics.util');
-
+        it('should use default calendar name when no league name provided', () => {
             exportPodScheduleToICS(mockSchedule, mockTeamNames);
 
             expect(createICSContent).toHaveBeenCalledWith(
