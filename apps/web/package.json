@@ -25,6 +25,7 @@
 		"dayjs": "^1.11.18",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
+		"react-helmet-async": "^2.0.5",
 		"react-router-dom": "^7.9.1"
 	},
 	"devDependencies": {
@@ -35,6 +36,7 @@
 		"@types/node": "^22.10.7",
 		"@types/react": "^19.1.10",
 		"@types/react-dom": "^19.1.7",
+		"@types/react-helmet": "^6.1.11",
 		"@typescript-eslint/eslint-plugin": "^8.44.0",
 		"@typescript-eslint/parser": "^8.44.0",
 		"@vitejs/plugin-react": "^5.0.0",

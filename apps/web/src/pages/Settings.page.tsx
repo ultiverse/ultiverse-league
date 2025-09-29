@@ -1,22 +1,28 @@
-import {
-  Box,
-  Typography,
-  Paper,
-  Alert,
-} from '@mui/material';
+import { Page, PageAlert } from '@/components/Page.component';
 
 export function Settings() {
-  return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Settings
-      </Typography>
+  // Build alerts array
+  const alerts: PageAlert[] = [
+    {
+      id: 'under-construction',
+      severity: 'info',
+      message: 'Settings page is under construction. Configuration options will be added here.',
+    },
+  ];
 
-      <Paper sx={{ p: 3 }}>
-        <Alert severity="info">
-          Settings page is under construction. Configuration options will be added here.
-        </Alert>
-      </Paper>
-    </Box>
+  return (
+    <Page
+      title="Settings"
+      subtitle="Configure your application preferences and account settings"
+      alerts={alerts}
+      meta={{
+        title: 'Settings - Ultiverse League',
+        description: 'Configure your league management preferences and account settings',
+      }}
+      breadcrumbs={[
+        { label: 'Home', href: '/' },
+        { label: 'Settings' },
+      ]}
+    />
   );
 }

@@ -1,15 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import {
-    Box,
-    Typography,
     Grid,
     CircularProgress,
-    Alert,
 } from '@mui/material';
 import { getTeamsByLeague, TeamSummary } from '@/api/uc';
 import { useLeague } from '@/hooks/useLeague';
 import { TeamName } from '@/components/TeamName.component';
 import { Section } from '@/components/Section.component';
+import { Page, PageAlert } from '@/components/Page.component';
 
 export function Teams() {
     const { selectedLeague } = useLeague();
@@ -22,50 +20,70 @@ export function Teams() {
         gcTime: 60 * 60 * 1000, // 1 hour cache retention
     });
 
+    // Build alerts array
+    const alerts: PageAlert[] = [];
+
     if (!selectedLeague) {
-        return (
-            <Box sx={{ p: 3 }}>
-                <Alert severity="info">
-                    Please select a league to view teams.
-                </Alert>
-            </Box>
-        );
+        alerts.push({
+            id: 'no-league',
+            severity: 'info',
+            message: 'Please select a league to view teams.',
+        });
+    }
+
+    if (teamsQuery.isError) {
+        alerts.push({
+            id: 'query-error',
+            severity: 'error',
+            message: String(teamsQuery.error),
+        });
+    }
+
+    if (teamsQuery.data?.length === 0 && !teamsQuery.isLoading) {
+        alerts.push({
+            id: 'no-teams',
+            severity: 'info',
+            message: 'No teams found for this league.',
+        });
     }
 
     return (
-        <Box sx={{ p: 3 }}>
-            <Typography variant="h4" gutterBottom sx={{ mb: 3 }}>
-                Teams in {selectedLeague.name}
-            </Typography>
-
+        <Page
+            title={selectedLeague ? `Teams in ${selectedLeague.name}` : 'Teams'}
+            subtitle={selectedLeague ? `Browse teams in ${selectedLeague.name}` : undefined}
+            alerts={alerts}
+            meta={{
+                title: `Teams - ${selectedLeague?.name || 'Ultiverse League'}`,
+                description: selectedLeague
+                    ? `View all teams in ${selectedLeague.name} league`
+                    : 'View teams in your leagues',
+            }}
+            breadcrumbs={[
+                { label: 'Home', href: '/' },
+                { label: 'Teams' },
+            ]}
+        >
             {teamsQuery.isLoading && <CircularProgress />}
-            {teamsQuery.isError && (
-                <Alert severity="error">{String(teamsQuery.error)}</Alert>
-            )}
 
-            <Section>
-                <Grid container spacing={3}>
-                    {(teamsQuery.data ?? []).map((team: TeamSummary) => (
-                        <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                            <TeamName
-                                name={team.name}
-                                primaryColor={team.colour}
-                                onClick={() => {
-                                    // Future: Navigate to team detail page
-                                    console.log('Team clicked:', team.name);
-                                }}
-                                variant="inline"
-                            />
-                        </Grid>
-                    ))}
-                </Grid>
-            </Section>
-
-            {teamsQuery.data?.length === 0 && (
-                <Alert sx={{ mt: 2 }} severity="info">
-                    No teams found for this league.
-                </Alert>
+            {selectedLeague && teamsQuery.data && teamsQuery.data.length > 0 && (
+                <Section>
+                    <Grid container spacing={3}>
+                        {teamsQuery.data.map((team: TeamSummary) => (
+                            <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                                <TeamName
+                                    name={team.name}
+                                    primaryColor={team.colour}
+                                    onClick={() => {
+                                        // Future: Navigate to team detail page
+                                        console.log('Team clicked:', team.name);
+                                    }}
+                                    variant="inline"
+                                />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Section>
             )}
-        </Box>
+        </Page>
     );
 }

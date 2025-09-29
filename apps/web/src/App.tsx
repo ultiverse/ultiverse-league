@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, Modal, Backdrop, Fade, ThemeProvider, useTheme } from '@mui/material';
+import { HelmetProvider } from 'react-helmet-async';
 import { Sidebar } from './components/Sidebar.component';
 import { TopBar } from './components/TopBar.component';
 import { LeagueProvider } from './context/LeagueContext';
@@ -110,14 +111,16 @@ function AppContent() {
 
 export function App() {
     return (
-        <ThemeProvider theme={theme}>
-            <UserProvider>
-                <LeagueProvider>
-                    <Router>
-                        <AppContent />
-                    </Router>
-                </LeagueProvider>
-            </UserProvider>
-        </ThemeProvider>
+        <HelmetProvider>
+            <ThemeProvider theme={theme}>
+                <UserProvider>
+                    <LeagueProvider>
+                        <Router>
+                            <AppContent />
+                        </Router>
+                    </LeagueProvider>
+                </UserProvider>
+            </ThemeProvider>
+        </HelmetProvider>
     );
 }
