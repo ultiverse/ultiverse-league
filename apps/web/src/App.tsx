@@ -7,10 +7,10 @@ import { LeagueProvider } from './context/LeagueContext';
 import { UserProvider } from './context/UserContext';
 import { useLeague } from './hooks/useLeague';
 import { useLastUrl, useInitialRedirect } from './hooks/useLastUrl';
-import { Leagues } from './pages/Leagues';
-import { Teams } from './pages/Teams';
-import { Games } from './pages/Games';
-import { Settings } from './pages/Settings';
+import { Leagues } from './pages/Leagues.page';
+import { Teams } from './pages/Teams.page';
+import { Games } from './pages/Games.page';
+import { Settings } from './pages/Settings.page';
 import { theme } from './theme/theme';
 
 function AppContent() {

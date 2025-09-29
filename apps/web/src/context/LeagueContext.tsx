@@ -1,7 +1,7 @@
 import { useState, ReactNode } from 'react';
 import { LeagueContext } from './leagueContextDefinition';
 import { LeagueSummary } from '../api/uc';
-import { leagueStorage } from '../utils/localStorage';
+import { leagueStorage } from '../utils/localStorage.util';
 
 export function LeagueProvider({ children }: { children: ReactNode }) {
   const [selectedLeague, setSelectedLeagueState] = useState<LeagueSummary | null>(() =>
