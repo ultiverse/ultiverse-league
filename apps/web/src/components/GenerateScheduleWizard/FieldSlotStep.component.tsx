@@ -19,31 +19,7 @@ import { Field } from '@ultiverse/shared-types';
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { Dayjs } from 'dayjs';
-
-export interface FieldSlot {
-    id: string;
-    venue: string;
-    dayOfWeek: number;
-    startTime: Dayjs | null;
-    duration: number;
-    subfield?: string;
-}
-
-export interface FieldSlotData {
-    venue: string;
-    dayOfWeek: number;
-    startTime: Dayjs | null;
-    duration: number;
-    subfields: string[];
-    fieldSlots: FieldSlot[];
-}
-
-interface FieldSlotStepProps {
-    fieldSlot: FieldSlotData;
-    onFieldSlotChange: (fieldSlot: FieldSlotData) => void;
-    onDayOfWeekChange?: (dayOfWeek: number) => void;
-    availableTeamsCount?: number;
-}
+import { FieldSlot, FieldSlotData, FieldSlotStepProps } from '../../types/wizard';
 
 const DAYS_OF_WEEK = [
     'Sunday',

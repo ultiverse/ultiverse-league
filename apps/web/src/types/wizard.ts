@@ -34,15 +34,15 @@ export interface FieldSlot {
     venue: string;
     dayOfWeek: number;
     startTime: Dayjs | null;
-    fieldName: string;
-    subfields: string[];
+    duration: number;
+    subfield?: string;
 }
 
 export interface FieldSlotData {
     venue: string;
     dayOfWeek: number;
     startTime: Dayjs | null;
-    fieldName: string;
+    duration: number;
     subfields: string[];
     fieldSlots: FieldSlot[];
 }
@@ -50,6 +50,8 @@ export interface FieldSlotData {
 export interface FieldSlotStepProps {
     fieldSlot: FieldSlotData;
     onFieldSlotChange: (fieldSlot: FieldSlotData) => void;
+    onDayOfWeekChange?: (dayOfWeek: number) => void;
+    availableTeamsCount?: number;
 }
 
 // Preview Step Types
@@ -63,6 +65,7 @@ export interface PreviewStepProps {
 export interface GenerateScheduleWizardProps {
     open: boolean;
     onClose: () => void;
+    availableTeams?: Array<{ id: string; name: string; colour?: string; }>;
     onGenerate?: (scheduleData: {
         fieldSlot: FieldSlotData;
         range: RangeData;
