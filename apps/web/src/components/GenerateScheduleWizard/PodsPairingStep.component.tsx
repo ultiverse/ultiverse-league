@@ -12,8 +12,7 @@ import {
 import { Add, Delete } from '@mui/icons-material';
 import { TeamName } from '../TeamName.component';
 import { createTeam, isValidTeamName, isTeamNameTaken, getMinimumTeamsRequired, hasEnoughTeams, isValidTeamCount, areTeamsReadyForScheduling, getNextValidTeamCount } from '../../helpers/team.helper';
-import { Team } from '../../types/utils';
-import { PairingData, PodsPairingStepProps } from '../../types/wizard';
+import { PodsPairingStepProps } from '../../types/wizard';
 
 export function PodsPairingStep({ availableTeams, onTeamsChange }: PodsPairingStepProps) {
     const [newTeamName, setNewTeamName] = useState('');
