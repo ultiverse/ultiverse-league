@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { localStorage } from '../utils/localStorage.util';
-import { STORAGE_KEYS } from '../constants/storage';
+import { STORAGE_KEYS } from '../constants';
 import { LeagueSummary } from '../types/api';
 
 /**

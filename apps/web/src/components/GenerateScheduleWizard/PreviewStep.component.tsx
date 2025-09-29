@@ -7,25 +7,9 @@ import {
     Chip,
 } from '@mui/material';
 import { TeamName } from '../TeamName.component';
-import { FieldSlotData } from './FieldSlotStep.component';
-import { RangeData } from './RangeStep.component';
 import { getFieldSlotValidationMessage } from '../../helpers/schedule.helper';
-
-interface PreviewStepProps {
-    fieldSlot: FieldSlotData;
-    range: RangeData;
-    availableTeams: Array<{ id: string; name: string; colour?: string; }>;
-}
-
-const DAYS_OF_WEEK = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday'
-];
+import { PreviewStepProps } from '../../types/wizard';
+import { DAYS_OF_WEEK } from '../../constants';
 
 
 export function PreviewStep({ fieldSlot, range, availableTeams }: PreviewStepProps) {

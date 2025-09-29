@@ -8,31 +8,8 @@ import {
 } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Dayjs } from 'dayjs';
-
-export interface RangeData {
-    rangeMode: 'rounds' | 'endDate';
-    firstDate: Dayjs | null;
-    numberOfRounds: number;
-    endDate: Dayjs | null;
-    blackoutDates: Dayjs[];
-}
-
-interface RangeStepProps {
-    range: RangeData;
-    onRangeChange: (range: RangeData) => void;
-    dayOfWeek: number;
-}
-
-const DAYS_OF_WEEK = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday'
-];
+import { RangeStepProps } from '../../types/wizard';
+import { DAYS_OF_WEEK } from '../../constants';
 
 export function RangeStep({ range, onRangeChange, dayOfWeek }: RangeStepProps) {
     return (

@@ -16,6 +16,8 @@ export interface GameCardProps {
 export interface SidebarProps {
     selectedLeague: LeagueSummary | null;
     onLeagueClick: () => void;
+    mobileOpen: boolean;
+    onMobileClose: () => void;
 }
 
 export interface TopBarProps {
@@ -45,6 +47,8 @@ export interface ConfirmationDialogProps {
     message: string;
     confirmText?: string;
     cancelText?: string;
+    confirmColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
+    maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 }
 
 export type JerseyIconProps = SvgIconProps;

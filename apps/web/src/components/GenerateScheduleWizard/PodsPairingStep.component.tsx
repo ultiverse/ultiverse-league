@@ -13,19 +13,7 @@ import { Add, Delete } from '@mui/icons-material';
 import { TeamName } from '../TeamName.component';
 import { createTeam, isValidTeamName, isTeamNameTaken, getMinimumTeamsRequired, hasEnoughTeams, isValidTeamCount, areTeamsReadyForScheduling, getNextValidTeamCount } from '../../helpers/team.helper';
 import { Team } from '../../types/utils';
-
-export interface PairingData {
-    avoidRematches: boolean;
-    balancePartners: boolean;
-    balanceOpponents: boolean;
-}
-
-interface PodsPairingStepProps {
-    pairing: PairingData;
-    onPairingChange: (pairing: PairingData) => void;
-    availableTeams: Team[];
-    onTeamsChange?: (teams: Team[]) => void;
-}
+import { PairingData, PodsPairingStepProps } from '../../types/wizard';
 
 export function PodsPairingStep({ availableTeams, onTeamsChange }: PodsPairingStepProps) {
     const [newTeamName, setNewTeamName] = useState('');

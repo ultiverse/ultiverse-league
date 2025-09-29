@@ -17,10 +17,7 @@ import {
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useUser } from '../hooks/useUser';
-
-interface TopBarProps {
-  onMenuClick?: () => void;
-}
+import { TopBarProps } from '../types/components';
 
 export function TopBar({ onMenuClick }: TopBarProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

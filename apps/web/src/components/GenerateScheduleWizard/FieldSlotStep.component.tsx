@@ -18,18 +18,8 @@ import { useLeague } from '../../hooks/useLeague';
 import { Field } from '@ultiverse/shared-types';
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Dayjs } from 'dayjs';
-import { FieldSlot, FieldSlotData, FieldSlotStepProps } from '../../types/wizard';
-
-const DAYS_OF_WEEK = [
-    'Sunday',
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday'
-];
+import { FieldSlot, FieldSlotStepProps } from '../../types/wizard';
+import { DAYS_OF_WEEK } from '../../constants';
 
 export function FieldSlotStep({ fieldSlot, onFieldSlotChange, onDayOfWeekChange, availableTeamsCount = 0 }: FieldSlotStepProps) {
     const { selectedLeague } = useLeague();

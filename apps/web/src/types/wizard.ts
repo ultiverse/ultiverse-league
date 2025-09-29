@@ -12,6 +12,7 @@ export interface RangeData {
 export interface RangeStepProps {
     range: RangeData;
     onRangeChange: (range: RangeData) => void;
+    dayOfWeek: number;
 }
 
 // Pairing Step Types
@@ -24,8 +25,8 @@ export interface PairingData {
 export interface PodsPairingStepProps {
     pairing: PairingData;
     onPairingChange: (pairing: PairingData) => void;
-    teams: Array<{ id: string; name: string; colour?: string; }>;
-    onTeamsChange: (teams: Array<{ id: string; name: string; colour?: string; }>) => void;
+    availableTeams: Array<{ id: string; name: string; colour?: string; }>;
+    onTeamsChange?: (teams: Array<{ id: string; name: string; colour?: string; }>) => void;
 }
 
 // Field Slot Step Types
