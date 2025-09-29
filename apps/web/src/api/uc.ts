@@ -2,9 +2,6 @@ import { api } from './client';
 import { ScheduleView, UserProfile, Field } from '@ultiverse/shared-types';
 import { LeagueSummary, TeamSummary, GenerateScheduleRequest } from '../types/api';
 
-// Re-export types for backward compatibility
-export { LeagueSummary, TeamSummary, GenerateScheduleRequest };
-
 export const getLeagues = () =>
   api<LeagueSummary[]>('/api/v1/leagues/recent?integration=external&order_by=date_desc&limit=20');
 

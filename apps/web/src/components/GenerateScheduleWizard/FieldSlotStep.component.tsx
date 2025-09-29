@@ -13,8 +13,8 @@ import {
     Alert,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
-import { getFieldsByLeagueId } from '@/api/uc';
-import { useLeague } from '@/hooks/useLeague';
+import { getFieldsByLeagueId } from '../../api/uc';
+import { useLeague } from '../../hooks/useLeague';
 import { Field } from '@ultiverse/shared-types';
 import { LocalizationProvider, TimePicker } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';

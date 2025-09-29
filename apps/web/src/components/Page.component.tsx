@@ -8,10 +8,7 @@ import {
     Link,
 } from '@mui/material';
 import { Helmet } from 'react-helmet-async';
-import { PageProps, PageAlert, BreadcrumbItem, PageMeta } from '../types/components';
-
-// Re-export for backward compatibility
-export { PageAlert, BreadcrumbItem, PageMeta };
+import { PageProps } from '../types/components';
 
 export function Page({
     children,

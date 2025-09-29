@@ -4,9 +4,6 @@
 
 import { Team } from '../types/utils';
 
-// Re-export for backward compatibility
-export { Team };
-
 /**
  * Generates a unique team ID
  */

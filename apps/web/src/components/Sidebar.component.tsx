@@ -17,7 +17,7 @@ import {
     ArrowDropDown as ArrowDropDownIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
-import { LeagueSummary } from '../api/uc';
+import { LeagueSummary } from '../types/api';
 
 const DRAWER_WIDTH = 280;
 

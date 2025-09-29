@@ -4,9 +4,6 @@
 
 import { ICSEvent } from '../types/utils';
 
-// Re-export for backward compatibility
-export { ICSEvent };
-
 /**
  * Formats a date for ICS format (YYYYMMDDTHHMMSSZ)
  */

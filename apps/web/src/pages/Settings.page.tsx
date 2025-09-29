@@ -1,4 +1,5 @@
-import { Page, PageAlert } from '@/components/Page.component';
+import { Page } from '../components/Page.component';
+import { PageAlert } from '../types/components';
 
 export function Settings() {
   // Build alerts array

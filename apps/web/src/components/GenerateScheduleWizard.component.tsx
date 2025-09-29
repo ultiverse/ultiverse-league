@@ -21,9 +21,10 @@ import { FieldSlotStep, FieldSlotData } from './GenerateScheduleWizard/FieldSlot
 import { RangeStep, RangeData } from './GenerateScheduleWizard/RangeStep.component';
 import { PodsPairingStep, PairingData } from './GenerateScheduleWizard/PodsPairingStep.component';
 import { PreviewStep } from './GenerateScheduleWizard/PreviewStep.component';
-import { validateFieldSlots } from '@/helpers/schedule.helper';
-import { getNextOccurrenceOfDay } from '@/helpers/date.helper';
-import { areTeamsReadyForScheduling, type Team } from '@/helpers/team.helper';
+import { validateFieldSlots } from '../helpers/schedule.helper';
+import { getNextOccurrenceOfDay } from '../helpers/date.helper';
+import { areTeamsReadyForScheduling } from '../helpers/team.helper';
+import { Team } from '../types/utils';
 
 interface GenerateScheduleWizardProps {
     open: boolean;

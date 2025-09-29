@@ -13,7 +13,8 @@ import {
     Alert,
     Chip,
 } from '@mui/material';
-import { getLeagues, LeagueSummary } from '../api/uc';
+import { getLeagues } from '../api/uc';
+import { LeagueSummary } from '../types/api';
 import { useLeague } from '../hooks/useLeague';
 import { useNavigate } from 'react-router-dom';
 

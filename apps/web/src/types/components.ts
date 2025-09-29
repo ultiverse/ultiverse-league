@@ -52,9 +52,7 @@ export interface ConfirmationDialogProps {
     onCancel: () => void;
 }
 
-export interface JerseyIconProps extends SvgIconProps {
-    // Extends SvgIconProps without additional properties
-}
+export type JerseyIconProps = SvgIconProps;
 
 export interface BreadcrumbItem {
     label: string;

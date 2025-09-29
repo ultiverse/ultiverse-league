@@ -6,10 +6,10 @@ import {
     Alert,
     Chip,
 } from '@mui/material';
-import { TeamName } from '@/components/TeamName.component';
+import { TeamName } from '../TeamName.component';
 import { FieldSlotData } from './FieldSlotStep.component';
 import { RangeData } from './RangeStep.component';
-import { getFieldSlotValidationMessage } from '@/helpers/schedule.helper';
+import { getFieldSlotValidationMessage } from '../../helpers/schedule.helper';
 
 interface PreviewStepProps {
     fieldSlot: FieldSlotData;

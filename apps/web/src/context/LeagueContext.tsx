@@ -1,6 +1,6 @@
 import { useState, ReactNode } from 'react';
 import { LeagueContext } from './leagueContextDefinition';
-import { LeagueSummary } from '../api/uc';
+import { LeagueSummary } from '../types/api';
 import { useLeagueStorage } from '../hooks/useLeagueStorage';
 
 export function LeagueProvider({ children }: { children: ReactNode }) {
