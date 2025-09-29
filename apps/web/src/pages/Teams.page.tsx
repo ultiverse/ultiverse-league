@@ -3,11 +3,13 @@ import {
     Grid,
     CircularProgress,
 } from '@mui/material';
-import { getTeamsByLeague, TeamSummary } from '@/api/uc';
-import { useLeague } from '@/hooks/useLeague';
-import { TeamName } from '@/components/TeamName.component';
-import { Section } from '@/components/Section.component';
-import { Page, PageAlert } from '@/components/Page.component';
+import { getTeamsByLeague } from '../api/uc';
+import { TeamSummary } from '../types/api';
+import { useLeague } from '../hooks/useLeague';
+import { TeamName } from '../components/TeamName.component';
+import { Section } from '../components/layout/Section.component';
+import { Page } from '../components/layout/Page.component';
+import { PageAlert } from '../types/components';
 
 export function Teams() {
     const { selectedLeague } = useLeague();

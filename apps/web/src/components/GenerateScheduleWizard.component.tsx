@@ -17,24 +17,16 @@ import { Close } from '@mui/icons-material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { FieldSlotStep, FieldSlotData } from './GenerateScheduleWizard/FieldSlotStep.component';
-import { RangeStep, RangeData } from './GenerateScheduleWizard/RangeStep.component';
-import { PodsPairingStep, PairingData } from './GenerateScheduleWizard/PodsPairingStep.component';
+import { FieldSlotStep } from './GenerateScheduleWizard/FieldSlotStep.component';
+import { RangeStep } from './GenerateScheduleWizard/RangeStep.component';
+import { PodsPairingStep } from './GenerateScheduleWizard/PodsPairingStep.component';
 import { PreviewStep } from './GenerateScheduleWizard/PreviewStep.component';
-import { validateFieldSlots } from '@/helpers/schedule.helper';
-import { getNextOccurrenceOfDay } from '@/helpers/date.helper';
-import { areTeamsReadyForScheduling, type Team } from '@/helpers/team.helper';
-
-interface GenerateScheduleWizardProps {
-    open: boolean;
-    onClose: () => void;
-    onGenerate?: (scheduleData: {
-        fieldSlot: FieldSlotData;
-        range: RangeData;
-        pairing: PairingData;
-    }) => void;
-    availableTeams?: Team[];
-}
+import { FieldSlotData, RangeData, PairingData } from '../types/wizard';
+import { validateFieldSlots } from '../helpers/schedule.helper';
+import { getNextOccurrenceOfDay } from '../helpers/date.helper';
+import { areTeamsReadyForScheduling } from '../helpers/team.helper';
+import { Team } from '../types/utils';
+import { GenerateScheduleWizardProps } from '../types/wizard';
 
 const steps = [
     'Teams',
@@ -92,7 +84,8 @@ export function GenerateScheduleWizard({ open, onClose, onGenerate, availableTea
             onGenerate({
                 fieldSlot,
                 range,
-                pairing
+                pairing,
+                teams
             });
         }
         onClose();

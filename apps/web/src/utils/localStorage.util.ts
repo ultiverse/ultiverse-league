@@ -1,12 +1,6 @@
-import { LeagueSummary } from '@/api/uc';
-
-const STORAGE_KEYS = {
-  SELECTED_LEAGUE: 'ultiverse-selected-league',
-  LAST_URL: 'ultiverse-last-url',
-} as const;
-
 /**
  * Generic localStorage utility with error handling
+ * This is a pure technical utility without business logic
  */
 export const localStorage = {
   /**
@@ -54,60 +48,29 @@ export const localStorage = {
       console.warn('Failed to clear localStorage:', error);
     }
   },
-};
 
-/**
- * League-specific localStorage utilities
- */
-export const leagueStorage = {
   /**
-   * Save selected league to localStorage
+   * Check if a key exists in localStorage
    */
-  saveSelectedLeague(league: LeagueSummary | null): void {
-    if (league) {
-      localStorage.set(STORAGE_KEYS.SELECTED_LEAGUE, league);
-    } else {
-      localStorage.remove(STORAGE_KEYS.SELECTED_LEAGUE);
+  has(key: string): boolean {
+    try {
+      return window.localStorage.getItem(key) !== null;
+    } catch (error) {
+      console.warn('Failed to check localStorage:', error);
+      return false;
     }
   },
 
   /**
-   * Load selected league from localStorage
+   * Get all keys from localStorage with optional prefix filter
    */
-  loadSelectedLeague(): LeagueSummary | null {
-    return localStorage.get<LeagueSummary>(STORAGE_KEYS.SELECTED_LEAGUE);
-  },
-
-  /**
-   * Clear selected league from localStorage
-   */
-  clearSelectedLeague(): void {
-    localStorage.remove(STORAGE_KEYS.SELECTED_LEAGUE);
-  },
-};
-
-/**
- * Navigation-specific localStorage utilities
- */
-export const navigationStorage = {
-  /**
-   * Save last visited URL to localStorage
-   */
-  saveLastUrl(url: string): void {
-    localStorage.set(STORAGE_KEYS.LAST_URL, url);
-  },
-
-  /**
-   * Load last visited URL from localStorage
-   */
-  loadLastUrl(): string | null {
-    return localStorage.get<string>(STORAGE_KEYS.LAST_URL);
-  },
-
-  /**
-   * Clear last URL from localStorage
-   */
-  clearLastUrl(): void {
-    localStorage.remove(STORAGE_KEYS.LAST_URL);
+  getKeys(prefix?: string): string[] {
+    try {
+      const keys = Object.keys(window.localStorage);
+      return prefix ? keys.filter(key => key.startsWith(prefix)) : keys;
+    } catch (error) {
+      console.warn('Failed to get localStorage keys:', error);
+      return [];
+    }
   },
 };

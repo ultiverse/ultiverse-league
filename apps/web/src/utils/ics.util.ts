@@ -2,15 +2,7 @@
  * ICS (iCalendar) utility functions for exporting calendar events
  */
 
-export interface ICSEvent {
-    uid: string;
-    title: string;
-    description?: string;
-    location?: string;
-    start: Date;
-    end: Date;
-    allDay?: boolean;
-}
+import { ICSEvent } from '../types/utils';
 
 /**
  * Formats a date for ICS format (YYYYMMDDTHHMMSSZ)

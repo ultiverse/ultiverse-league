@@ -6,18 +6,7 @@ import {
     DialogActions,
     Button,
 } from '@mui/material';
-
-interface ConfirmationDialogProps {
-    open: boolean;
-    onClose: () => void;
-    onConfirm: () => void;
-    title: string;
-    message: string;
-    confirmText?: string;
-    cancelText?: string;
-    confirmColor?: 'primary' | 'secondary' | 'error' | 'warning' | 'info' | 'success';
-    maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-}
+import { ConfirmationDialogProps } from '../types/components';
 
 export function ConfirmationDialog({
     open,

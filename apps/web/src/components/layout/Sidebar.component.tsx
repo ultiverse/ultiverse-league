@@ -17,16 +17,9 @@ import {
     ArrowDropDown as ArrowDropDownIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
-import { LeagueSummary } from '../api/uc';
+import { SidebarProps } from '../../types/components';
 
 const DRAWER_WIDTH = 280;
-
-interface SidebarProps {
-    selectedLeague: LeagueSummary | null;
-    onLeagueClick: () => void;
-    mobileOpen: boolean;
-    onMobileClose: () => void;
-}
 
 export function Sidebar({ selectedLeague, onLeagueClick, mobileOpen, onMobileClose }: SidebarProps) {
     const location = useLocation();

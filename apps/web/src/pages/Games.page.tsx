@@ -9,16 +9,18 @@ import {
     Stack,
 } from '@mui/material';
 import { Download, CalendarMonth, Schedule } from '@mui/icons-material';
-import { getTeamsByLeague, generateSchedule, TeamSummary } from '@/api/uc';
-import { useLeague } from '@/hooks/useLeague';
+import { getTeamsByLeague, generateSchedule } from '../api/uc';
+import { TeamSummary } from '../types/api';
+import { useLeague } from '../hooks/useLeague';
 import { ScheduleView } from '@ultiverse/shared-types';
-import { GameCard } from '@/components/GameCard.component';
-import { Section } from '@/components/Section.component';
-import { Page, PageAlert } from '@/components/Page.component';
-import { GenerateScheduleWizard } from '@/components/GenerateScheduleWizard.component';
-import { ConfirmationDialog } from '@/components/ConfirmationDialog.component';
-import { exportPodScheduleToCSV, exportPodScheduleToICS } from '@/helpers/schedule.helper';
-import { getTeamDisplayName, getTeamColor } from '@/helpers/teams.helper';
+import { GameCard } from '../components/GameCard.component';
+import { Section } from '../components/layout/Section.component';
+import { Page } from '../components/layout/Page.component';
+import { PageAlert } from '../types/components';
+import { GenerateScheduleWizard } from '../components/GenerateScheduleWizard.component';
+import { ConfirmationDialog } from '../components/ConfirmationDialog.component';
+import { exportPodScheduleToCSV, exportPodScheduleToICS } from '../helpers/schedule.helper';
+import { getTeamDisplayName, getTeamColor } from '../helpers/teams.helper';
 import dayjs from 'dayjs';
 
 

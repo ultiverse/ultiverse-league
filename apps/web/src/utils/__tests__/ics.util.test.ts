@@ -1,4 +1,5 @@
-import { createICSContent, generateICSFileName, ICSEvent } from '../ics.util';
+import { createICSContent, generateICSFileName } from '../ics.util';
+import { ICSEvent } from '../../types/utils';
 import { vi } from 'vitest';
 
 // Mock the download functionality

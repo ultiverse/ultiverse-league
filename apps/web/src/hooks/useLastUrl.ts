@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { navigationStorage } from '@/utils/localStorage.util';
+import { useNavigationStorage } from './useNavigationStorage';
 
 /**
  * Hook to manage URL persistence
@@ -9,21 +9,22 @@ import { navigationStorage } from '@/utils/localStorage.util';
 export function useLastUrl() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { saveLastUrl, loadLastUrl, clearLastUrl } = useNavigationStorage();
 
   // Save current URL whenever location changes
   useEffect(() => {
     const currentUrl = location.pathname + location.search;
     // Only save meaningful URLs (not root redirect)
     if (currentUrl !== '/') {
-      navigationStorage.saveLastUrl(currentUrl);
+      saveLastUrl(currentUrl);
     }
-  }, [location]);
+  }, [location, saveLastUrl]);
 
   /**
    * Navigate to the last saved URL or fallback to a default
    */
   const navigateToLastUrl = (fallbackUrl: string = '/teams') => {
-    const lastUrl = navigationStorage.loadLastUrl();
+    const lastUrl = loadLastUrl();
     navigate(lastUrl || fallbackUrl);
   };
 
@@ -31,14 +32,7 @@ export function useLastUrl() {
    * Get the last saved URL without navigating
    */
   const getLastUrl = (): string | null => {
-    return navigationStorage.loadLastUrl();
-  };
-
-  /**
-   * Clear the saved URL
-   */
-  const clearLastUrl = () => {
-    navigationStorage.clearLastUrl();
+    return loadLastUrl();
   };
 
   return {
@@ -54,9 +48,10 @@ export function useLastUrl() {
  */
 export function useInitialRedirect() {
   const navigate = useNavigate();
+  const { loadLastUrl } = useNavigationStorage();
 
   const redirectToLastUrl = () => {
-    const lastUrl = navigationStorage.loadLastUrl();
+    const lastUrl = loadLastUrl();
     if (lastUrl && lastUrl !== '/') {
       navigate(lastUrl, { replace: true });
       return true; // Indicates a redirect happened

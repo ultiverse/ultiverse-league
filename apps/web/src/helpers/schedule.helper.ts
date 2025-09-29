@@ -1,6 +1,7 @@
 import { ScheduleView } from '@ultiverse/shared-types';
-import { createCSVContent, downloadCSV, generateCSVFileName } from '@/utils/csv.util';
-import { createICSContent, downloadICS, generateICSFileName, ICSEvent } from '@/utils/ics.util';
+import { createCSVContent, downloadCSV, generateCSVFileName } from '../utils/csv.util';
+import { createICSContent, downloadICS, generateICSFileName } from '../utils/ics.util';
+import { ICSEvent } from '../types/utils';
 import { getFirstTeamName, getSecondTeamName } from './teams.helper';
 import { formatFieldName } from './fields.helper';
 import dayjs from 'dayjs';
