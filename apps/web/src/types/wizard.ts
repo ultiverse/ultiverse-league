@@ -1,54 +1,72 @@
+import { Dayjs } from 'dayjs';
+
+// Range Step Types
 export interface RangeData {
-    startDate: Date | null;
-    endDate: Date | null;
+    rangeMode: 'rounds' | 'endDate';
+    firstDate: Dayjs | null;
+    numberOfRounds: number;
+    endDate: Dayjs | null;
+    blackoutDates: Dayjs[];
 }
 
 export interface RangeStepProps {
-    value: RangeData;
-    onChange: (value: RangeData) => void;
-    onNext: () => void;
-    onBack: () => void;
+    range: RangeData;
+    onRangeChange: (range: RangeData) => void;
 }
 
+// Pairing Step Types
 export interface PairingData {
-    selectedTeamIds: string[];
+    avoidRematches: boolean;
+    balancePartners: boolean;
+    balanceOpponents: boolean;
 }
 
 export interface PodsPairingStepProps {
-    value: PairingData;
-    onChange: (value: PairingData) => void;
-    onNext: () => void;
-    onBack: () => void;
+    pairing: PairingData;
+    onPairingChange: (pairing: PairingData) => void;
+    teams: Array<{ id: string; name: string; colour?: string; }>;
+    onTeamsChange: (teams: Array<{ id: string; name: string; colour?: string; }>) => void;
 }
 
+// Field Slot Step Types
 export interface FieldSlot {
-    name: string;
-    subfields?: string[];
+    id: string;
+    venue: string;
+    dayOfWeek: number;
+    startTime: Dayjs | null;
+    fieldName: string;
+    subfields: string[];
 }
 
 export interface FieldSlotData {
     venue: string;
-    fieldSlots: number;
-    fields: FieldSlot[];
+    dayOfWeek: number;
+    startTime: Dayjs | null;
+    fieldName: string;
+    subfields: string[];
+    fieldSlots: FieldSlot[];
 }
 
 export interface FieldSlotStepProps {
-    value: FieldSlotData;
-    onChange: (value: FieldSlotData) => void;
-    onNext: () => void;
-    onBack: () => void;
+    fieldSlot: FieldSlotData;
+    onFieldSlotChange: (fieldSlot: FieldSlotData) => void;
 }
 
+// Preview Step Types
 export interface PreviewStepProps {
-    rangeData: RangeData;
-    pairingData: PairingData;
-    fieldSlotData: FieldSlotData;
-    onNext: () => void;
-    onBack: () => void;
+    fieldSlot: FieldSlotData;
+    range: RangeData;
+    availableTeams: Array<{ id: string; name: string; colour?: string; }>;
 }
 
+// Main Wizard Types
 export interface GenerateScheduleWizardProps {
     open: boolean;
     onClose: () => void;
-    onComplete?: () => void;
+    onGenerate?: (scheduleData: {
+        fieldSlot: FieldSlotData;
+        range: RangeData;
+        pairing: PairingData;
+        teams: Array<{ id: string; name: string; colour?: string; }>;
+    }) => void;
 }

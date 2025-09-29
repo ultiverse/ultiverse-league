@@ -25,17 +25,7 @@ import { validateFieldSlots } from '../helpers/schedule.helper';
 import { getNextOccurrenceOfDay } from '../helpers/date.helper';
 import { areTeamsReadyForScheduling } from '../helpers/team.helper';
 import { Team } from '../types/utils';
-
-interface GenerateScheduleWizardProps {
-    open: boolean;
-    onClose: () => void;
-    onGenerate?: (scheduleData: {
-        fieldSlot: FieldSlotData;
-        range: RangeData;
-        pairing: PairingData;
-    }) => void;
-    availableTeams?: Team[];
-}
+import { GenerateScheduleWizardProps } from '../types/wizard';
 
 const steps = [
     'Teams',

@@ -1,5 +1,6 @@
 import { SvgIconProps, AlertColor, SxProps, Theme } from '@mui/material';
 import { ScheduleGameView } from '@ultiverse/shared-types';
+import { LeagueSummary } from './api';
 
 export interface GameCardProps {
     game: ScheduleGameView;
@@ -13,23 +14,17 @@ export interface GameCardProps {
 }
 
 export interface SidebarProps {
-    drawerWidth: number;
-    open: boolean;
-    onClose: () => void;
-    onOpen: () => void;
+    selectedLeague: LeagueSummary | null;
+    onLeagueClick: () => void;
 }
 
 export interface TopBarProps {
-    drawerWidth: number;
-    open: boolean;
-    onMenuClick: () => void;
+    onMenuClick?: () => void;
 }
 
 export interface SectionProps {
-    children: React.ReactNode;
     title?: string;
-    subtitle?: string;
-    actions?: React.ReactNode;
+    children: React.ReactNode;
 }
 
 export interface TeamNameProps {
@@ -44,12 +39,12 @@ export interface TeamNameProps {
 
 export interface ConfirmationDialogProps {
     open: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
     title: string;
     message: string;
     confirmText?: string;
     cancelText?: string;
-    onConfirm: () => void;
-    onCancel: () => void;
 }
 
 export type JerseyIconProps = SvgIconProps;
