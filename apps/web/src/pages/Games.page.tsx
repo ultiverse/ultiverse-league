@@ -5,7 +5,6 @@ import {
     Typography,
     Grid,
     CircularProgress,
-    Alert,
     Button,
     Stack,
 } from '@mui/material';
@@ -13,10 +12,11 @@ import { Download, CalendarMonth, Schedule } from '@mui/icons-material';
 import { getTeamsByLeague, generateSchedule, TeamSummary } from '@/api/uc';
 import { useLeague } from '@/hooks/useLeague';
 import { ScheduleView } from '@ultiverse/shared-types';
-import { GameCard } from '@/components/GameCard';
-import { Section } from '@/components/Section';
-import { GenerateScheduleWizard } from '@/components/GenerateScheduleWizard';
-import { ConfirmationDialog } from '@/components/ConfirmationDialog';
+import { GameCard } from '@/components/GameCard.component';
+import { Section } from '@/components/Section.component';
+import { Page, PageAlert } from '@/components/Page.component';
+import { GenerateScheduleWizard } from '@/components/GenerateScheduleWizard.component';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog.component';
 import { exportPodScheduleToCSV, exportPodScheduleToICS } from '@/helpers/schedule.helper';
 import { getTeamDisplayName, getTeamColor } from '@/helpers/teams.helper';
 import dayjs from 'dayjs';
@@ -146,58 +146,90 @@ export function Games() {
         }
     };
 
+    // Build alerts array
+    const alerts: PageAlert[] = [];
+
     if (!selectedLeague) {
-        return (
-            <Box sx={{ p: 3 }}>
-                <Alert severity="info">
-                    Please select a league to generate games.
-                </Alert>
-            </Box>
-        );
+        alerts.push({
+            id: 'no-league',
+            severity: 'info',
+            message: 'Please select a league to generate games.',
+        });
     }
 
+    if (generateScheduleMutation.isError) {
+        alerts.push({
+            id: 'generation-error',
+            severity: 'error',
+            message: `Failed to generate schedule: ${String(generateScheduleMutation.error)}`,
+        });
+    }
+
+    if (teamsQuery.isError) {
+        alerts.push({
+            id: 'teams-error',
+            severity: 'error',
+            message: String(teamsQuery.error),
+        });
+    }
+
+    if (teamsQuery.data?.length === 0 && !teamsQuery.isLoading && selectedLeague) {
+        alerts.push({
+            id: 'no-teams',
+            severity: 'info',
+            message: 'No teams found for this league.',
+        });
+    }
+
+    // Build page actions
+    const pageActions = (
+        <Stack direction="row" spacing={1}>
+            <Button
+                variant="contained"
+                startIcon={<Schedule />}
+                onClick={handleGenerateSchedule}
+                disabled={!selectedLeague}
+            >
+                Generate Schedule
+            </Button>
+
+            <Button
+                variant="outlined"
+                startIcon={<Download />}
+                onClick={handleExportCSV}
+                disabled={!generatedSchedule}
+            >
+                Export CSV
+            </Button>
+
+            <Button
+                variant="outlined"
+                startIcon={<CalendarMonth />}
+                onClick={handleExportICS}
+                disabled={!generatedSchedule}
+            >
+                Export ICS
+            </Button>
+        </Stack>
+    );
+
     return (
-        <Box sx={{ p: 3 }}>
-            {/* Admin Header */}
-            <Box sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                mb: 3
-            }}>
-                <Typography variant="h4">
-                    Schedule
-                </Typography>
-
-                <Stack direction="row" spacing={1}>
-                    <Button
-                        variant="contained"
-                        startIcon={<Schedule />}
-                        onClick={handleGenerateSchedule}
-                    >
-                        Generate Schedule
-                    </Button>
-
-                    <Button
-                        variant="outlined"
-                        startIcon={<Download />}
-                        onClick={handleExportCSV}
-                        disabled={!generatedSchedule}
-                    >
-                        Export CSV
-                    </Button>
-
-                    <Button
-                        variant="outlined"
-                        startIcon={<CalendarMonth />}
-                        onClick={handleExportICS}
-                        disabled={!generatedSchedule}
-                    >
-                        Export ICS
-                    </Button>
-
-                </Stack>
-            </Box>
+        <Page
+            title="Schedule"
+            subtitle={selectedLeague ? `Manage schedule for ${selectedLeague.name}` : 'Generate and manage your league schedule'}
+            actions={pageActions}
+            alerts={alerts}
+            meta={{
+                title: `Schedule - ${selectedLeague?.name || 'Ultiverse League'}`,
+                description: selectedLeague
+                    ? `Generate and manage schedule for ${selectedLeague.name} league`
+                    : 'Generate and manage your league schedules',
+            }}
+            breadcrumbs={[
+                { label: 'Home', href: '/' },
+                { label: 'Schedule' },
+            ]}
+        >
 
             {/* Empty State - No Rounds Yet */}
             {!generatedSchedule && (
@@ -228,14 +260,11 @@ export function Games() {
                 </Section>
             )}
 
-            {/* Development/Legacy UI - will be replaced by Rounds View */}
-            {generatedSchedule && teamsQuery.isLoading && <CircularProgress />}
-            {generatedSchedule && teamsQuery.isError && (
-                <Alert severity="error">{String(teamsQuery.error)}</Alert>
-            )}
+            {/* Loading State */}
+            {(generatedSchedule && teamsQuery.isLoading) && <CircularProgress />}
 
-
-            {generatedSchedule && (
+            {/* Generated Schedule */}
+            {generatedSchedule && selectedLeague && (
                 <Section
                     ref={scheduleRef}
                     title="Generated Schedule"
@@ -245,7 +274,6 @@ export function Games() {
                         </Button>
                     }
                 >
-
                     {generatedSchedule.rounds.filter(round => round.games.length > 0).map((round, roundIndex) => (
                         <Box key={roundIndex} sx={{ mb: 3 }}>
                             <Typography variant="h6" sx={{ mb: 2 }}>Round {round.round}</Typography>
@@ -269,19 +297,7 @@ export function Games() {
                             </Grid>
                         </Box>
                     ))}
-
-                    {generateScheduleMutation.isError && (
-                        <Alert severity="error" sx={{ mt: 2 }}>
-                            Failed to generate schedule: {String(generateScheduleMutation.error)}
-                        </Alert>
-                    )}
                 </Section>
-            )}
-
-            {teamsQuery.data?.length === 0 && (
-                <Alert sx={{ mt: 2 }} severity="info">
-                    No teams found for this league.
-                </Alert>
             )}
 
             {/* Generate Schedule Wizard */}
@@ -302,6 +318,6 @@ export function Games() {
                 confirmText="Clear Schedule"
                 confirmColor="error"
             />
-        </Box>
+        </Page>
     );
 }

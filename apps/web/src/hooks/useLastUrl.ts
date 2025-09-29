@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { navigationStorage } from '@/utils/localStorage';
+import { navigationStorage } from '@/utils/localStorage.util';
 
 /**
  * Hook to manage URL persistence

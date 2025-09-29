@@ -1,60 +1,60 @@
-name: CI (API)
+name: CI
 
 on:
   pull_request:
-    paths: ['apps/api/**', '.github/workflows/**']
+    paths: ['apps/**', 'packages/**', '.github/workflows/**']
   push:
     branches: [main]
-    paths: ['apps/api/**', '.github/workflows/**']
+    paths: ['apps/**', 'packages/**', '.github/workflows/**']
 
 permissions:
   contents: read
 
 jobs:
-  api-tests:
+  # Check if builds are successful
+  build:
+    name: Build Check
+    uses: ./.github/workflows/build.yml
+
+  # Run linting
+  lint:
+    name: Lint Check
+    uses: ./.github/workflows/lint.yml
+
+  # Run tests
+  test:
+    name: Test Suite
+    uses: ./.github/workflows/test.yml
+
+  # Run E2E tests (depends on successful build)
+  e2e:
+    name: E2E Tests
+    needs: build
+    uses: ./.github/workflows/e2e.yml
+
+  # Summary job to provide single status check
+  ci-success:
+    name: CI
     runs-on: ubuntu-latest
-    env:
-      NODE_ENV: test
-      PORT: 3000
-      UC_API_DOMAIN: http://localhost
-      UC_CLIENT_ID: test
-      UC_CLIENT_SECRET: test
+    needs: [build, lint, test, e2e]
+    if: always()
     steps:
-      - uses: actions/checkout@v4
+      - name: Check all jobs
+        run: |
+          echo "=== CI Results Summary ==="
+          echo "Build: ${{ needs.build.result }}"
+          echo "Lint: ${{ needs.lint.result }}"
+          echo "Test: ${{ needs.test.result }}"
+          echo "E2E: ${{ needs.e2e.result }}"
+          echo "=========================="
 
-      # 1) Install pnpm first so setup-node's cache step can call it
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 9.12.3
-
-      # 2) Now enable Node + cache for pnpm (points at the lockfile in repo root)
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      # 3) Install deps at the repo root (workspace)
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # 4) Run app tasks inside apps/api
-      - name: Build
-        run: pnpm -C apps/api build
-
-      - name: Lint
-        run: pnpm -C apps/api lint
-
-      - name: Test
-        run: pnpm -C apps/api test -- --coverage --runInBand
-
-      - name: E2E
-        run: pnpm -C apps/api test:e2e
-
-      - name: Upload coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-api
-          path: apps/api/coverage
-          if-no-files-found: ignore
+          if [[ "${{ needs.build.result }}" == "success" && \
+                "${{ needs.lint.result }}" == "success" && \
+                "${{ needs.test.result }}" == "success" && \
+                "${{ needs.e2e.result }}" == "success" ]]; then
+            echo "✅ All CI checks passed!"
+            exit 0
+          else
+            echo "❌ Some CI checks failed. See individual job logs for details."
+            exit 1
+          fi

@@ -10,7 +10,7 @@ import {
     IconButton,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
-import { TeamName } from '@/components/TeamName';
+import { TeamName } from '@/components/TeamName.component';
 import { createTeam, isValidTeamName, isTeamNameTaken, getMinimumTeamsRequired, hasEnoughTeams, isValidTeamCount, areTeamsReadyForScheduling, getNextValidTeamCount, type Team } from '@/helpers/team.helper';
 
 export interface PairingData {

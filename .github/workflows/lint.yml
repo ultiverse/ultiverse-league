@@ -1,0 +1,57 @@
+name: Lint
+
+on:
+  workflow_call:
+  pull_request:
+    paths: ['apps/**', 'packages/**', '.github/workflows/**']
+  push:
+    branches: [main]
+    paths: ['apps/**', 'packages/**', '.github/workflows/**']
+
+permissions:
+  contents: read
+
+jobs:
+  api-lint:
+    name: API Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint API
+        run: pnpm -C apps/api lint
+
+  web-lint:
+    name: Web Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint Web
+        run: pnpm -C apps/web lint

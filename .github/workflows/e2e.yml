@@ -1,0 +1,70 @@
+name: E2E Tests
+
+on:
+  workflow_call:
+  pull_request:
+    paths: ['apps/**', 'packages/**', '.github/workflows/**']
+  push:
+    branches: [main]
+    paths: ['apps/**', 'packages/**', '.github/workflows/**']
+
+permissions:
+  contents: read
+
+jobs:
+  api-e2e:
+    name: API E2E Tests
+    runs-on: ubuntu-latest
+    env:
+      NODE_ENV: test
+      PORT: 3000
+      UC_API_DOMAIN: http://localhost
+      UC_CLIENT_ID: test
+      UC_CLIENT_SECRET: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build API
+        run: pnpm -C apps/api build
+
+      - name: Run API E2E tests
+        run: pnpm -C apps/api test:e2e
+
+  # Add web E2E tests when available
+  # web-e2e:
+  #   name: Web E2E Tests
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #
+  #     - uses: pnpm/action-setup@v4
+  #       with:
+  #         version: 9.12.3
+  #
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: pnpm
+  #         cache-dependency-path: pnpm-lock.yaml
+  #
+  #     - name: Install dependencies
+  #       run: pnpm install --frozen-lockfile
+  #
+  #     - name: Build Web
+  #       run: pnpm -C apps/web build
+  #
+  #     - name: Run Web E2E tests
+  #       run: pnpm -C apps/web test:e2e

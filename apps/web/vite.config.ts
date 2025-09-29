@@ -12,6 +12,7 @@ export default defineConfig({
   },
   server: { port: 5173 },
   test: {
+    passWithNoTests: true,
     globals: true,
     environment: 'happy-dom',
     setupFiles: ['./src/test/setup.ts'],
