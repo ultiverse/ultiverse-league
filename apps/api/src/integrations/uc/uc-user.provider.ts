@@ -23,6 +23,7 @@ interface UCPersonsResponse {
     teams?: Array<{
       id: number;
       name: string;
+      color?: string;
       created_at: string;
     }>;
   }>;

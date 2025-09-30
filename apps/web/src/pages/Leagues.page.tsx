@@ -11,57 +11,18 @@ import {
     Paper,
     CircularProgress,
     Alert,
-    Chip,
 } from '@mui/material';
 import { getLeagues } from '../api/uc';
 import { LeagueSummary } from '../types/api';
 import { useLeague } from '../hooks/useLeague';
 import { useNavigate } from 'react-router-dom';
+import { SeasonChip } from '../components/SeasonChip.component';
+import { formatStartDate } from '../helpers/season.helper';
 
 interface LeaguesProps {
     onLeagueSelect?: () => void;
 }
 
-function getSeason(dateStr?: string): string {
-    if (!dateStr) return 'Unknown';
-
-    try {
-        const date = new Date(dateStr);
-        const month = date.getMonth(); // 0-11
-
-        if (month >= 2 && month <= 4) return 'Spring'; // Mar, Apr, May
-        if (month >= 5 && month <= 7) return 'Summer'; // Jun, Jul, Aug
-        if (month >= 8 && month <= 10) return 'Fall'; // Sep, Oct, Nov
-        return 'Winter'; // Dec, Jan, Feb
-    } catch {
-        return 'Unknown';
-    }
-}
-
-function formatStartDate(dateStr?: string): string {
-    if (!dateStr) return 'Date not available';
-
-    try {
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        });
-    } catch {
-        return 'Invalid date';
-    }
-}
-
-function getSeasonColor(season: string): 'primary' | 'secondary' | 'success' | 'warning' {
-    switch (season) {
-        case 'Spring': return 'success';
-        case 'Summer': return 'warning';
-        case 'Fall': return 'primary';
-        case 'Winter': return 'secondary';
-        default: return 'secondary';
-    }
-}
 
 export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
     const { setSelectedLeague } = useLeague();
@@ -121,12 +82,7 @@ export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
                                         </Typography>
                                     </TableCell>
                                     <TableCell>
-                                        <Chip
-                                            label={getSeason(league.start)}
-                                            color={getSeasonColor(getSeason(league.start))}
-                                            size="small"
-                                            variant="outlined"
-                                        />
+                                        <SeasonChip dateStr={league.start} />
                                     </TableCell>
                                     <TableCell>
                                         <Typography variant="body2" color="text.secondary">

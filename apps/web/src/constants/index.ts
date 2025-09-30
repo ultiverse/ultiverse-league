@@ -22,3 +22,17 @@ export const DAYS_OF_WEEK = [
 ] as const;
 
 export type DayOfWeek = typeof DAYS_OF_WEEK[number];
+
+/**
+ * Season constants and utilities
+ */
+export const SEASONS = ['Spring', 'Summer', 'Fall', 'Winter'] as const;
+
+export type Season = typeof SEASONS[number];
+
+export const SEASON_COLORS: Record<Season, 'primary' | 'secondary' | 'success' | 'warning'> = {
+    Spring: 'success',
+    Summer: 'warning',
+    Fall: 'primary',
+    Winter: 'secondary',
+} as const;

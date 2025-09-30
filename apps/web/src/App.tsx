@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, Modal, Backdrop, Fade, ThemeProvider, useTheme } from '@mui/material';
 import { HelmetProvider } from 'react-helmet-async';
-import { Sidebar } from './components/layout/Sidebar.component';
-import { TopBar } from './components/layout/TopBar.component';
+import { Sidebar } from './components/Layout/Sidebar.component';
+import { TopBar } from './components/Layout/TopBar.component';
 import { LeagueProvider } from './context/LeagueContext';
 import { UserProvider } from './context/UserContext';
 import { useLeague } from './hooks/useLeague';
@@ -12,6 +12,7 @@ import { Leagues } from './pages/Leagues.page';
 import { Teams } from './pages/Teams.page';
 import { Games } from './pages/Games.page';
 import { Settings } from './pages/Settings.page';
+import { ProfilePage } from './pages/Profile.page';
 import { theme } from './theme/theme';
 
 function AppContent() {
@@ -71,6 +72,7 @@ function AppContent() {
                         <Route path="/leagues" element={<Leagues />} />
                         <Route path="/teams" element={<Teams />} />
                         <Route path="/games" element={<Games />} />
+                        <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/settings" element={<Settings />} />
                     </Routes>
                 </Box>
