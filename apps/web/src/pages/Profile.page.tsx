@@ -2,7 +2,7 @@ import { Stack, Alert, Box, Typography } from '@mui/material';
 import { Page } from '../components/Layout/Page.component';
 import { ProfileHeader } from '../components/Profile/ProfileHeader.component';
 import { AccountDetails } from '../components/Profile/AccountDetails.component';
-import { Integrations } from '../components/Profile/Integrations.component';
+import { IntegrationsOverview } from '../components/Profile/IntegrationsOverview.component';
 import { PastTeamsHistory } from '../components/Profile/PastTeamsHistory.component';
 import { ProfileActions } from '../components/Profile/ProfileActions.component';
 import { useUser } from '../hooks/useUser';
@@ -40,7 +40,7 @@ export function ProfilePage() {
             <Stack spacing={3}>
                 <ProfileHeader user={user} />
                 <AccountDetails user={user} />
-                <Integrations />
+                <IntegrationsOverview />
                 <PastTeamsHistory pastTeams={pastTeams} isLoading={isLoading} />
                 <ProfileActions />
             </Stack>

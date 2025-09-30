@@ -14,10 +14,12 @@ import {
     Groups as GroupsIcon,
     CalendarMonth as CalendarMonthIcon,
     Settings as SettingsIcon,
+    IntegrationInstructions as IntegrationInstructionsIcon,
     ArrowDropDown as ArrowDropDownIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 import { SidebarProps } from '../../types/components';
+import { SourceBadge } from '../SourceBadge.component';
 
 const DRAWER_WIDTH = 280;
 
@@ -27,6 +29,7 @@ export function Sidebar({ selectedLeague, onLeagueClick, mobileOpen, onMobileClo
     const menuItems = [
         { path: '/teams', label: 'Teams', icon: <GroupsIcon /> },
         { path: '/games', label: 'Schedule', icon: <CalendarMonthIcon /> },
+        { path: '/integrations', label: 'Integrations', icon: <IntegrationInstructionsIcon /> },
         { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
     ];
 
@@ -62,9 +65,19 @@ export function Sidebar({ selectedLeague, onLeagueClick, mobileOpen, onMobileClo
                     }}
                 >
                     <Box sx={{ textAlign: 'left', overflow: 'hidden' }}>
-                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }} noWrap>
-                            League
-                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }} noWrap>
+                                League
+                            </Typography>
+                            {selectedLeague && (
+                                <SourceBadge
+                                    source={selectedLeague.source}
+                                    integrationProvider={selectedLeague.integrationProvider}
+                                    size="small"
+                                    showText={false}
+                                />
+                            )}
+                        </Box>
                         <Typography variant="body1" noWrap>
                             {selectedLeague?.name || 'Select League'}
                         </Typography>
@@ -81,7 +94,7 @@ export function Sidebar({ selectedLeague, onLeagueClick, mobileOpen, onMobileClo
                             component={Link}
                             to={item.path}
                             selected={location.pathname === item.path}
-                            disabled={!selectedLeague}
+                            disabled={!selectedLeague && (item.path === '/teams' || item.path === '/games')}
                             onClick={onMobileClose}
                             sx={{
                                 color: 'white',

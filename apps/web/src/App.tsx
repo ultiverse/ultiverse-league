@@ -6,6 +6,7 @@ import { Sidebar } from './components/Layout/Sidebar.component';
 import { TopBar } from './components/Layout/TopBar.component';
 import { LeagueProvider } from './context/LeagueContext';
 import { UserProvider } from './context/UserContext';
+import { IntegrationContextProvider } from './context/IntegrationContext';
 import { useLeague } from './hooks/useLeague';
 import { useLastUrl, useInitialRedirect } from './hooks/useLastUrl';
 import { Leagues } from './pages/Leagues.page';
@@ -14,6 +15,7 @@ import { Games } from './pages/Games.page';
 import { Settings } from './pages/Settings.page';
 import { ProfilePage } from './pages/Profile.page';
 import { AccountPage } from './pages/Account.page';
+import { IntegrationsPage } from './pages/Integrations.page';
 import { theme } from './theme/theme';
 
 function AppContent() {
@@ -75,6 +77,7 @@ function AppContent() {
                         <Route path="/games" element={<Games />} />
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/account" element={<AccountPage />} />
+                        <Route path="/integrations" element={<IntegrationsPage />} />
                         <Route path="/settings" element={<Settings />} />
                     </Routes>
                 </Box>
@@ -118,11 +121,13 @@ export function App() {
         <HelmetProvider>
             <ThemeProvider theme={theme}>
                 <UserProvider>
-                    <LeagueProvider>
-                        <Router>
-                            <AppContent />
-                        </Router>
-                    </LeagueProvider>
+                    <IntegrationContextProvider>
+                        <LeagueProvider>
+                            <Router>
+                                <AppContent />
+                            </Router>
+                        </LeagueProvider>
+                    </IntegrationContextProvider>
                 </UserProvider>
             </ThemeProvider>
         </HelmetProvider>

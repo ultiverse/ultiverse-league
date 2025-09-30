@@ -17,7 +17,8 @@ import { LeagueSummary } from '../types/api';
 import { useLeague } from '../hooks/useLeague';
 import { useNavigate } from 'react-router-dom';
 import { SeasonChip } from '../components/SeasonChip.component';
-import { formatStartDate } from '../helpers/season.helper';
+import { SourceBadge, SyncStatusBadge } from '../components/SourceBadge.component';
+import { transformLeagueData } from '../utils/dataTransform';
 
 interface LeaguesProps {
     onLeagueSelect?: () => void;
@@ -30,7 +31,10 @@ export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
 
     const leaguesQuery = useQuery({
         queryKey: ['leagues'],
-        queryFn: getLeagues,
+        queryFn: async () => {
+            const rawLeagues = await getLeagues();
+            return transformLeagueData(rawLeagues);
+        },
         staleTime: 15 * 60 * 1000, // 15 minutes - leagues don't change very often
         gcTime: 30 * 60 * 1000, // 30 minutes cache retention
     });
@@ -59,8 +63,9 @@ export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
                         <TableHead>
                             <TableRow>
                                 <TableCell>League Name</TableCell>
+                                <TableCell>Source</TableCell>
                                 <TableCell>Season</TableCell>
-                                <TableCell>Start Date</TableCell>
+                                <TableCell>Status</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -82,12 +87,21 @@ export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
                                         </Typography>
                                     </TableCell>
                                     <TableCell>
+                                        <SourceBadge
+                                            source={league.source}
+                                            integrationProvider={league.integrationProvider}
+                                            size="small"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
                                         <SeasonChip dateStr={league.start} />
                                     </TableCell>
                                     <TableCell>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {formatStartDate(league.start)}
-                                        </Typography>
+                                        <SyncStatusBadge
+                                            syncStatus={league.syncStatus}
+                                            lastSynced={league.lastSynced}
+                                            size="small"
+                                        />
                                     </TableCell>
                                 </TableRow>
                             ))}
