@@ -13,6 +13,7 @@ import { Teams } from './pages/Teams.page';
 import { Games } from './pages/Games.page';
 import { Settings } from './pages/Settings.page';
 import { ProfilePage } from './pages/Profile.page';
+import { AccountPage } from './pages/Account.page';
 import { theme } from './theme/theme';
 
 function AppContent() {
@@ -73,6 +74,7 @@ function AppContent() {
                         <Route path="/teams" element={<Teams />} />
                         <Route path="/games" element={<Games />} />
                         <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/account" element={<AccountPage />} />
                         <Route path="/settings" element={<Settings />} />
                     </Routes>
                 </Box>
