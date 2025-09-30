@@ -19,6 +19,3 @@ export const getCurrentUser = () =>
 
 export const getFieldsByLeagueId = (leagueId: string) =>
   api<Field[]>(`/api/v1/leagues/${leagueId}/fields?integration=external`);
-
-export const getUserPastTeams = () =>
-  api<TeamSummary[]>('/api/v1/user/me/teams/past?integration=external');

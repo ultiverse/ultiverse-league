@@ -11,6 +11,8 @@ import {
     FormControlLabel,
     Button,
     Alert,
+    Pagination,
+    Grid,
 } from '@mui/material';
 import {
     AccountCircle,
@@ -18,24 +20,30 @@ import {
     Link as LinkIcon,
     Groups as GroupsIcon,
 } from '@mui/icons-material';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Page } from '../components/layout/Page.component';
 import { TeamName } from '../components/TeamName.component';
 import { SeasonChip } from '../components/SeasonChip.component';
 import { useUser } from '../hooks/useUser';
-import { getUserPastTeams } from '../api/uc';
+
+const TEAMS_PER_PAGE = 6; // Better for 2-column layout (3 rows × 2 columns)
 
 export function ProfilePage() {
     const { user, isLoading } = useUser();
+    const [currentPage, setCurrentPage] = useState(1);
 
-    // Fetch past teams data
-    const pastTeamsQuery = useQuery({
-        queryKey: ['user-past-teams'],
-        queryFn: getUserPastTeams,
-        enabled: !!user,
-        staleTime: 15 * 60 * 1000, // 15 minutes
-        gcTime: 30 * 60 * 1000, // 30 minutes
-    });
+    // Get past teams from user data
+    const pastTeams = user?.pastTeams || [];
+
+    // Pagination calculations
+    const totalPages = Math.ceil(pastTeams.length / TEAMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * TEAMS_PER_PAGE;
+    const endIndex = startIndex + TEAMS_PER_PAGE;
+    const currentTeams = pastTeams.slice(startIndex, endIndex);
+
+    const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+        setCurrentPage(value);
+    };
 
     if (isLoading) {
         return (
@@ -203,47 +211,57 @@ export function ProfilePage() {
                         Your team participation history from Ultimate Central
                     </Typography>
 
-                    {pastTeamsQuery.isLoading && (
+                    {isLoading && (
                         <Alert severity="info">Loading teams history...</Alert>
                     )}
 
-                    {pastTeamsQuery.isError && (
-                        <Alert severity="error">
-                            Failed to load teams history. Please try again later.
-                        </Alert>
-                    )}
-
-                    {pastTeamsQuery.data && pastTeamsQuery.data.length === 0 && (
+                    {!isLoading && pastTeams.length === 0 && (
                         <Alert severity="info">
                             No past teams found. Join a league to see your team history here!
                         </Alert>
                     )}
 
-                    {pastTeamsQuery.data && pastTeamsQuery.data.length > 0 && (
-                        <Stack spacing={2}>
-                            {pastTeamsQuery.data.map((team) => (
-                                <Card key={team.id} variant="outlined">
-                                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                        <Stack direction="row" spacing={2} alignItems="center">
-                                            <Box sx={{ flexGrow: 1 }}>
-                                                <TeamName
-                                                    name={team.name}
-                                                    primaryColor={team.colour || '#1976d2'}
-                                                    size="md"
-                                                />
-                                            </Box>
-                                            <SeasonChip dateStr={team.dateJoined} />
-                                        </Stack>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </Stack>
-                    )}
+                    {!isLoading && pastTeams.length > 0 && (
+                        <>
+                            <Grid container spacing={2}>
+                                {currentTeams.map((team) => (
+                                    <Grid size={{ xs: 12, lg: 6 }} key={team.id}>
+                                        <Card variant="outlined" sx={{ height: '100%' }}>
+                                            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                                                <Stack direction="row" spacing={2} alignItems="center">
+                                                    <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                                        <TeamName
+                                                            name={team.name}
+                                                            primaryColor={team.colour || '#1976d2'}
+                                                            size="md"
+                                                        />
+                                                    </Box>
+                                                    <SeasonChip dateStr={team.dateJoined} />
+                                                </Stack>
+                                            </CardContent>
+                                        </Card>
+                                    </Grid>
+                                ))}
+                            </Grid>
 
-                    {!pastTeamsQuery.data && !pastTeamsQuery.isLoading && !pastTeamsQuery.isError && (
-                        <Typography variant="body2" color="text.secondary">
-                            Connect to Ultimate Central to see your team history
-                        </Typography>
+                            {totalPages > 1 && (
+                                <Stack direction="row" justifyContent="center" sx={{ mt: 3 }}>
+                                    <Pagination
+                                        count={totalPages}
+                                        page={currentPage}
+                                        onChange={handlePageChange}
+                                        color="primary"
+                                        size="medium"
+                                        showFirstButton
+                                        showLastButton
+                                    />
+                                </Stack>
+                            )}
+
+                            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, textAlign: 'center' }}>
+                                Showing {startIndex + 1}-{Math.min(endIndex, pastTeams.length)} of {pastTeams.length} teams
+                            </Typography>
+                        </>
                     )}
                 </Paper>
 
