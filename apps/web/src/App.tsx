@@ -12,6 +12,7 @@ import { Leagues } from './pages/Leagues.page';
 import { Teams } from './pages/Teams.page';
 import { Games } from './pages/Games.page';
 import { Settings } from './pages/Settings.page';
+import { ProfilePage } from './pages/Profile.page';
 import { theme } from './theme/theme';
 
 function AppContent() {
@@ -71,6 +72,7 @@ function AppContent() {
                         <Route path="/leagues" element={<Leagues />} />
                         <Route path="/teams" element={<Teams />} />
                         <Route path="/games" element={<Games />} />
+                        <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/settings" element={<Settings />} />
                     </Routes>
                 </Box>

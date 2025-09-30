@@ -94,3 +94,8 @@ export interface LeaguesProps {
     onLeagueSelect: (leagueId: string) => void;
     selectedLeagueId?: string;
 }
+
+export interface SeasonChipProps {
+    dateStr?: string;
+    showYear?: boolean;
+}

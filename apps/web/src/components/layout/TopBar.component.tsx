@@ -16,12 +16,14 @@ import {
   Menu as MenuIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../hooks/useUser';
 import { TopBarProps } from '../../types/components';
 
 export function TopBar({ onMenuClick }: TopBarProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const { user, isLoading } = useUser();
+  const navigate = useNavigate();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -29,6 +31,11 @@ export function TopBar({ onMenuClick }: TopBarProps) {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+    handleClose();
   };
 
   return (
@@ -94,7 +101,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
-            <MenuItem onClick={handleClose}>
+            <MenuItem onClick={handleProfileClick}>
               <AccountCircle sx={{ mr: 1 }} />
               Profile
             </MenuItem>
