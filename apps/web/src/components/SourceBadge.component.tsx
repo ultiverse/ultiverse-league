@@ -1,6 +1,26 @@
 import { Box, Chip, Tooltip, Stack, useTheme } from '@mui/material';
 import { DataSource, IntegrationProvider } from '../types/api';
 
+// Extend the theme type to include our custom palette properties
+interface CustomTheme {
+  palette: {
+    integration: {
+      uc: string;
+      ultiverse: string;
+      zuluru: string;
+      synced: string;
+      unknown: string;
+    };
+    syncStatus: {
+      synced: string;
+      needsPull: string;
+      needsPush: string;
+      conflict: string;
+      neverSynced: string;
+    };
+  };
+}
+
 interface SourceBadgeProps {
     source?: DataSource;
     integrationProvider?: IntegrationProvider;
@@ -16,7 +36,7 @@ interface ProviderConfig {
     iconText: string;
 }
 
-const getProviderConfigs = (theme: any): Record<IntegrationProvider, ProviderConfig> => ({
+const getProviderConfigs = (theme: CustomTheme): Record<IntegrationProvider, ProviderConfig> => ({
     uc: {
         name: 'Ultimate Central',
         shortName: 'UC',
@@ -31,7 +51,7 @@ const getProviderConfigs = (theme: any): Record<IntegrationProvider, ProviderCon
     },
 });
 
-const getSourceConfigs = (theme: any): Record<DataSource, { name: string; color: string; }> => ({
+const getSourceConfigs = (theme: CustomTheme): Record<DataSource, { name: string; color: string; }> => ({
     ultiverse: {
         name: 'Ultiverse',
         color: theme.palette.integration.ultiverse,
@@ -57,7 +77,7 @@ export function SourceBadge({
     showText = true,
     variant = 'filled'
 }: SourceBadgeProps) {
-    const theme = useTheme();
+    const theme = useTheme() as CustomTheme;
     const PROVIDER_CONFIGS = getProviderConfigs(theme);
     const SOURCE_CONFIGS = getSourceConfigs(theme);
 
@@ -176,7 +196,7 @@ interface SyncStatusBadgeProps {
 }
 
 export function SyncStatusBadge({ syncStatus, size = 'medium', lastSynced }: SyncStatusBadgeProps) {
-    const theme = useTheme();
+    const theme = useTheme() as CustomTheme;
 
     const getStatusInfo = () => {
         // Handle undefined or null syncStatus

@@ -75,17 +75,27 @@ export function TeamCard({ team, onClick, showSourceInfo = true }: TeamCardProps
                     {/* Source and sync status */}
                     {showSourceInfo && (
                         <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                            <SourceBadge
-                                source={team.source}
-                                integrationProvider={team.integrationProvider}
-                                size="small"
-                                variant="outlined"
-                            />
-                            <SyncStatusBadge
-                                syncStatus={team.syncStatus}
-                                lastSynced={team.lastSynced}
-                                size="small"
-                            />
+                            {team.source ? (
+                                <>
+                                    <SourceBadge
+                                        source={team.source}
+                                        integrationProvider={team.integrationProvider}
+                                        size="small"
+                                        variant="outlined"
+                                    />
+                                    {team.syncStatus && (
+                                        <SyncStatusBadge
+                                            syncStatus={team.syncStatus}
+                                            lastSynced={team.lastSynced}
+                                            size="small"
+                                        />
+                                    )}
+                                </>
+                            ) : (
+                                <Typography variant="caption" color="text.secondary">
+                                    Loading integration status...
+                                </Typography>
+                            )}
                         </Stack>
                     )}
 

@@ -1,29 +1,8 @@
-import { createContext, useState, useEffect, ReactNode } from 'react';
-import { IntegrationConnection, IntegrationConfig, SyncOperation } from '../types/integrations';
+import { useState, useEffect, ReactNode } from 'react';
+import { IntegrationConnection, SyncOperation } from '../types/integrations';
 import { IntegrationProvider } from '../types/api';
 import { AVAILABLE_INTEGRATIONS } from '../constants/integrations';
-
-interface IntegrationContextType {
-    connections: IntegrationConnection[];
-    availableIntegrations: IntegrationConfig[];
-    activeSyncOperations: SyncOperation[];
-    isLoading: boolean;
-
-    // Connection management
-    connectProvider: (provider: IntegrationProvider) => Promise<void>;
-    disconnectProvider: (provider: IntegrationProvider) => Promise<void>;
-    refreshConnection: (provider: IntegrationProvider) => Promise<void>;
-
-    // Sync operations
-    startSync: (provider: IntegrationProvider, type: 'pull' | 'push') => Promise<string>;
-    getSyncStatus: (operationId: string) => SyncOperation | undefined;
-
-    // Utility functions
-    isProviderConnected: (provider: IntegrationProvider) => boolean;
-    getProviderConnection: (provider: IntegrationProvider) => IntegrationConnection | undefined;
-}
-
-export const IntegrationContext = createContext<IntegrationContextType | undefined>(undefined);
+import { IntegrationContext } from './IntegrationContext.context';
 
 
 interface IntegrationContextProviderProps {

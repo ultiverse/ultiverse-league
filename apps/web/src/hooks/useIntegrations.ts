@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { IntegrationContext } from '../context/IntegrationContext';
+import { IntegrationContext } from '../context/IntegrationContext.context';
 
 export function useIntegrations() {
     const context = useContext(IntegrationContext);
