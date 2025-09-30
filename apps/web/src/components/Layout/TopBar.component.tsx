@@ -38,6 +38,11 @@ export function TopBar({ onMenuClick }: TopBarProps) {
     handleClose();
   };
 
+  const handleAccountClick = () => {
+    navigate('/account');
+    handleClose();
+  };
+
   return (
     <AppBar
       position="static"
@@ -105,7 +110,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
               <AccountCircle sx={{ mr: 1 }} />
               Profile
             </MenuItem>
-            <MenuItem onClick={handleClose}>
+            <MenuItem onClick={handleAccountClick}>
               <SettingsIcon sx={{ mr: 1 }} />
               Account Settings
             </MenuItem>

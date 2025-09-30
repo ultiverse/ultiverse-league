@@ -15,6 +15,6 @@ export default defineConfig({
     passWithNoTests: true,
     globals: true,
     environment: 'happy-dom',
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./src/test/setup.ts']
   },
 });
