@@ -1,5 +1,11 @@
-import { IntegrationProvider } from './api';
+import { IntegrationProvider } from '../api/integrations';
+import {
+  SyncOperation as BaseSyncOperation,
+  ConflictResolution as BaseConflictResolution,
+  SyncPreview as BaseSyncPreview,
+} from '@ultiverse/shared-types';
 
+// Frontend-specific integration connection that uses the full provider object
 export interface IntegrationConnection {
     provider: IntegrationProvider;
     isConnected: boolean;
@@ -10,51 +16,15 @@ export interface IntegrationConnection {
     errorMessage?: string;
 }
 
-export interface IntegrationConfig {
+// Frontend-specific sync operation that uses the full provider object
+export interface SyncOperation extends Omit<BaseSyncOperation, 'provider'> {
     provider: IntegrationProvider;
-    name: string;
-    description: string;
-    iconUrl?: string;
-    iconText: string; // Fallback text like "UC" for Ultimate Central
-    primaryColor: string;
-    features: string[];
-    authType: 'oauth' | 'api_key';
-    isAvailable: boolean;
 }
 
-export interface SyncOperation {
-    id: string;
-    type: 'pull' | 'push';
+// Frontend-specific sync preview that uses the full provider object
+export interface SyncPreview extends Omit<BaseSyncPreview, 'provider'> {
     provider: IntegrationProvider;
-    entity: 'leagues' | 'teams' | 'games' | 'players';
-    status: 'pending' | 'in_progress' | 'completed' | 'failed';
-    startedAt: string;
-    completedAt?: string;
-    itemsProcessed?: number;
-    totalItems?: number;
-    errorMessage?: string;
 }
 
-export interface ConflictResolution {
-    entityType: 'league' | 'team' | 'game' | 'player';
-    entityId: string;
-    fieldName: string;
-    localValue: unknown;
-    remoteValue: unknown;
-    resolution: 'keep_local' | 'keep_remote' | 'merge' | 'skip';
-}
-
-export interface SyncPreview {
-    provider: IntegrationProvider;
-    pullChanges: {
-        new: number;
-        updated: number;
-        deleted: number;
-    };
-    pushChanges: {
-        new: number;
-        updated: number;
-        deleted: number;
-    };
-    conflicts: ConflictResolution[];
-}
+// Re-export types that don't need frontend customization
+export type { BaseConflictResolution as ConflictResolution };

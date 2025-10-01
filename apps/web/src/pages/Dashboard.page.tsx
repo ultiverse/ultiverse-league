@@ -24,7 +24,7 @@ export function DashboardPage() {
 
     // Check if any integrations are connected
     const hasConnectedIntegrations = availableIntegrations.some(integration =>
-        isProviderConnected(integration.provider)
+        isProviderConnected(integration)
     );
 
     // If a league is selected and we're on the root path, redirect to teams

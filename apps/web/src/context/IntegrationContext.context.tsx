@@ -1,10 +1,10 @@
 import { createContext } from 'react';
-import { IntegrationConnection, IntegrationConfig, SyncOperation } from '../types/integrations';
-import { IntegrationProvider } from '../types/api';
+import { IntegrationConnection, SyncOperation } from '../types/integrations';
+import { IntegrationProvider } from '../api/integrations';
 
 interface IntegrationContextType {
     connections: IntegrationConnection[];
-    availableIntegrations: IntegrationConfig[];
+    availableIntegrations: IntegrationProvider[];
     activeSyncOperations: SyncOperation[];
     isLoading: boolean;
 

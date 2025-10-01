@@ -71,11 +71,11 @@ export function IntegrationsOverview() {
 
             <Stack spacing={2}>
                 {connections.map((connection) => {
-                    const integration = availableIntegrations.find(i => i.provider === connection.provider);
+                    const integration = availableIntegrations.find(i => i.provider === connection.provider.provider);
                     if (!integration) return null;
 
                     return (
-                        <Box key={connection.provider}>
+                        <Box key={connection.provider.provider}>
                             <Stack direction="row" alignItems="center" spacing={2}>
                                 <Box
                                     sx={{

@@ -26,7 +26,7 @@ import {
     Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 import { useIntegrations } from '../../hooks/useIntegrations';
-import { IntegrationProvider } from '../../types/api';
+import { IntegrationProvider } from '../../api/integrations';
 import { formatDistanceToNow } from 'date-fns';
 
 export function Integrations() {
@@ -121,8 +121,8 @@ export function Integrations() {
 
             <Stack spacing={3}>
                 {availableIntegrations.map((integration) => {
-                    const isConnected = isProviderConnected(integration.provider);
-                    const connection = getProviderConnection(integration.provider);
+                    const isConnected = isProviderConnected(integration);
+                    const connection = getProviderConnection(integration);
 
                     return (
                         <Card key={integration.provider} variant="outlined">
@@ -153,7 +153,7 @@ export function Integrations() {
                                             <Typography variant="h6">
                                                 {integration.name}
                                             </Typography>
-                                            {getStatusIcon(integration.provider)}
+                                            {getStatusIcon(integration)}
                                             {!integration.isAvailable && (
                                                 <Chip label="Coming Soon" size="small" color="default" />
                                             )}
@@ -164,12 +164,12 @@ export function Integrations() {
                                         </Typography>
 
                                         <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                            <strong>Status:</strong> {getStatusText(integration.provider)}
+                                            <strong>Status:</strong> {getStatusText(integration)}
                                         </Typography>
 
                                         {isConnected && (
                                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                                {getLastSyncText(integration.provider)}
+                                                {getLastSyncText(integration)}
                                             </Typography>
                                         )}
 
@@ -195,7 +195,7 @@ export function Integrations() {
                                         {isConnected && (
                                             <Tooltip title="Refresh connection">
                                                 <IconButton
-                                                    onClick={() => handleRefresh(integration.provider)}
+                                                    onClick={() => handleRefresh(integration)}
                                                     disabled={integrationsLoading}
                                                 >
                                                     <RefreshIcon />
@@ -209,8 +209,8 @@ export function Integrations() {
                                                 color={isConnected ? "error" : "primary"}
                                                 startIcon={isConnected ? <LinkOffIcon /> : <LinkIcon />}
                                                 onClick={() => isConnected
-                                                    ? handleDisconnect(integration.provider)
-                                                    : handleConnect(integration.provider)
+                                                    ? handleDisconnect(integration)
+                                                    : handleConnect(integration)
                                                 }
                                                 disabled={integrationsLoading || connection?.status === 'pending'}
                                             >

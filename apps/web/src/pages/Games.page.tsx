@@ -10,7 +10,6 @@ import {
 } from '@mui/material';
 import { Download, CalendarMonth, Schedule } from '@mui/icons-material';
 import { getTeamsByLeague, generateSchedule } from '../api/uc';
-import { TeamSummary } from '../types/api';
 import { useLeague } from '../hooks/useLeague';
 import { ScheduleView } from '@ultiverse/shared-types';
 import { GameCard } from '../components/GameCard.component';
@@ -129,7 +128,7 @@ export function Games() {
                 const teamNameMap: Record<string, string> = {};
                 const teamDataMap: Record<string, { id: string; name: string; colour: string; }> = {};
 
-                teamsQuery.data.forEach((team: TeamSummary) => {
+                teamsQuery.data.forEach((team) => {
                     teamNameMap[team.id] = team.name;
                     teamDataMap[team.id] = {
                         id: team.id,

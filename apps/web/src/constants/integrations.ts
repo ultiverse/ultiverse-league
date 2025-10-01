@@ -1,8 +1,8 @@
-import { IntegrationConfig } from '../types/integrations';
+import { IntegrationProvider } from '../api/integrations';
 import { theme } from '../theme/theme';
 
 // Available integration configurations
-export const AVAILABLE_INTEGRATIONS: IntegrationConfig[] = [
+export const AVAILABLE_INTEGRATIONS: IntegrationProvider[] = [
     {
         provider: 'uc',
         name: 'Ultimate Central',
