@@ -20,4 +20,5 @@ __exportStar(require("./domain"), exports);
 __exportStar(require("./api/schedules"), exports);
 __exportStar(require("./api/user"), exports);
 // Integration types
+__exportStar(require("./integrations"), exports);
 __exportStar(require("./integrations/uc"), exports);

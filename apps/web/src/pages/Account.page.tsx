@@ -19,6 +19,7 @@ import {
 import { useState } from 'react';
 import { Page } from '../components/Layout/Page.component';
 import { useUser } from '../hooks/useUser';
+import { Integrations } from '../components/Account/Integrations.component';
 
 export function AccountPage() {
     const { user, isLoading } = useUser();
@@ -55,6 +56,7 @@ export function AccountPage() {
         // TODO: Implement password reset logic
         console.log('Password reset requested');
     };
+
 
     return (
         <Page title="Account" subtitle="Manage your account security and login methods">
@@ -191,6 +193,9 @@ export function AccountPage() {
                         </Box>
                     </Stack>
                 </Paper>
+
+                {/* Data Integrations */}
+                <Integrations />
 
                 {/* Account Actions */}
                 <Stack direction="row" spacing={2}>

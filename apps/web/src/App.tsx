@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Box, CssBaseline, Modal, Backdrop, Fade, ThemeProvider, useTheme } from '@mui/material';
 import { HelmetProvider } from 'react-helmet-async';
 import { Sidebar } from './components/Layout/Sidebar.component';
 import { TopBar } from './components/Layout/TopBar.component';
 import { LeagueProvider } from './context/LeagueContext';
 import { UserProvider } from './context/UserContext';
+import { IntegrationContextProvider } from './context/IntegrationContext';
 import { useLeague } from './hooks/useLeague';
 import { useLastUrl, useInitialRedirect } from './hooks/useLastUrl';
+import { DashboardPage } from './pages/Dashboard.page';
 import { Leagues } from './pages/Leagues.page';
 import { Teams } from './pages/Teams.page';
 import { Games } from './pages/Games.page';
@@ -69,7 +71,8 @@ function AppContent() {
                 <TopBar onMenuClick={handleDrawerToggle} />
                 <Box sx={{ flexGrow: 1 }}>
                     <Routes>
-                        <Route path="/" element={<Navigate to="/teams" replace />} />
+                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/leagues" element={<Leagues />} />
                         <Route path="/teams" element={<Teams />} />
                         <Route path="/games" element={<Games />} />
@@ -118,11 +121,13 @@ export function App() {
         <HelmetProvider>
             <ThemeProvider theme={theme}>
                 <UserProvider>
-                    <LeagueProvider>
-                        <Router>
-                            <AppContent />
-                        </Router>
-                    </LeagueProvider>
+                    <IntegrationContextProvider>
+                        <LeagueProvider>
+                            <Router>
+                                <AppContent />
+                            </Router>
+                        </LeagueProvider>
+                    </IntegrationContextProvider>
                 </UserProvider>
             </ThemeProvider>
         </HelmetProvider>

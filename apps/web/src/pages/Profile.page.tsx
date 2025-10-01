@@ -2,7 +2,6 @@ import { Stack, Alert, Box, Typography } from '@mui/material';
 import { Page } from '../components/Layout/Page.component';
 import { ProfileHeader } from '../components/Profile/ProfileHeader.component';
 import { AccountDetails } from '../components/Profile/AccountDetails.component';
-import { Integrations } from '../components/Profile/Integrations.component';
 import { PastTeamsHistory } from '../components/Profile/PastTeamsHistory.component';
 import { ProfileActions } from '../components/Profile/ProfileActions.component';
 import { useUser } from '../hooks/useUser';
@@ -36,11 +35,10 @@ export function ProfilePage() {
     }
 
     return (
-        <Page title="Profile" subtitle="Manage your account settings and integrations">
+        <Page title="Profile" subtitle="View your player profile and team history">
             <Stack spacing={3}>
                 <ProfileHeader user={user} />
                 <AccountDetails user={user} />
-                <Integrations />
                 <PastTeamsHistory pastTeams={pastTeams} isLoading={isLoading} />
                 <ProfileActions />
             </Stack>

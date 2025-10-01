@@ -6,7 +6,7 @@ export const getLeagues = () =>
   api<LeagueSummary[]>('/api/v1/leagues/recent?integration=external&order_by=date_desc&limit=20');
 
 export const getTeamsByLeague = (eventId: string) =>
-  api<TeamSummary[]>(`/api/v1/leagues/${eventId}/teams?integration=external`);
+  api<Omit<TeamSummary, 'source' | 'syncStatus' | 'integrationProvider'>[]>(`/api/v1/leagues/${eventId}/teams?integration=external`);
 
 export const generateSchedule = (request: GenerateScheduleRequest) =>
   api<ScheduleView>('/api/v1/schedules/pods/generate', {
