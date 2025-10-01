@@ -14,7 +14,6 @@ import {
     Groups as GroupsIcon,
     CalendarMonth as CalendarMonthIcon,
     Settings as SettingsIcon,
-    IntegrationInstructions as IntegrationInstructionsIcon,
     ArrowDropDown as ArrowDropDownIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
@@ -29,7 +28,6 @@ export function Sidebar({ selectedLeague, onLeagueClick, mobileOpen, onMobileClo
     const menuItems = [
         { path: '/teams', label: 'Teams', icon: <GroupsIcon /> },
         { path: '/games', label: 'Schedule', icon: <CalendarMonthIcon /> },
-        { path: '/integrations', label: 'Integrations', icon: <IntegrationInstructionsIcon /> },
         { path: '/settings', label: 'Settings', icon: <SettingsIcon /> },
     ];
 

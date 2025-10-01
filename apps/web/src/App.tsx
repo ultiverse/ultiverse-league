@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Box, CssBaseline, Modal, Backdrop, Fade, ThemeProvider, useTheme } from '@mui/material';
 import { HelmetProvider } from 'react-helmet-async';
 import { Sidebar } from './components/Layout/Sidebar.component';
@@ -9,13 +9,13 @@ import { UserProvider } from './context/UserContext';
 import { IntegrationContextProvider } from './context/IntegrationContext';
 import { useLeague } from './hooks/useLeague';
 import { useLastUrl, useInitialRedirect } from './hooks/useLastUrl';
+import { DashboardPage } from './pages/Dashboard.page';
 import { Leagues } from './pages/Leagues.page';
 import { Teams } from './pages/Teams.page';
 import { Games } from './pages/Games.page';
 import { Settings } from './pages/Settings.page';
 import { ProfilePage } from './pages/Profile.page';
 import { AccountPage } from './pages/Account.page';
-import { IntegrationsPage } from './pages/Integrations.page';
 import { theme } from './theme/theme';
 
 function AppContent() {
@@ -71,13 +71,13 @@ function AppContent() {
                 <TopBar onMenuClick={handleDrawerToggle} />
                 <Box sx={{ flexGrow: 1 }}>
                     <Routes>
-                        <Route path="/" element={<Navigate to="/teams" replace />} />
+                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="/dashboard" element={<DashboardPage />} />
                         <Route path="/leagues" element={<Leagues />} />
                         <Route path="/teams" element={<Teams />} />
                         <Route path="/games" element={<Games />} />
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/account" element={<AccountPage />} />
-                        <Route path="/integrations" element={<IntegrationsPage />} />
                         <Route path="/settings" element={<Settings />} />
                     </Routes>
                 </Box>
