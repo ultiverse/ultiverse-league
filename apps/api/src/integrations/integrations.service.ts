@@ -21,7 +21,9 @@ export class IntegrationsService {
       status: 'connected',
       connectedEmail: 'user@example.com',
       connectedAt: new Date().toISOString(),
-      lastSyncAt: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+      lastSyncAt: new Date(
+        Date.now() - Math.random() * 24 * 60 * 60 * 1000,
+      ).toISOString(),
     });
 
     this.connections.set('zuluru', {
@@ -39,7 +41,8 @@ export class IntegrationsService {
       {
         provider: 'uc',
         name: 'Ultimate Central',
-        description: 'Your ultimate frisbee league management platform. Sync teams, games, and player data.',
+        description:
+          'Your ultimate frisbee league management platform. Sync teams, games, and player data.',
         iconText: 'UC',
         primaryColor: '#1976d2',
         features: ['Teams', 'Games', 'Players', 'League Info'],

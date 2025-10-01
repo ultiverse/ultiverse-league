@@ -17,7 +17,7 @@ export class IntegrationsController {
    * Returns list of available integration providers with their capabilities.
    */
   @Get('providers')
-  async getAvailableProviders() {
+  getAvailableProviders() {
     return this.integrationsService.getAvailableProviders();
   }
 
@@ -26,7 +26,7 @@ export class IntegrationsController {
    * Returns current connection status for all providers.
    */
   @Get('connections')
-  async getConnections() {
+  getConnections() {
     return this.integrationsService.getConnections();
   }
 
@@ -36,11 +36,8 @@ export class IntegrationsController {
    * For OAuth providers, returns authorization URL.
    */
   @Post('connect/:provider')
-  async connectProvider(
-    @Param('provider') provider: string,
-    @Body() _connectionData?: unknown
-  ) {
-    // connectionData parameter reserved for future use when implementing OAuth flow
+  async connectProvider(@Param('provider') provider: string) {
+    // connectionData parameter will be added when implementing OAuth flow
     return this.integrationsService.connectProvider(provider);
   }
 
