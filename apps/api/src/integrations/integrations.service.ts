@@ -1,37 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import {
   IntegrationProvider,
-  IntegrationConnection,
+  IntegrationConnection as SharedIntegrationConnection,
   ConnectResponse,
   DisconnectResponse,
   RefreshResponse,
 } from '@ultiverse/shared-types';
+import { AccountsService } from './accounts.service';
 
 @Injectable()
 export class IntegrationsService {
-  // In-memory storage for demo purposes
-  // In production, this would be stored in a database
-  private connections: Map<string, IntegrationConnection> = new Map();
-
-  constructor() {
-    // Initialize with default connection states
-    this.connections.set('uc', {
-      provider: 'uc',
-      isConnected: true, // UC is connected by default for now
-      status: 'connected',
-      connectedEmail: 'user@example.com',
-      connectedAt: new Date().toISOString(),
-      lastSyncAt: new Date(
-        Date.now() - Math.random() * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-    });
-
-    this.connections.set('zuluru', {
-      provider: 'zuluru',
-      isConnected: false,
-      status: 'disconnected',
-    });
-  }
+  constructor(private readonly accountsService: AccountsService) {}
 
   /**
    * Get list of available integration providers
@@ -64,49 +43,111 @@ export class IntegrationsService {
 
   /**
    * Get current connection status for all providers
+   * TODO: This should be scoped to authenticated user, for now using seeded account
    */
-  getConnections(): IntegrationConnection[] {
-    return Array.from(this.connections.values());
+  async getConnections(): Promise<SharedIntegrationConnection[]> {
+    // Use the seeded account for now - in real implementation this would be from authentication
+    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+
+    if (!account) {
+      // Return empty array if no account found
+      return [];
+    }
+
+    const connections = await this.accountsService.getIntegrationConnections(account.id);
+
+    return connections.map(conn => ({
+      provider: conn.provider,
+      isConnected: conn.isConnected,
+      status: conn.status,
+      connectedEmail: conn.connectedEmail,
+      connectedAt: conn.connectedAt?.toISOString(),
+      lastSyncAt: conn.lastSyncAt?.toISOString(),
+      errorMessage: conn.errorMessage,
+    }));
   }
 
   /**
    * Connect to a provider
+   * TODO: This should be scoped to authenticated user, for now using seeded account
    */
-  async connectProvider(provider: string): Promise<ConnectResponse> {
-    const connection = this.connections.get(provider);
+  async connectProvider(provider: string, connectionData?: any): Promise<ConnectResponse> {
+    // Use the seeded account for now - in real implementation this would be from authentication
+    let account = await this.accountsService.findByEmail('greg@gregpike.ca');
 
-    if (!connection) {
+    if (!account) {
+      throw new Error('User account not found. Please ensure you are logged in.');
+    }
+
+    // Validate provider
+    const availableProviders = this.getAvailableProviders();
+    const providerConfig = availableProviders.find(p => p.provider === provider);
+
+    if (!providerConfig) {
       throw new Error(`Unknown provider: ${provider}`);
     }
 
-    // Simulate OAuth flow for UC
-    if (provider === 'uc') {
-      // In a real implementation, this would:
-      // 1. Generate OAuth state
-      // 2. Return authorization URL
-      // 3. Handle callback to complete the flow
+    if (!providerConfig.isAvailable) {
+      throw new Error(`${providerConfig.name} integration is not yet available`);
+    }
 
-      // For now, simulate successful connection
-      await this.simulateAsync(1000);
-
-      this.connections.set(provider, {
-        ...connection,
-        isConnected: true,
-        status: 'connected',
-        connectedEmail: 'user@example.com',
-        connectedAt: new Date().toISOString(),
-      });
-
+    // Check if already connected
+    const existingConnection = await this.getConnection(provider);
+    if (existingConnection?.isConnected) {
       return {
         success: true,
-        message: 'Successfully connected to Ultimate Central',
-        redirectUrl: undefined, // In OAuth flow, this would be the auth URL
+        message: `Already connected to ${providerConfig.name}`,
+        redirectUrl: undefined,
       };
     }
 
-    // For other providers
-    if (provider === 'zuluru') {
-      throw new Error('Zuluru integration is not yet available');
+    // Handle OAuth flow for UC
+    if (provider === 'uc') {
+      // Validate OAuth credentials if provided
+      if (connectionData && connectionData.clientId && connectionData.clientSecret) {
+        console.log('Received OAuth credentials for UC:', {
+          clientId: connectionData.clientId,
+          clientSecret: '***hidden***'
+        });
+
+        // In a real implementation, this would:
+        // 1. Validate OAuth credentials with UC
+        // 2. Generate OAuth state
+        // 3. Return authorization URL
+        // 4. Handle callback to complete the flow
+
+        // For now, simulate successful connection with provided credentials
+        await this.simulateAsync(1000);
+
+        // Update database connection with OAuth credentials
+        await this.accountsService.updateIntegrationConnection(account.id, provider, {
+          isConnected: true,
+          status: 'connected',
+          connectedEmail: account.email,
+          connectedAt: new Date(),
+          externalUserId: 'uc-user-pending', // Will be populated after OAuth flow
+          // Store OAuth credentials in providerData field
+          providerData: {
+            clientId: connectionData.clientId,
+            // In production, we should encrypt the client secret
+            clientSecret: connectionData.clientSecret,
+            domain: connectionData.domain,
+            credentialsStored: true,
+            storedAt: new Date().toISOString(),
+          },
+        });
+
+        // TODO: Trigger profile enrichment from integration data
+        // This would be implemented when ProfileService is properly wired up
+
+        return {
+          success: true,
+          message: 'Successfully connected to Ultimate Central with your OAuth credentials',
+          redirectUrl: undefined, // In OAuth flow, this would be the auth URL
+        };
+      } else {
+        throw new Error('OAuth credentials (clientId and clientSecret) are required for Ultimate Central integration');
+      }
     }
 
     throw new Error(`Unsupported provider: ${provider}`);
@@ -114,9 +155,19 @@ export class IntegrationsService {
 
   /**
    * Disconnect from a provider
+   * TODO: This should be scoped to authenticated user, for now using seeded account
    */
   async disconnectProvider(provider: string): Promise<DisconnectResponse> {
-    const connection = this.connections.get(provider);
+    // Use the seeded account for now
+    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+
+    if (!account) {
+      throw new Error('No account found');
+    }
+
+    // Get current connections to verify provider exists and is connected
+    const connections = await this.accountsService.getIntegrationConnections(account.id);
+    const connection = connections.find(conn => conn.provider === provider);
 
     if (!connection) {
       throw new Error(`Unknown provider: ${provider}`);
@@ -129,14 +180,17 @@ export class IntegrationsService {
     // Simulate disconnection process
     await this.simulateAsync(500);
 
-    this.connections.set(provider, {
-      ...connection,
+    // Update database connection
+    await this.accountsService.updateIntegrationConnection(account.id, provider, {
       isConnected: false,
       status: 'disconnected',
       connectedEmail: undefined,
       connectedAt: undefined,
       lastSyncAt: undefined,
       errorMessage: undefined,
+      encryptedAccessToken: undefined,
+      encryptedRefreshToken: undefined,
+      tokenExpiresAt: undefined,
     });
 
     return {
@@ -147,9 +201,19 @@ export class IntegrationsService {
 
   /**
    * Refresh connection for a provider
+   * TODO: This should be scoped to authenticated user, for now using seeded account
    */
   async refreshConnection(provider: string): Promise<RefreshResponse> {
-    const connection = this.connections.get(provider);
+    // Use the seeded account for now
+    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+
+    if (!account) {
+      throw new Error('No account found');
+    }
+
+    // Get current connections to verify provider exists and is connected
+    const connections = await this.accountsService.getIntegrationConnections(account.id);
+    const connection = connections.find(conn => conn.provider === provider);
 
     if (!connection) {
       throw new Error(`Unknown provider: ${provider}`);
@@ -163,9 +227,8 @@ export class IntegrationsService {
     await this.simulateAsync(800);
 
     // Update last sync time
-    this.connections.set(provider, {
-      ...connection,
-      lastSyncAt: new Date().toISOString(),
+    await this.accountsService.updateIntegrationConnection(account.id, provider, {
+      lastSyncAt: new Date(),
     });
 
     return {
@@ -176,16 +239,43 @@ export class IntegrationsService {
 
   /**
    * Get connection status for a specific provider
+   * TODO: This should be scoped to authenticated user, for now using seeded account
    */
-  getConnection(provider: string): IntegrationConnection | undefined {
-    return this.connections.get(provider);
+  async getConnection(provider: string): Promise<SharedIntegrationConnection | undefined> {
+    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+
+    if (!account) {
+      return undefined;
+    }
+
+    try {
+      const connections = await this.accountsService.getIntegrationConnections(account.id);
+      const connection = connections.find(conn => conn.provider === provider);
+
+      if (!connection) {
+        return undefined;
+      }
+
+      return {
+        provider: connection.provider,
+        isConnected: connection.isConnected,
+        status: connection.status,
+        connectedEmail: connection.connectedEmail,
+        connectedAt: connection.connectedAt?.toISOString(),
+        lastSyncAt: connection.lastSyncAt?.toISOString(),
+        errorMessage: connection.errorMessage,
+      };
+    } catch (error) {
+      return undefined;
+    }
   }
 
   /**
    * Check if a provider is connected
+   * TODO: This should be scoped to a specific user account
    */
-  isProviderConnected(provider: string): boolean {
-    const connection = this.connections.get(provider);
+  async isProviderConnected(provider: string): Promise<boolean> {
+    const connection = await this.getConnection(provider);
     return connection?.isConnected ?? false;
   }
 

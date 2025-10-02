@@ -16,6 +16,7 @@ import { Games } from './pages/Games.page';
 import { Settings } from './pages/Settings.page';
 import { ProfilePage } from './pages/Profile.page';
 import { AccountPage } from './pages/Account.page';
+import { IntegrationsPage } from './pages/Integrations.page';
 import { theme } from './theme/theme';
 
 function AppContent() {
@@ -78,6 +79,7 @@ function AppContent() {
                         <Route path="/games" element={<Games />} />
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/account" element={<AccountPage />} />
+                        <Route path="/integrations" element={<IntegrationsPage />} />
                         <Route path="/settings" element={<Settings />} />
                     </Routes>
                 </Box>
