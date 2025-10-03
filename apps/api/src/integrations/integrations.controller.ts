@@ -26,19 +26,21 @@ export class IntegrationsController {
    * Returns current connection status for all providers.
    */
   @Get('connections')
-  getConnections() {
+  async getConnections() {
     return this.integrationsService.getConnections();
   }
 
   /**
    * POST /integrations/connect/:provider
    * Initiates connection flow for a specific provider.
-   * For OAuth providers, returns authorization URL.
+   * For OAuth providers, accepts client credentials and returns authorization URL.
    */
   @Post('connect/:provider')
-  async connectProvider(@Param('provider') provider: string) {
-    // connectionData parameter will be added when implementing OAuth flow
-    return this.integrationsService.connectProvider(provider);
+  async connectProvider(
+    @Param('provider') provider: string,
+    @Body() connectionData?: any,
+  ) {
+    return this.integrationsService.connectProvider(provider, connectionData);
   }
 
   /**

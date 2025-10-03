@@ -1,4 +1,11 @@
 import 'reflect-metadata';
+import { randomUUID } from 'crypto';
+
+// Polyfill for Node.js < 19
+if (!globalThis.crypto) {
+  globalThis.crypto = { randomUUID } as any;
+}
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, RequestMethod } from '@nestjs/common';

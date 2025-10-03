@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { UCAdapter } from './uc/uc.adapter';
 import {
   GAMES_PROVIDER,
@@ -16,13 +17,21 @@ import { UCGamesService } from './uc/uc.games/uc.games.service';
 import { UCFieldsService } from './uc/uc.fields/uc.fields.service';
 import { IntegrationsController } from './integrations.controller';
 import { IntegrationsService } from './integrations.service';
+import { AccountsService } from './accounts.service';
+import { UCConfigService } from './uc-config.service';
+import { Account, Profile, IntegrationConnection } from '../database/entities';
 
 @Module({
-  imports: [UCModule],
+  imports: [
+    UCModule,
+    TypeOrmModule.forFeature([Account, Profile, IntegrationConnection]),
+  ],
   controllers: [IntegrationsController],
   providers: [
-    // Integration management service
+    // Integration management services
     IntegrationsService,
+    AccountsService,
+    UCConfigService,
     // concrete UC services used by the adapter
     UCEventsService,
     UCRegistrationsService,
@@ -41,6 +50,7 @@ import { IntegrationsService } from './integrations.service';
   ],
   exports: [
     IntegrationsService,
+    AccountsService,
     LEAGUE_PROVIDER,
     TEAMS_PROVIDER,
     REGISTRATION_PROVIDER,

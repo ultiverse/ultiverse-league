@@ -43,7 +43,7 @@ import {
     TEAMS_PROVIDER,
     GAMES_PROVIDER,
 
-    // (optionally) export these if other modules/tests want them directly
+    // Export for other modules to use
     UCClient,
     UCEventsService,
     UCRegistrationsService,

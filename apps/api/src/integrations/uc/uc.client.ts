@@ -3,6 +3,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UCOAuthTokenResponse } from '../ports/';
 
+export interface UCCredentials {
+  clientId: string;
+  clientSecret: string;
+  domain: string;
+}
+
 type TokenState = { accessToken: string; expiresAt: number };
 type UCParams = Record<string, string | number | boolean>;
 
@@ -19,26 +25,41 @@ function normalizeHost(input: string): string {
 @Injectable()
 export class UCClient {
   private readonly logger = new Logger(UCClient.name);
-  private client!: AxiosInstance;
+  private client: AxiosInstance | null = null;
   private tokenState: TokenState | null = null;
+  private currentCredentials: UCCredentials | null = null;
 
   constructor(private readonly cfg: ConfigService) {
-    const raw = this.cfg.get<string>('UC_API_DOMAIN', '');
-    if (!raw) throw new Error('UC_API_DOMAIN is not set');
+    // Client will be initialized when credentials are set
+  }
+
+  /**
+   * Configure the client with stored OAuth credentials
+   */
+  setCredentials(credentials: UCCredentials) {
+    this.currentCredentials = credentials;
+    this.tokenState = null; // Reset token when credentials change
 
     this.client = axios.create({
-      baseURL: `https://${normalizeHost(raw)}`,
+      baseURL: `https://${normalizeHost(credentials.domain)}`,
       timeout: 15000,
     });
   }
 
   private get creds() {
-    const id = this.cfg.get<string>('UC_CLIENT_ID', '');
-    const secret = this.cfg.get<string>('UC_CLIENT_SECRET', '');
-    if (!id || !secret) {
-      throw new Error('UC_CLIENT_ID/UC_CLIENT_SECRET are not set');
+    if (!this.currentCredentials) {
+      throw new Error('UC credentials not configured. Call setCredentials first.');
     }
-    return { id, secret };
+    return {
+      id: this.currentCredentials.clientId,
+      secret: this.currentCredentials.clientSecret,
+    };
+  }
+
+  private ensureConfigured() {
+    if (!this.client || !this.currentCredentials) {
+      throw new Error('UC client not configured. Call setCredentials first.');
+    }
   }
 
   private now() {
@@ -47,6 +68,8 @@ export class UCClient {
 
   /** Fetch or reuse OAuth token; cached until ~30s before expiry. */
   private async getAccessToken(): Promise<string> {
+    this.ensureConfigured();
+
     if (this.tokenState && this.tokenState.expiresAt - this.now() > 30) {
       return this.tokenState.accessToken;
     }
@@ -57,7 +80,7 @@ export class UCClient {
       client_secret: secret,
     });
 
-    const resp = await this.client.post<UCOAuthTokenResponse>(
+    const resp = await this.client!.post<UCOAuthTokenResponse>(
       '/api/oauth/server',
       params,
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
@@ -84,14 +107,14 @@ export class UCClient {
     const auth = { Authorization: `Bearer ${token}` };
 
     try {
-      return await fn(this.client, auth);
+      return await fn(this.client!, auth);
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const e: AxiosError = err;
         if (e.response?.status === 401) {
           // Refresh once
           const t2 = await this.getAccessToken();
-          return fn(this.client, { Authorization: `Bearer ${t2}` });
+          return fn(this.client!, { Authorization: `Bearer ${t2}` });
         }
         this.logger.error(`UC request failed: ${e.message}`, e.stack);
         throw e;
