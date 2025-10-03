@@ -9,17 +9,9 @@ import { UCEnrichmentService } from '../integrations/uc/uc-enrichment.service';
 import { Profile } from '../database/entities';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Profile]),
-    IntegrationsModule,
-    UCModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Profile]), IntegrationsModule, UCModule],
   controllers: [UserController],
-  providers: [
-    UserService,
-    ProfileService,
-    UCEnrichmentService,
-  ],
+  providers: [UserService, ProfileService, UCEnrichmentService],
   exports: [UserService, ProfileService],
 })
 export class UserModule {}

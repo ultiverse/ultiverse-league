@@ -21,7 +21,11 @@ export class Account {
   @Column({ nullable: true })
   passwordHash?: string;
 
-  @Column({ type: 'enum', enum: ['active', 'suspended', 'deleted'], default: 'active' })
+  @Column({
+    type: 'enum',
+    enum: ['active', 'suspended', 'deleted'],
+    default: 'active',
+  })
   status: 'active' | 'suspended' | 'deleted';
 
   @Column({ nullable: true })
@@ -43,6 +47,8 @@ export class Account {
   @OneToOne(() => Profile, (profile) => profile.account, { cascade: true })
   profile?: Profile;
 
-  @OneToMany(() => IntegrationConnection, (connection) => connection.account, { cascade: true })
+  @OneToMany(() => IntegrationConnection, (connection) => connection.account, {
+    cascade: true,
+  })
   integrationConnections: IntegrationConnection[];
 }

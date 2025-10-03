@@ -59,7 +59,9 @@ export class ProfileService {
     });
 
     // Get connected integrations
-    const connections = await this.accountsService.getIntegrationConnections(account.id);
+    const connections = await this.accountsService.getIntegrationConnections(
+      account.id,
+    );
 
     // Build base profile from Ultiverse data
     const userProfile: UltiverseUserProfile = {
@@ -78,7 +80,7 @@ export class ProfileService {
     };
 
     // Enrich with integration data
-    for (const connection of connections.filter(c => c.isConnected)) {
+    for (const connection of connections.filter((c) => c.isConnected)) {
       if (connection.provider === 'uc') {
         const ucData = await this.ucEnrichmentService.getUserEnrichmentData();
         if (ucData) {
@@ -93,7 +95,10 @@ export class ProfileService {
   /**
    * Enrich profile when a new integration is connected
    */
-  async enrichProfileFromIntegration(accountId: string, provider: string): Promise<void> {
+  async enrichProfileFromIntegration(
+    accountId: string,
+    provider: string,
+  ): Promise<void> {
     const profile = await this.profileRepository.findOne({
       where: { accountId },
     });
@@ -114,7 +119,8 @@ export class ProfileService {
           updates.avatarUrl = ucData.avatarUrls.large;
         }
         if (!profile.displayName && (ucData.firstName || ucData.lastName)) {
-          updates.displayName = `${ucData.firstName || ''} ${ucData.lastName || ''}`.trim();
+          updates.displayName =
+            `${ucData.firstName || ''} ${ucData.lastName || ''}`.trim();
         }
 
         if (Object.keys(updates).length > 0) {
@@ -127,11 +133,13 @@ export class ProfileService {
     }
   }
 
-
   /**
    * Update user profile (Ultiverse canonical data)
    */
-  async updateProfile(email: string, updates: Partial<Profile>): Promise<Profile | null> {
+  async updateProfile(
+    email: string,
+    updates: Partial<Profile>,
+  ): Promise<Profile | null> {
     const account = await this.accountsService.findByEmail(email);
     if (!account) {
       return null;

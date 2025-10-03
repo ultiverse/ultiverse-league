@@ -4,13 +4,12 @@ import { ProfileService, UltiverseUserProfile } from './profile.service';
 
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly profileService: ProfileService,
-  ) {}
+  constructor(private readonly profileService: ProfileService) {}
 
   async getCurrentUser(): Promise<UserProfile | null> {
     // Use hardcoded email for now - in real implementation this would come from authentication
-    const ultiverseProfile = await this.profileService.getUserProfile('greg@gregpike.ca');
+    const ultiverseProfile =
+      await this.profileService.getUserProfile('greg@gregpike.ca');
 
     if (!ultiverseProfile) {
       return null;
@@ -20,7 +19,9 @@ export class UserService {
     return this.transformToUserProfile(ultiverseProfile);
   }
 
-  private transformToUserProfile(ultiverseProfile: UltiverseUserProfile): UserProfile {
+  private transformToUserProfile(
+    ultiverseProfile: UltiverseUserProfile,
+  ): UserProfile {
     const ucData = ultiverseProfile.integrationData?.uc;
 
     return {

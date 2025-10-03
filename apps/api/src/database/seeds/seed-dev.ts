@@ -25,7 +25,21 @@ async function main() {
     [accountId, 'Greg Pike'],
   );
 
+  // Create integration connection entry for UC (disconnected by default)
+  await AppDataSource.query(
+    `
+    INSERT INTO integration_connections (
+      id, "accountId", provider, "isConnected", status,
+      "createdAt", "updatedAt"
+    )
+    VALUES (gen_random_uuid(), $1, 'uc', false, 'disconnected', now(), now())
+    ON CONFLICT ("accountId", provider) DO NOTHING;
+    `,
+    [accountId],
+  );
+
   console.log('Seeded user:', 'greg@gregpike.ca', '→ account_id:', accountId);
+  console.log('Seeded integration connection for UC (disconnected)');
   await AppDataSource.destroy();
 }
 

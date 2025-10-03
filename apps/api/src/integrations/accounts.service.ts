@@ -76,7 +76,10 @@ export class AccountsService {
   /**
    * Find account by integration connection
    */
-  async findByIntegration(provider: string, externalUserId: string): Promise<Account | null> {
+  async findByIntegration(
+    provider: string,
+    externalUserId: string,
+  ): Promise<Account | null> {
     const connection = await this.integrationsRepository.findOne({
       where: { provider, externalUserId },
       relations: ['account', 'account.profile'],
@@ -98,7 +101,9 @@ export class AccountsService {
   /**
    * Get all integration connections for an account
    */
-  async getIntegrationConnections(accountId: string): Promise<IntegrationConnection[]> {
+  async getIntegrationConnections(
+    accountId: string,
+  ): Promise<IntegrationConnection[]> {
     return this.integrationsRepository.find({
       where: { accountId },
       order: { createdAt: 'DESC' },

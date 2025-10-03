@@ -28,7 +28,7 @@ export class IntegrationConnection {
   @Column({
     type: 'enum',
     enum: ['connected', 'disconnected', 'error', 'pending'],
-    default: 'disconnected'
+    default: 'disconnected',
   })
   status: 'connected' | 'disconnected' | 'error' | 'pending';
 
@@ -67,7 +67,9 @@ export class IntegrationConnection {
   updatedAt: Date;
 
   // Relationships
-  @ManyToOne(() => Account, (account) => account.integrationConnections, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Account, (account) => account.integrationConnections, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'accountId' })
   account: Account;
 }

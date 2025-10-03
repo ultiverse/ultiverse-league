@@ -36,7 +36,10 @@ export class IntegrationsController {
    * For OAuth providers, accepts client credentials and returns authorization URL.
    */
   @Post('connect/:provider')
-  async connectProvider(@Param('provider') provider: string, @Body() connectionData?: any) {
+  async connectProvider(
+    @Param('provider') provider: string,
+    @Body() connectionData?: any,
+  ) {
     return this.integrationsService.connectProvider(provider, connectionData);
   }
 

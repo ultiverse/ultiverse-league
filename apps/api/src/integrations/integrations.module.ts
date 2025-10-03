@@ -18,6 +18,7 @@ import { UCFieldsService } from './uc/uc.fields/uc.fields.service';
 import { IntegrationsController } from './integrations.controller';
 import { IntegrationsService } from './integrations.service';
 import { AccountsService } from './accounts.service';
+import { UCConfigService } from './uc-config.service';
 import { Account, Profile, IntegrationConnection } from '../database/entities';
 
 @Module({
@@ -30,6 +31,7 @@ import { Account, Profile, IntegrationConnection } from '../database/entities';
     // Integration management services
     IntegrationsService,
     AccountsService,
+    UCConfigService,
     // concrete UC services used by the adapter
     UCEventsService,
     UCRegistrationsService,
