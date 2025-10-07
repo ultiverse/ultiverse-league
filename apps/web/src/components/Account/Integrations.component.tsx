@@ -178,7 +178,7 @@ export function Integrations() {
                                                 Features:
                                             </Typography>
                                             <Stack direction="row" spacing={1} flexWrap="wrap">
-                                                {integration.features.map((feature) => (
+                                                {integration.features.map((feature: string) => (
                                                     <Chip
                                                         key={feature}
                                                         label={feature}
