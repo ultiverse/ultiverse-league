@@ -6,19 +6,15 @@ import {
     Box,
     TextField,
     Button,
-    Card,
-    CardContent,
-    Chip,
 } from '@mui/material';
 import {
     Email as EmailIcon,
     Security as SecurityIcon,
-    Login as LoginIcon,
-    CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { Page } from '../components/Layout/Page.component';
 import { useUser } from '../hooks/useUser';
+import { IntegrationsSummary } from '../components/Account/IntegrationsSummary.component';
 
 export function AccountPage() {
     const { user, isLoading } = useUser();
@@ -56,6 +52,7 @@ export function AccountPage() {
         console.log('Password reset requested');
     };
 
+
     return (
         <Page title="Account" subtitle="Manage your account security and login methods">
             <Stack spacing={3}>
@@ -79,7 +76,7 @@ export function AccountPage() {
                             {user.email}
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                            Verified via Ultimate Central integration
+                            Primary account email address
                         </Typography>
                     </Box>
                 </Paper>
@@ -105,7 +102,7 @@ export function AccountPage() {
                             placeholder="Enter new password"
                             fullWidth
                             disabled
-                            helperText="Password management is handled through Ultimate Central"
+                            helperText="Password management coming soon"
                         />
                         <TextField
                             label="Confirm Password"
@@ -115,7 +112,7 @@ export function AccountPage() {
                             placeholder="Confirm new password"
                             fullWidth
                             disabled
-                            helperText="Use Ultimate Central to change your password"
+                            helperText="Password management coming soon"
                         />
                         <Button
                             variant="outlined"
@@ -128,69 +125,8 @@ export function AccountPage() {
                     </Stack>
                 </Paper>
 
-                {/* Login Integrations */}
-                <Paper sx={{ p: 3 }}>
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                        <LoginIcon color="primary" />
-                        <Typography variant="h6">
-                            Login Methods
-                        </Typography>
-                    </Stack>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                        Connected services you can use to log in to your account
-                    </Typography>
-
-                    <Stack spacing={2}>
-                        {/* Ultimate Central Integration */}
-                        <Card variant="outlined">
-                            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                <Stack direction="row" spacing={2} alignItems="center">
-                                    {/* Ultimate Central Logo/Icon */}
-                                    <Box
-                                        sx={{
-                                            width: 40,
-                                            height: 40,
-                                            borderRadius: 1,
-                                            bgcolor: '#1976d2',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            color: 'white',
-                                            fontWeight: 'bold',
-                                            fontSize: '1rem'
-                                        }}
-                                    >
-                                        UC
-                                    </Box>
-                                    <Box sx={{ flexGrow: 1 }}>
-                                        <Typography variant="subtitle1" fontWeight="medium">
-                                            Ultimate Central
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Primary authentication method for ultimate frisbee leagues
-                                        </Typography>
-                                    </Box>
-                                    <Stack direction="row" spacing={1} alignItems="center">
-                                        <CheckCircleIcon color="success" fontSize="small" />
-                                        <Chip
-                                            label="Active"
-                                            color="success"
-                                            size="small"
-                                            variant="outlined"
-                                        />
-                                    </Stack>
-                                </Stack>
-                            </CardContent>
-                        </Card>
-
-                        {/* Future Integration Placeholder */}
-                        <Box sx={{ p: 2, border: '2px dashed', borderColor: 'divider', borderRadius: 1 }}>
-                            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                                Additional login methods will be available in the future
-                            </Typography>
-                        </Box>
-                    </Stack>
-                </Paper>
+                {/* Data Integrations */}
+                <IntegrationsSummary />
 
                 {/* Account Actions */}
                 <Stack direction="row" spacing={2}>
