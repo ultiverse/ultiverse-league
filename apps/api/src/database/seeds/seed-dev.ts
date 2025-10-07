@@ -5,6 +5,7 @@ async function main() {
   await AppDataSource.initialize();
 
   // Insert account with column names matching the migration
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const [{ id: accountId }] = await AppDataSource.query(
     `
     INSERT INTO accounts (id, email, "passwordHash", status, "createdAt", "updatedAt")

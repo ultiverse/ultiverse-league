@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Account, Profile } from '../database/entities';
+import { Profile } from '../database/entities';
 import { AccountsService } from '../integrations/accounts.service';
 import { IntegrationsService } from '../integrations/integrations.service';
 import { UCEnrichmentService } from '../integrations/uc/uc-enrichment.service';

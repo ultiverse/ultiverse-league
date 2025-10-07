@@ -34,7 +34,10 @@ export class UCConfigService implements OnModuleInit {
         this.logger.warn('No UC credentials found in database');
       }
     } catch (error) {
-      this.logger.error('Failed to configure UC client with stored credentials', error);
+      this.logger.error(
+        'Failed to configure UC client with stored credentials',
+        error,
+      );
     }
   }
 

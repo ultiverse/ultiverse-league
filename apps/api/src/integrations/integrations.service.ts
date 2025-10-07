@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import {
   IntegrationProvider,
   IntegrationConnection as SharedIntegrationConnection,
@@ -9,13 +9,28 @@ import {
 import { AccountsService } from './accounts.service';
 import axios from 'axios';
 
+interface UCConfigService {
+  refreshUCClient(): Promise<void>;
+}
+
+interface UCProviderData {
+  clientId: string;
+  clientSecret: string;
+  domain: string;
+  credentialsStored?: boolean;
+  storedAt?: string;
+}
+
+// TODO: Remove this constant once proper authentication is implemented
+const TEMP_SEEDED_ACCOUNT_EMAIL = 'seeded-account@example.com';
+
 @Injectable()
 export class IntegrationsService {
-  private ucConfigService: any; // Injected later to avoid circular dependency
+  private ucConfigService?: UCConfigService; // Injected later to avoid circular dependency
 
   constructor(private readonly accountsService: AccountsService) {}
 
-  setUCConfigService(ucConfigService: any) {
+  setUCConfigService(ucConfigService: UCConfigService): void {
     this.ucConfigService = ucConfigService;
   }
 
@@ -54,7 +69,9 @@ export class IntegrationsService {
    */
   async getConnections(): Promise<SharedIntegrationConnection[]> {
     // Use the seeded account for now - in real implementation this would be from authentication
-    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+    const account = await this.accountsService.findByEmail(
+      TEMP_SEEDED_ACCOUNT_EMAIL,
+    );
 
     if (!account) {
       // Return empty array if no account found
@@ -69,10 +86,10 @@ export class IntegrationsService {
       provider: conn.provider,
       isConnected: conn.isConnected,
       status: conn.status,
-      connectedEmail: conn.connectedEmail,
+      connectedEmail: conn.connectedEmail ?? undefined,
       connectedAt: conn.connectedAt?.toISOString(),
       lastSyncAt: conn.lastSyncAt?.toISOString(),
-      errorMessage: conn.errorMessage,
+      errorMessage: conn.errorMessage ?? undefined,
     }));
   }
 
@@ -85,7 +102,9 @@ export class IntegrationsService {
     connectionData?: { clientId: string; clientSecret: string; domain: string },
   ): Promise<ConnectResponse> {
     // Use the seeded account for now - in real implementation this would be from authentication
-    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+    const account = await this.accountsService.findByEmail(
+      TEMP_SEEDED_ACCOUNT_EMAIL,
+    );
 
     if (!account) {
       throw new BadRequestException(
@@ -169,7 +188,7 @@ export class IntegrationsService {
               domain: connectionData.domain,
               credentialsStored: true,
               storedAt: new Date().toISOString(),
-            },
+            } satisfies UCProviderData,
           },
         );
 
@@ -203,7 +222,9 @@ export class IntegrationsService {
    */
   async disconnectProvider(provider: string): Promise<DisconnectResponse> {
     // Use the seeded account for now
-    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+    const account = await this.accountsService.findByEmail(
+      TEMP_SEEDED_ACCOUNT_EMAIL,
+    );
 
     if (!account) {
       throw new Error('No account found');
@@ -255,7 +276,9 @@ export class IntegrationsService {
    */
   async refreshConnection(provider: string): Promise<RefreshResponse> {
     // Use the seeded account for now
-    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+    const account = await this.accountsService.findByEmail(
+      TEMP_SEEDED_ACCOUNT_EMAIL,
+    );
 
     if (!account) {
       throw new Error('No account found');
@@ -300,7 +323,9 @@ export class IntegrationsService {
   async getConnection(
     provider: string,
   ): Promise<SharedIntegrationConnection | undefined> {
-    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+    const account = await this.accountsService.findByEmail(
+      TEMP_SEEDED_ACCOUNT_EMAIL,
+    );
 
     if (!account) {
       return undefined;
@@ -320,12 +345,12 @@ export class IntegrationsService {
         provider: connection.provider,
         isConnected: connection.isConnected,
         status: connection.status,
-        connectedEmail: connection.connectedEmail,
+        connectedEmail: connection.connectedEmail ?? undefined,
         connectedAt: connection.connectedAt?.toISOString(),
         lastSyncAt: connection.lastSyncAt?.toISOString(),
-        errorMessage: connection.errorMessage,
+        errorMessage: connection.errorMessage ?? undefined,
       };
-    } catch (error) {
+    } catch {
       return undefined;
     }
   }
@@ -347,22 +372,32 @@ export class IntegrationsService {
     clientSecret: string;
     domain: string;
   } | null> {
-    const account = await this.accountsService.findByEmail('greg@gregpike.ca');
+    const account = await this.accountsService.findByEmail(
+      TEMP_SEEDED_ACCOUNT_EMAIL,
+    );
 
     if (!account) {
       return null;
     }
 
-    const connections = await this.accountsService.getIntegrationConnections(account.id);
-    const ucConnection = connections.find(conn => conn.provider === 'uc' && conn.isConnected);
+    const connections = await this.accountsService.getIntegrationConnections(
+      account.id,
+    );
+    const ucConnection = connections.find(
+      (conn) => conn.provider === 'uc' && conn.isConnected,
+    );
 
     if (!ucConnection || !ucConnection.providerData) {
       return null;
     }
 
-    const providerData = ucConnection.providerData as any;
+    const providerData = ucConnection.providerData as unknown as UCProviderData;
 
-    if (!providerData.clientId || !providerData.clientSecret || !providerData.domain) {
+    if (
+      !providerData.clientId ||
+      !providerData.clientSecret ||
+      !providerData.domain
+    ) {
       return null;
     }
 
@@ -399,26 +434,41 @@ export class IntegrationsService {
         timeout: 10000,
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       if (!response.data.access_token) {
         throw new Error('No access token received from UC');
       }
 
       // Success - credentials are valid
-    } catch (error: any) {
-      if (error.response) {
+    } catch (error) {
+      if (error && typeof error === 'object' && 'response' in error) {
         // UC returned an error response
-        const status = error.response.status;
-        const message = error.response.data?.error || error.response.statusText;
+        const errorResponse = error as {
+          response?: {
+            status: number;
+            data?: { error?: string };
+            statusText: string;
+          };
+        };
+        const status = errorResponse.response?.status;
+        const message =
+          errorResponse.response?.data?.error ||
+          errorResponse.response?.statusText;
         throw new Error(`UC API error (${status}): ${message}`);
-      } else if (error.code === 'ENOTFOUND' || error.code === 'ECONNREFUSED') {
-        throw new Error(
-          `Cannot connect to UC at ${baseURL}. Please check the API domain.`,
-        );
-      } else {
-        throw new Error(
-          `Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        );
+      } else if (error && typeof error === 'object' && 'code' in error) {
+        const errorWithCode = error as { code: string };
+        if (
+          errorWithCode.code === 'ENOTFOUND' ||
+          errorWithCode.code === 'ECONNREFUSED'
+        ) {
+          throw new Error(
+            `Cannot connect to UC at ${baseURL}. Please check the API domain.`,
+          );
+        }
       }
+      throw new Error(
+        `Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 

@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 
 // Polyfill for Node.js < 19
 if (!globalThis.crypto) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   globalThis.crypto = { randomUUID } as any;
 }
 

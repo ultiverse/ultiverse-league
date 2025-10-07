@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { UserProfile } from '../integrations/ports/user.port';
+import type { UserProfile, PastTeam } from '../integrations/ports/user.port';
 import { ProfileService, UltiverseUserProfile } from './profile.service';
 
 @Injectable()
@@ -29,7 +29,7 @@ export class UserService {
       firstName: ultiverseProfile.firstName || '',
       lastName: ultiverseProfile.lastName || '',
       integration: ucData ? 'uc' : 'native',
-      pastTeams: ucData?.pastTeams || [],
+      pastTeams: (ucData?.pastTeams as PastTeam[] | undefined) || [],
       lastLogin: ucData?.lastSeen || new Date().toISOString(),
       identifies: 'not_defined', // Will be enhanced with proper mapping later
       avatarSmall: ucData?.avatarUrls?.small || ultiverseProfile.avatarUrl,

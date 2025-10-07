@@ -226,7 +226,7 @@ export function IntegrationsManager() {
                                                         {provider.description}
                                                     </Typography>
                                                     <Stack direction="row" spacing={1} flexWrap="wrap">
-                                                        {provider.features.map(feature => (
+                                                        {provider.features.map((feature: string) => (
                                                             <Chip
                                                                 key={feature}
                                                                 label={feature}

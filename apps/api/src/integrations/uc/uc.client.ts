@@ -48,7 +48,9 @@ export class UCClient {
 
   private get creds() {
     if (!this.currentCredentials) {
-      throw new Error('UC credentials not configured. Call setCredentials first.');
+      throw new Error(
+        'UC credentials not configured. Call setCredentials first.',
+      );
     }
     return {
       id: this.currentCredentials.clientId,
