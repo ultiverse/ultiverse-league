@@ -37,6 +37,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared-types
+        run: pnpm --filter @ultiverse/shared-types build
+
       - name: Test API
         run: pnpm -C apps/api test -- --coverage --runInBand
 
@@ -66,6 +69,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build shared-types
+        run: pnpm --filter @ultiverse/shared-types build
 
       - name: Test Web
         run: pnpm -C apps/web test:run

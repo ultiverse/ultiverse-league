@@ -31,6 +31,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared-types
+        run: pnpm --filter @ultiverse/shared-types build
+
       - name: Lint API
         run: pnpm -C apps/api lint
 
@@ -52,6 +55,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Build shared-types
+        run: pnpm --filter @ultiverse/shared-types build
 
       - name: Lint Web
         run: pnpm -C apps/web lint
