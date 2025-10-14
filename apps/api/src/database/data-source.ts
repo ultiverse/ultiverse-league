@@ -1,5 +1,13 @@
 import { DataSource } from 'typeorm';
-import { Account, Profile, IntegrationConnection } from './entities';
+import {
+  Account,
+  Profile,
+  IntegrationConnection,
+  Team,
+  Player,
+  UserTeamMembership,
+  ExternalTeamSource,
+} from './entities';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -8,7 +16,15 @@ export const AppDataSource = new DataSource({
   username: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'ultiverse',
-  entities: [Account, Profile, IntegrationConnection],
+  entities: [
+    Account,
+    Profile,
+    IntegrationConnection,
+    Team,
+    Player,
+    UserTeamMembership,
+    ExternalTeamSource,
+  ],
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   synchronize: false, // Always false for migrations
   logging: process.env.NODE_ENV === 'development',

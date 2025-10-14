@@ -14,7 +14,6 @@ import {
 import {
     Link as LinkIcon,
     LinkOff as LinkOffIcon,
-    Settings as SettingsIcon,
 } from '@mui/icons-material';
 import {
     getIntegrationProviders,
@@ -117,10 +116,8 @@ export function IntegrationsManager() {
         return connections.find(conn => conn.provider === provider.provider);
     };
 
-    // Filter to show only providers that are connected or have been connected in the past
-    const relevantProviders = providers.filter(provider =>
-        provider.isAvailable && (isConnected(provider) || hasBeenConnected(provider))
-    );
+    // Show all available providers
+    const relevantProviders = providers.filter(provider => provider.isAvailable);
 
     const getInstructions = (provider: IntegrationProvider) => {
         switch (provider.provider) {
@@ -256,11 +253,11 @@ export function IntegrationsManager() {
                                                         <Button
                                                             size="small"
                                                             variant="contained"
-                                                            startIcon={isConnecting ? <CircularProgress size={16} /> : <SettingsIcon />}
+                                                            startIcon={isConnecting ? <CircularProgress size={16} /> : <LinkIcon />}
                                                             onClick={() => handleConnect(provider)}
                                                             disabled={isConnecting}
                                                         >
-                                                            Reconnect
+                                                            {hasBeenConnected(provider) ? 'Reconnect' : 'Connect'}
                                                         </Button>
                                                     )}
                                                 </Stack>
@@ -273,7 +270,7 @@ export function IntegrationsManager() {
                     )}
 
                     <Typography variant="caption" color="text.secondary">
-                        More integrations coming soon. Only active or previously connected integrations are shown.
+                        More integrations coming soon.
                     </Typography>
                 </Stack>
             </Paper>

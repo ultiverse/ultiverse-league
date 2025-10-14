@@ -22,7 +22,7 @@ interface UCProviderData {
 }
 
 // TODO: Remove this constant once proper authentication is implemented
-const TEMP_SEEDED_ACCOUNT_EMAIL = 'seeded-account@example.com';
+const TEMP_SEEDED_ACCOUNT_EMAIL = 'greg@gregpike.ca';
 
 @Injectable()
 export class IntegrationsService {

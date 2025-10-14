@@ -1,6 +1,14 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { Account, Profile, IntegrationConnection } from './entities';
+import {
+  Account,
+  Profile,
+  IntegrationConnection,
+  Team,
+  Player,
+  UserTeamMembership,
+  ExternalTeamSource,
+} from './entities';
 
 export const getDatabaseConfig = (
   configService: ConfigService,
@@ -11,7 +19,15 @@ export const getDatabaseConfig = (
   username: configService.get('DATABASE_USERNAME', 'postgres'),
   password: configService.get('DATABASE_PASSWORD', 'postgres'),
   database: configService.get('DATABASE_NAME', 'ultiverse'),
-  entities: [Account, Profile, IntegrationConnection],
+  entities: [
+    Account,
+    Profile,
+    IntegrationConnection,
+    Team,
+    Player,
+    UserTeamMembership,
+    ExternalTeamSource,
+  ],
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   synchronize: configService.get('NODE_ENV') === 'development', // Only for development
   logging: configService.get('NODE_ENV') === 'development',
