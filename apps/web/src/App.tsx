@@ -17,6 +17,7 @@ import { Settings } from './pages/Settings.page';
 import { ProfilePage } from './pages/Profile.page';
 import { AccountPage } from './pages/Account.page';
 import { IntegrationsPage } from './pages/Integrations.page';
+import { NotFoundPage } from './pages/NotFound.page';
 import { theme } from './theme/theme';
 
 function AppContent() {
@@ -81,6 +82,7 @@ function AppContent() {
                         <Route path="/account" element={<AccountPage />} />
                         <Route path="/integrations" element={<IntegrationsPage />} />
                         <Route path="/settings" element={<Settings />} />
+                        <Route path="*" element={<NotFoundPage />} />
                     </Routes>
                 </Box>
             </Box>
