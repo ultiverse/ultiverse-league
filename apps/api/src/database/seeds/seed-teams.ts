@@ -1,11 +1,25 @@
 import 'reflect-metadata';
 import { AppDataSource } from '../data-source';
 
+type IdRow = { id: string };
+
+async function queryOne<T>(
+  sql: string,
+  params: unknown[] = [],
+): Promise<T | null> {
+  const raw: unknown = await AppDataSource.query(sql, params); // <- unknown, not any
+  if (!Array.isArray(raw) || raw.length === 0) return null;
+
+  // We now know it's an array of unknowns; take first and assert to T at the boundary
+  const [row] = raw as unknown[];
+  return (row ?? null) as T | null;
+}
+
 async function main() {
   await AppDataSource.initialize();
 
   // Get greg's account
-  const [account] = await AppDataSource.query(
+  const account = await queryOne<IdRow>(
     `SELECT id FROM accounts WHERE email = $1`,
     ['greg@gregpike.ca'],
   );
@@ -15,14 +29,21 @@ async function main() {
     process.exit(1);
   }
 
-  const accountId = account.id;
+  const accountId: string = account.id;
   console.log('Found account:', accountId);
 
   // Organization ID (hardcoded as 1 for now)
   const organizationId = '00000000-0000-0000-0000-000000000001';
 
   // Create a few sample teams
-  const teams = [
+  const teams: Array<{
+    name: string;
+    location: string;
+    seasonStart: string;
+    seasonEnd: string;
+    colour: string;
+    altColour: string;
+  }> = [
     {
       name: 'Summer League Warriors',
       location: 'Vancouver, BC',
@@ -51,7 +72,7 @@ async function main() {
 
   for (const team of teams) {
     // Insert team (using camelCase columns as TypeORM created them)
-    const [insertedTeam] = await AppDataSource.query(
+    const insertedTeam = await queryOne<IdRow>(
       `
       INSERT INTO teams (
         id, "organizationId", name, location, "seasonStart", "seasonEnd",
@@ -74,7 +95,11 @@ async function main() {
       ],
     );
 
-    const teamId = insertedTeam.id;
+    if (!insertedTeam) {
+      throw new Error(`Failed to insert team: ${team.name}`);
+    }
+
+    const teamId: string = insertedTeam.id;
 
     // Create user-team membership (using camelCase)
     await AppDataSource.query(
@@ -97,7 +122,7 @@ async function main() {
   await AppDataSource.destroy();
 }
 
-main().catch((e) => {
+main().catch((e: unknown) => {
   console.error(e);
   process.exit(1);
 });

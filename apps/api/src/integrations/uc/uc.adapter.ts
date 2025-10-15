@@ -336,6 +336,7 @@ export class UCAdapter
           altColour: '#ffffff',
           dateJoined: team.created_at,
           monthYear: this.formatMonthYear(team.created_at),
+          source: 'uc' as const,
         }),
       );
 

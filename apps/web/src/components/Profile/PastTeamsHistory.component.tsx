@@ -13,6 +13,8 @@ import {
 import { Groups as GroupsIcon } from '@mui/icons-material';
 import { TeamName } from '../TeamName.component';
 import { SeasonChip } from '../SeasonChip.component';
+import { SourceBadge } from '../SourceBadge.component';
+import { DataSource, IntegrationProvider } from '../../types/api';
 
 const TEAMS_PER_PAGE = 6; // Better for 2-column layout (3 rows × 2 columns)
 
@@ -21,6 +23,7 @@ interface PastTeam {
     name: string;
     colour?: string;
     dateJoined?: string;
+    source: DataSource;
 }
 
 interface PastTeamsHistoryProps {
@@ -50,7 +53,7 @@ export function PastTeamsHistory({ pastTeams, isLoading }: PastTeamsHistoryProps
                 </Typography>
             </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Your team participation history from Ultimate Central
+                Your team participation history from all connected sources
             </Typography>
 
             {isLoading && (
@@ -70,15 +73,23 @@ export function PastTeamsHistory({ pastTeams, isLoading }: PastTeamsHistoryProps
                             <Grid size={{ xs: 12, lg: 6 }} key={team.id}>
                                 <Card variant="outlined" sx={{ height: '100%' }}>
                                     <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                        <Stack direction="row" spacing={2} alignItems="center">
-                                            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                                                <TeamName
-                                                    name={team.name}
-                                                    primaryColor={team.colour || '#1976d2'}
-                                                    size="md"
-                                                />
-                                            </Box>
-                                            <SeasonChip dateStr={team.dateJoined} />
+                                        <Stack spacing={1.5}>
+                                            <Stack direction="row" spacing={2} alignItems="center">
+                                                <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                                                    <TeamName
+                                                        name={team.name}
+                                                        primaryColor={team.colour || '#1976d2'}
+                                                        size="md"
+                                                    />
+                                                </Box>
+                                                <SeasonChip dateStr={team.dateJoined} />
+                                            </Stack>
+                                            <SourceBadge
+                                                source={team.source}
+                                                integrationProvider={team.source === 'uc' ? 'uc' : team.source === 'zuluru' ? 'zuluru' : undefined}
+                                                size="small"
+                                                variant="outlined"
+                                            />
                                         </Stack>
                                     </CardContent>
                                 </Card>

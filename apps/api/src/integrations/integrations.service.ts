@@ -7,6 +7,7 @@ import {
   RefreshResponse,
 } from '@ultiverse/shared-types';
 import { AccountsService } from './accounts.service';
+import { UCEnrichmentService } from './uc/uc-enrichment.service';
 import axios from 'axios';
 
 interface UCConfigService {
@@ -23,12 +24,17 @@ interface UCProviderData {
 
 // TODO: Remove this constant once proper authentication is implemented
 const TEMP_SEEDED_ACCOUNT_EMAIL = 'greg@gregpike.ca';
+// TODO: This should come from the user's organization
+const TEMP_ORGANIZATION_ID = '00000000-0000-0000-0000-000000000001';
 
 @Injectable()
 export class IntegrationsService {
   private ucConfigService?: UCConfigService; // Injected later to avoid circular dependency
 
-  constructor(private readonly accountsService: AccountsService) {}
+  constructor(
+    private readonly accountsService: AccountsService,
+    private readonly ucEnrichmentService: UCEnrichmentService,
+  ) {}
 
   setUCConfigService(ucConfigService: UCConfigService): void {
     this.ucConfigService = ucConfigService;
@@ -197,8 +203,20 @@ export class IntegrationsService {
           await this.ucConfigService.refreshUCClient();
         }
 
-        // TODO: Trigger profile enrichment from integration data
-        // This would be implemented when ProfileService is properly wired up
+        // Import teams from Ultimate Central into canonical schema
+        void this.ucEnrichmentService
+          .importTeamsForUser(account.id, TEMP_ORGANIZATION_ID)
+          .then((importResult) => {
+            console.log(
+              `Imported ${importResult.imported} teams from UC (${importResult.errors} errors)`,
+            );
+          })
+          .catch((error: unknown) => {
+            console.error(
+              `Failed to import teams during UC connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            );
+            // Don't fail the connection if team import fails
+          });
 
         return {
           success: true,

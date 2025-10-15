@@ -23,7 +23,7 @@ import { Account, Profile, IntegrationConnection } from '../database/entities';
 
 @Module({
   imports: [
-    UCModule,
+    UCModule, // This exports UCEnrichmentService
     TypeOrmModule.forFeature([Account, Profile, IntegrationConnection]),
   ],
   controllers: [IntegrationsController],
@@ -32,7 +32,7 @@ import { Account, Profile, IntegrationConnection } from '../database/entities';
     IntegrationsService,
     AccountsService,
     UCConfigService,
-    // concrete UC services used by the adapter
+    // concrete UC services used by the adapter (imported from UCModule)
     UCEventsService,
     UCRegistrationsService,
     UCTeamsService,

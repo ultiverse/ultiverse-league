@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { UCClient } from './uc.client';
+import { TeamsService, ExternalTeamData } from '../../teams/teams.service';
 
 export interface UCUserEnrichmentData {
   externalId: string;
@@ -25,7 +26,12 @@ export interface UCUserEnrichmentData {
 
 @Injectable()
 export class UCEnrichmentService {
-  constructor(private readonly client: UCClient) {}
+  private readonly logger = new Logger(UCEnrichmentService.name);
+
+  constructor(
+    private readonly client: UCClient,
+    private readonly teamsService: TeamsService,
+  ) {}
 
   /**
    * Get user enrichment data from Ultimate Central
@@ -114,6 +120,103 @@ export class UCEnrichmentService {
     } catch (error) {
       console.error('Failed to check UC user existence:', error);
       return false;
+    }
+  }
+
+  /**
+   * Import teams from Ultimate Central into the canonical teams schema
+   * This is called when a user connects their UC account
+   */
+  async importTeamsForUser(
+    userId: string,
+    organizationId: string,
+  ): Promise<{ imported: number; errors: number }> {
+    try {
+      // Fetch user data from UC
+      interface UCPersonsResponse {
+        action: string;
+        status: number;
+        count: number;
+        result: Array<{
+          id: number;
+          teams?: Array<{
+            id: number;
+            name: string;
+            colour?: string;
+            alt_colour?: string;
+            created_at: string;
+          }>;
+        }>;
+      }
+
+      const response =
+        await this.client.get<UCPersonsResponse>('/api/persons/me');
+
+      if (!response?.result?.[0]?.teams) {
+        this.logger.log('No teams found for user in UC');
+        return { imported: 0, errors: 0 };
+      }
+
+      const ucTeams = response.result[0].teams;
+      let imported = 0;
+      let errors = 0;
+
+      // Import each team using the deduplication logic
+      for (const ucTeam of ucTeams) {
+        try {
+          const joinDate = new Date(ucTeam.created_at);
+
+          // Estimate season dates based on join date
+          // Assume season starts in the month joined and lasts 3 months
+          const seasonStart = new Date(
+            joinDate.getFullYear(),
+            joinDate.getMonth(),
+            1,
+          );
+          const seasonEnd = new Date(
+            joinDate.getFullYear(),
+            joinDate.getMonth() + 3,
+            0,
+          );
+
+          const externalTeamData: ExternalTeamData = {
+            externalId: ucTeam.id.toString(),
+            source: 'ultimate_central',
+            name: ucTeam.name,
+            seasonStart,
+            seasonEnd,
+            colour: ucTeam.colour || '#000000',
+            altColour: ucTeam.alt_colour || '#ffffff',
+            rawData: {
+              ucTeamId: ucTeam.id,
+              created_at: ucTeam.created_at,
+            },
+          };
+
+          await this.teamsService.importExternalTeam(
+            userId,
+            organizationId,
+            externalTeamData,
+          );
+
+          imported++;
+        } catch (error) {
+          this.logger.error(
+            `Failed to import UC team ${ucTeam.id}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
+          errors++;
+        }
+      }
+
+      this.logger.log(
+        `Imported ${imported} teams from UC for user ${userId} (${errors} errors)`,
+      );
+      return { imported, errors };
+    } catch (error) {
+      this.logger.error(
+        `Failed to import teams from UC: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      return { imported: 0, errors: 1 };
     }
   }
 }
