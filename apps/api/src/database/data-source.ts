@@ -9,6 +9,10 @@ import {
   ExternalTeamSource,
 } from './entities';
 
+// Auto-determine schema from NODE_ENV: staging uses 'staging' schema, others use 'public'
+const nodeEnv = process.env.NODE_ENV || 'development';
+const schema = nodeEnv === 'staging' ? 'staging' : 'public';
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DATABASE_HOST || 'localhost',
@@ -16,6 +20,7 @@ export const AppDataSource = new DataSource({
   username: process.env.DATABASE_USERNAME || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'ultiverse',
+  schema,
   entities: [
     Account,
     Profile,
@@ -27,9 +32,9 @@ export const AppDataSource = new DataSource({
   ],
   migrations: [__dirname + '/migrations/*{.ts,.js}'],
   synchronize: false, // Always false for migrations
-  logging: process.env.NODE_ENV === 'development',
+  logging: nodeEnv === 'development',
   ssl:
-    process.env.NODE_ENV === 'production'
+    nodeEnv === 'production' || nodeEnv === 'staging'
       ? { rejectUnauthorized: false }
       : false,
 });

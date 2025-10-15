@@ -4,7 +4,7 @@ on:
   pull_request:
     paths: ['apps/**', 'packages/**', '.github/workflows/**']
   push:
-    branches: [main]
+    branches: [main, staging]
     paths: ['apps/**', 'packages/**', '.github/workflows/**']
 
 permissions:
