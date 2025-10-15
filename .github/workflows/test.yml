@@ -2,11 +2,6 @@ name: Tests
 
 on:
   workflow_call:
-  pull_request:
-    paths: ['apps/**', 'packages/**', '.github/workflows/**']
-  push:
-    branches: [main]
-    paths: ['apps/**', 'packages/**', '.github/workflows/**']
 
 permissions:
   contents: read
@@ -18,9 +13,6 @@ jobs:
     env:
       NODE_ENV: test
       PORT: 3000
-      UC_API_DOMAIN: http://localhost
-      UC_CLIENT_ID: test
-      UC_CLIENT_SECRET: test
     steps:
       - uses: actions/checkout@v4
 

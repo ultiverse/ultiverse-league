@@ -2,11 +2,6 @@ name: Lint
 
 on:
   workflow_call:
-  pull_request:
-    paths: ['apps/**', 'packages/**', '.github/workflows/**']
-  push:
-    branches: [main]
-    paths: ['apps/**', 'packages/**', '.github/workflows/**']
 
 permissions:
   contents: read
