@@ -57,6 +57,7 @@ services:
       pnpm build:types
       pnpm build:web
       pnpm build:api
+      bash apps/api/scripts/create-schema.sh
       pnpm -C apps/api migration:run
     startCommand: node apps/api/dist/main.js
     envVars:
