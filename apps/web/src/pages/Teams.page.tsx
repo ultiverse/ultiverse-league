@@ -6,17 +6,21 @@ import {
 import { getTeamsByLeague } from '../api/uc';
 import { TeamSummary } from '../types/api';
 import { useLeague } from '../hooks/useLeague';
-import { TeamName } from '../components/TeamName.component';
+import { TeamCard } from '../components/TeamCard.component';
 import { Section } from '../components/Layout/Section.component';
 import { Page } from '../components/Layout/Page.component';
 import { PageAlert } from '../types/components';
+import { transformTeamData } from '../utils/dataTransform';
 
 export function Teams() {
     const { selectedLeague } = useLeague();
 
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
-        queryFn: () => getTeamsByLeague(selectedLeague!.id),
+        queryFn: async () => {
+            const rawTeams = await getTeamsByLeague(selectedLeague!.id);
+            return transformTeamData(rawTeams);
+        },
         enabled: !!selectedLeague,
         staleTime: 30 * 60 * 1000, // 30 minutes - teams rarely change
         gcTime: 60 * 60 * 1000, // 1 hour cache retention
@@ -72,14 +76,13 @@ export function Teams() {
                     <Grid container spacing={3}>
                         {teamsQuery.data.map((team: TeamSummary) => (
                             <Grid key={team.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                                <TeamName
-                                    name={team.name}
-                                    primaryColor={team.colour}
-                                    onClick={() => {
+                                <TeamCard
+                                    team={team}
+                                    onClick={(clickedTeam) => {
                                         // Future: Navigate to team detail page
-                                        console.log('Team clicked:', team.name);
+                                        console.log('Team clicked:', clickedTeam.name);
                                     }}
-                                    variant="inline"
+                                    showSourceInfo={true}
                                 />
                             </Grid>
                         ))}

@@ -14,6 +14,7 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   Menu as MenuIcon,
+  Link as IntegrationIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -40,6 +41,11 @@ export function TopBar({ onMenuClick }: TopBarProps) {
 
   const handleAccountClick = () => {
     navigate('/account');
+    handleClose();
+  };
+
+  const handleIntegrationsClick = () => {
+    navigate('/integrations');
     handleClose();
   };
 
@@ -113,6 +119,10 @@ export function TopBar({ onMenuClick }: TopBarProps) {
             <MenuItem onClick={handleAccountClick}>
               <SettingsIcon sx={{ mr: 1 }} />
               Account Settings
+            </MenuItem>
+            <MenuItem onClick={handleIntegrationsClick}>
+              <IntegrationIcon sx={{ mr: 1 }} />
+              Integrations
             </MenuItem>
             <Divider />
             <MenuItem onClick={handleClose}>

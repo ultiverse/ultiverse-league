@@ -141,6 +141,7 @@ export class UCAdapter
       division: t.division_name ?? null,
       colour: typeof t.color === 'string' ? t.color : '#000000',
       altColour: '#ffffff',
+      source: 'uc' as const,
     }));
   }
 
@@ -336,6 +337,7 @@ export class UCAdapter
           altColour: '#ffffff',
           dateJoined: team.created_at,
           monthYear: this.formatMonthYear(team.created_at),
+          source: 'uc' as const,
         }),
       );
 

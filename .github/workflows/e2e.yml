@@ -2,11 +2,6 @@ name: E2E Tests
 
 on:
   workflow_call:
-  pull_request:
-    paths: ['apps/**', 'packages/**', '.github/workflows/**']
-  push:
-    branches: [main]
-    paths: ['apps/**', 'packages/**', '.github/workflows/**']
 
 permissions:
   contents: read
@@ -15,12 +10,31 @@ jobs:
   api-e2e:
     name: API E2E Tests
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ultiverse_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     env:
       NODE_ENV: test
       PORT: 3000
-      UC_API_DOMAIN: http://localhost
-      UC_CLIENT_ID: test
-      UC_CLIENT_SECRET: test
+      DATABASE_HOST: localhost
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      DATABASE_NAME: ultiverse_test
+
     steps:
       - uses: actions/checkout@v4
 
@@ -37,8 +51,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build shared-types
+        run: pnpm --filter @ultiverse/shared-types build
+
       - name: Build API
         run: pnpm -C apps/api build
+
+      - name: Run database migrations
+        run: pnpm -C apps/api migration:run
 
       - name: Run API E2E tests
         run: pnpm -C apps/api test:e2e

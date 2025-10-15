@@ -15,7 +15,10 @@
 		"build:web": "pnpm --filter ./apps/web build",
 		"dev:api": "pnpm --filter ./apps/api start:dev",
 		"build:api": "pnpm --filter ./apps/api build",
-		"build:types": "pnpm --filter ./packages/shared-types build"
+		"build:types": "pnpm --filter ./packages/shared-types build",
+		"db:setup": "bash scripts/setup-local-db.sh",
+		"db:migrate": "pnpm --filter ./apps/api migration:run",
+		"db:migrate:revert": "pnpm --filter ./apps/api migration:revert"
 	},
 	"workspaces": [
 		"apps/*",
