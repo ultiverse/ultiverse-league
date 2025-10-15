@@ -6,7 +6,7 @@ export interface TeamSummary {
   altColour: string; // Secondary team color, defaults to white
   dateJoined?: string; // ISO date (for past teams)
   monthYear?: string; // e.g., "June 2023" (for past teams)
-  source?: 'ultiverse' | 'uc' | 'zuluru'; // Source of the team data
+  source: 'ultiverse' | 'uc' | 'zuluru'; // Source of the team data
 }
 
 export type PastTeam = TeamSummary;

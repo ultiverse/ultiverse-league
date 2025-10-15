@@ -6,6 +6,7 @@ export interface TeamSummary {
     altColour: string;
     dateJoined?: string;
     monthYear?: string;
+    source: 'ultiverse' | 'uc' | 'zuluru';
 }
 export type PastTeam = TeamSummary;
 export interface UserProfile {
