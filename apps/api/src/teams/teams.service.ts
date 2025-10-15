@@ -112,11 +112,18 @@ export class TeamsService {
     });
 
     if (!existingMembership) {
+      // Map external source to joinedVia value
+      const joinedViaMap: Record<string, 'manual' | 'uc_import'> = {
+        ultimate_central: 'uc_import',
+        zuluru: 'manual', // fallback
+      };
+      const joinedVia = joinedViaMap[externalTeam.source] ?? 'manual';
+
       const membership = this.membershipsRepository.create({
         userId,
         teamId,
         role: 'player',
-        joinedVia: `${externalTeam.source}_import` as any,
+        joinedVia,
       });
 
       await this.membershipsRepository.save(membership);

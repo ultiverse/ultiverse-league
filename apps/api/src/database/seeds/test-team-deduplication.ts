@@ -24,22 +24,22 @@ async function main() {
   // Step 1: Create two test users
   console.log('Step 1: Creating test users...');
 
-  const aliceResult = await AppDataSource.query(
+  const aliceResult = await AppDataSource.query<Array<{ id: string }>>(
     `INSERT INTO accounts (id, email)
      VALUES (gen_random_uuid(), $1)
      RETURNING id`,
     ['alice@test.com'],
   );
-  const aliceId = aliceResult[0].id as string;
+  const aliceId = aliceResult[0].id;
   console.log(`✓ Created Alice (${aliceId})`);
 
-  const bobResult = await AppDataSource.query(
+  const bobResult = await AppDataSource.query<Array<{ id: string }>>(
     `INSERT INTO accounts (id, email)
      VALUES (gen_random_uuid(), $1)
      RETURNING id`,
     ['bob@test.com'],
   );
-  const bobId = bobResult[0].id as string;
+  const bobId = bobResult[0].id;
   console.log(`✓ Created Bob (${bobId})`);
 
   // Step 2: Create TeamsService instance
@@ -102,14 +102,14 @@ async function main() {
   }
 
   // Count canonical teams for this external team
-  const teamCount = await AppDataSource.query(
+  const teamCount = await AppDataSource.query<Array<{ count: string }>>(
     `SELECT COUNT(*) as count
      FROM teams t
      JOIN external_team_sources ets ON ets."teamId" = t.id
      WHERE ets.source = $1 AND ets."externalId" = $2`,
     ['ultimate_central', '12345'],
   );
-  const count = parseInt(teamCount[0].count);
+  const count = parseInt(teamCount[0].count, 10);
 
   if (count === 1) {
     console.log('✓ PASS: Only one canonical team created');
@@ -144,13 +144,13 @@ async function main() {
   }
 
   // Count total memberships for this team
-  const membershipCount = await AppDataSource.query(
+  const membershipCount = await AppDataSource.query<Array<{ count: string }>>(
     `SELECT COUNT(*) as count
      FROM user_team_memberships
      WHERE "teamId" = $1`,
     [aliceTeamId],
   );
-  const totalMemberships = parseInt(membershipCount[0].count);
+  const totalMemberships = parseInt(membershipCount[0].count, 10);
   console.log(`\nTotal memberships for team: ${totalMemberships}`);
 
   // Get external source info
@@ -181,13 +181,13 @@ async function main() {
   }
 
   // Verify membership count didn't increase
-  const membershipCount2 = await AppDataSource.query(
+  const membershipCount2 = await AppDataSource.query<Array<{ count: string }>>(
     `SELECT COUNT(*) as count
      FROM user_team_memberships
      WHERE "teamId" = $1`,
     [aliceTeamId],
   );
-  const totalMemberships2 = parseInt(membershipCount2[0].count);
+  const totalMemberships2 = parseInt(membershipCount2[0].count, 10);
 
   if (totalMemberships === totalMemberships2) {
     console.log('✓ PASS: No duplicate memberships created');
