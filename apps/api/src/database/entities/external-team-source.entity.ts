@@ -19,10 +19,10 @@ export class ExternalTeamSource {
   @Column({ type: 'uuid' })
   teamId: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   source: 'ultimate_central' | 'zuluru';
 
-  @Column()
+  @Column({ type: 'varchar' })
   externalId: string;
 
   @Column({ type: 'jsonb' })
@@ -31,10 +31,10 @@ export class ExternalTeamSource {
   @Column({ type: 'timestamptz', nullable: true })
   lastSyncedAt?: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   syncStatus?: 'active' | 'stale' | 'error';
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   etag?: string;
 
   @Column({ type: 'timestamptz', nullable: true })

@@ -14,28 +14,28 @@ export class Profile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'uuid', unique: true })
   accountId: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   firstName?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   lastName?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   displayName?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   avatarUrl?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   phoneNumber?: string;
 
   @Column({ type: 'date', nullable: true })
   dateOfBirth?: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   location?: string;
 
   @Column({ type: 'text', nullable: true })

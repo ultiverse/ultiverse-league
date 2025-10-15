@@ -14,7 +14,7 @@ import { Groups as GroupsIcon } from '@mui/icons-material';
 import { TeamName } from '../TeamName.component';
 import { SeasonChip } from '../SeasonChip.component';
 import { SourceBadge } from '../SourceBadge.component';
-import { DataSource, IntegrationProvider } from '../../types/api';
+import { DataSource } from '../../types/api';
 
 const TEAMS_PER_PAGE = 6; // Better for 2-column layout (3 rows × 2 columns)
 

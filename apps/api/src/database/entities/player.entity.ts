@@ -17,7 +17,7 @@ export class Player {
   @Column({ type: 'uuid', nullable: true })
   userId?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   fullName?: string;
 
   @Column({ type: 'citext', unique: true, nullable: true })

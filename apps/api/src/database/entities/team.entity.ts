@@ -20,10 +20,10 @@ export class Team {
   @Column({ type: 'uuid' })
   organizationId: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   location?: string;
 
   @Column({ type: 'date' })
@@ -35,16 +35,16 @@ export class Team {
   @Column({ type: 'uuid', nullable: true })
   createdByUserId?: string;
 
-  @Column({ default: 'ultiverse' })
+  @Column({ type: 'varchar', default: 'ultiverse' })
   sourceType: 'ultiverse' | 'ultimate_central';
 
-  @Column({ default: true })
+  @Column({ type: 'boolean', default: true })
   isEditable: boolean;
 
-  @Column({ default: '#000000' })
+  @Column({ type: 'varchar', default: '#000000' })
   colour: string;
 
-  @Column({ default: '#ffffff' })
+  @Column({ type: 'varchar', default: '#ffffff' })
   altColour: string;
 
   @CreateDateColumn()

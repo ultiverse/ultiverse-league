@@ -22,10 +22,10 @@ export class UserTeamMembership {
   @Column({ type: 'uuid' })
   teamId: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   role?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   joinedVia?: 'manual' | 'uc_import';
 
   @CreateDateColumn()

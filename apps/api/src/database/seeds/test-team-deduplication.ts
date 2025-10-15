@@ -28,7 +28,7 @@ async function main() {
     `INSERT INTO accounts (id, email)
      VALUES (gen_random_uuid(), $1)
      RETURNING id`,
-    ['alice@test.com']
+    ['alice@test.com'],
   );
   const aliceId = aliceResult[0].id as string;
   console.log(`✓ Created Alice (${aliceId})`);
@@ -37,7 +37,7 @@ async function main() {
     `INSERT INTO accounts (id, email)
      VALUES (gen_random_uuid(), $1)
      RETURNING id`,
-    ['bob@test.com']
+    ['bob@test.com'],
   );
   const bobId = bobResult[0].id as string;
   console.log(`✓ Created Bob (${bobId})`);
@@ -45,12 +45,13 @@ async function main() {
   // Step 2: Create TeamsService instance
   const teamsRepository = AppDataSource.getRepository(Team);
   const membershipsRepository = AppDataSource.getRepository(UserTeamMembership);
-  const externalSourcesRepository = AppDataSource.getRepository(ExternalTeamSource);
+  const externalSourcesRepository =
+    AppDataSource.getRepository(ExternalTeamSource);
 
   const teamsService = new TeamsService(
     teamsRepository,
     membershipsRepository,
-    externalSourcesRepository
+    externalSourcesRepository,
   );
 
   // Step 3: Define a shared UC team
@@ -74,7 +75,7 @@ async function main() {
   const aliceTeamId = await teamsService.importExternalTeam(
     aliceId,
     organizationId,
-    sharedUCTeam
+    sharedUCTeam,
   );
   console.log(`✓ Alice's team imported (canonical team_id: ${aliceTeamId})`);
 
@@ -83,7 +84,7 @@ async function main() {
   const bobTeamId = await teamsService.importExternalTeam(
     bobId,
     organizationId,
-    sharedUCTeam
+    sharedUCTeam,
   );
   console.log(`✓ Bob's team imported (canonical team_id: ${bobTeamId})`);
 
@@ -106,7 +107,7 @@ async function main() {
      FROM teams t
      JOIN external_team_sources ets ON ets."teamId" = t.id
      WHERE ets.source = $1 AND ets."externalId" = $2`,
-    ['ultimate_central', '12345']
+    ['ultimate_central', '12345'],
   );
   const count = parseInt(teamCount[0].count);
 
@@ -126,14 +127,18 @@ async function main() {
 
   if (aliceMembership) {
     console.log('✓ PASS: Alice has membership to the team');
-    console.log(`  Role: ${aliceMembership.role}, Joined via: ${aliceMembership.joinedVia}`);
+    console.log(
+      `  Role: ${aliceMembership.role}, Joined via: ${aliceMembership.joinedVia}`,
+    );
   } else {
     console.log('✗ FAIL: Alice missing membership');
   }
 
   if (bobMembership) {
     console.log('✓ PASS: Bob has membership to the team');
-    console.log(`  Role: ${bobMembership.role}, Joined via: ${bobMembership.joinedVia}`);
+    console.log(
+      `  Role: ${bobMembership.role}, Joined via: ${bobMembership.joinedVia}`,
+    );
   } else {
     console.log('✗ FAIL: Bob missing membership');
   }
@@ -143,7 +148,7 @@ async function main() {
     `SELECT COUNT(*) as count
      FROM user_team_memberships
      WHERE "teamId" = $1`,
-    [aliceTeamId]
+    [aliceTeamId],
   );
   const totalMemberships = parseInt(membershipCount[0].count);
   console.log(`\nTotal memberships for team: ${totalMemberships}`);
@@ -166,7 +171,7 @@ async function main() {
   const aliceTeamId2 = await teamsService.importExternalTeam(
     aliceId,
     organizationId,
-    sharedUCTeam
+    sharedUCTeam,
   );
 
   if (aliceTeamId === aliceTeamId2) {
@@ -180,14 +185,16 @@ async function main() {
     `SELECT COUNT(*) as count
      FROM user_team_memberships
      WHERE "teamId" = $1`,
-    [aliceTeamId]
+    [aliceTeamId],
   );
   const totalMemberships2 = parseInt(membershipCount2[0].count);
 
   if (totalMemberships === totalMemberships2) {
     console.log('✓ PASS: No duplicate memberships created');
   } else {
-    console.log(`✗ FAIL: Memberships increased from ${totalMemberships} to ${totalMemberships2}`);
+    console.log(
+      `✗ FAIL: Memberships increased from ${totalMemberships} to ${totalMemberships2}`,
+    );
   }
 
   // Step 8: Clean up test data
@@ -195,26 +202,23 @@ async function main() {
 
   await AppDataSource.query(
     `DELETE FROM user_team_memberships WHERE "userId" IN ($1, $2)`,
-    [aliceId, bobId]
+    [aliceId, bobId],
   );
   console.log('✓ Deleted memberships');
 
   await AppDataSource.query(
     `DELETE FROM external_team_sources WHERE "teamId" = $1`,
-    [aliceTeamId]
+    [aliceTeamId],
   );
   console.log('✓ Deleted external source');
 
-  await AppDataSource.query(
-    `DELETE FROM teams WHERE id = $1`,
-    [aliceTeamId]
-  );
+  await AppDataSource.query(`DELETE FROM teams WHERE id = $1`, [aliceTeamId]);
   console.log('✓ Deleted team');
 
-  await AppDataSource.query(
-    `DELETE FROM accounts WHERE id IN ($1, $2)`,
-    [aliceId, bobId]
-  );
+  await AppDataSource.query(`DELETE FROM accounts WHERE id IN ($1, $2)`, [
+    aliceId,
+    bobId,
+  ]);
   console.log('✓ Deleted test users');
 
   console.log('\n=== Test Complete ===\n');

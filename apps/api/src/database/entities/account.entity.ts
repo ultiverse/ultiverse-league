@@ -15,10 +15,10 @@ export class Account {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column({ type: 'varchar', unique: true })
   email: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   passwordHash?: string;
 
   @Column({
@@ -28,10 +28,10 @@ export class Account {
   })
   status: 'active' | 'suspended' | 'deleted';
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   lastLoginAt?: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   lastLoginProvider?: string; // Track which integration they last used to log in
 
   @CreateDateColumn()

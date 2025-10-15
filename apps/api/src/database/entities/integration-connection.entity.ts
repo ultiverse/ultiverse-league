@@ -16,13 +16,13 @@ export class IntegrationConnection {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'uuid' })
   accountId: string;
 
-  @Column()
+  @Column({ type: 'varchar' })
   provider: string; // 'uc', 'zuluru', etc.
 
-  @Column({ default: false })
+  @Column({ type: 'boolean', default: false })
   isConnected: boolean;
 
   @Column({
@@ -32,16 +32,16 @@ export class IntegrationConnection {
   })
   status: 'connected' | 'disconnected' | 'error' | 'pending';
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   externalUserId?: string; // The user ID from the external provider
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   connectedEmail?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   connectedAt?: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   lastSyncAt?: Date;
 
   @Column({ type: 'text', nullable: true })
@@ -54,7 +54,7 @@ export class IntegrationConnection {
   @Column({ type: 'text', nullable: true })
   encryptedRefreshToken?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   tokenExpiresAt?: Date;
 
   @Column({ type: 'jsonb', nullable: true })
