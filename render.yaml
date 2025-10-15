@@ -1,6 +1,7 @@
 services:
+  # Production Environment
   - type: web
-    name: ultiverse-league
+    name: ultiverse-league-prod
     runtime: node
     plan: free
     region: ohio
@@ -12,17 +13,72 @@ services:
       pnpm build:types
       pnpm build:web
       pnpm build:api
+      pnpm -C apps/api migration:run
     startCommand: node apps/api/dist/main.js
     envVars:
       - key: NODE_VERSION
         value: 20
       - key: PORT
         value: 3000
-      - key: UC_CLIENT_ID
+      - key: DATABASE_HOST
         sync: false
-      - key: UC_CLIENT_SECRET
+      - key: DATABASE_PORT
         sync: false
-      - key: UC_API_DOMAIN
+      - key: DATABASE_NAME
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+    healthCheckPath: /health
+    buildFilter:
+      paths:
+        - apps/api/**
+        - apps/web/**
+        - packages/**
+
+  # Staging Environment (shares database with prod using table prefixes)
+  - type: web
+    name: ultiverse-league-staging
+    runtime: node
+    plan: free
+    region: ohio
+    branch: staging
+    rootDir: .
+    buildCommand: |
+      corepack enable
+      pnpm install --frozen-lockfile
+      pnpm build:types
+      pnpm build:web
+      pnpm build:api
+      pnpm -C apps/api migration:run
+    startCommand: node apps/api/dist/main.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PORT
+        value: 3000
+      - key: DATABASE_HOST
+        sync: false
+      - key: DATABASE_PORT
+        sync: false
+      - key: DATABASE_NAME
+        sync: false
+      - key: DATABASE_USERNAME
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      - key: NODE_ENV
+        value: staging
+      - key: JWT_SECRET
+        sync: false
+      - key: ENCRYPTION_KEY
         sync: false
     healthCheckPath: /health
     previews:
