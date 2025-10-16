@@ -92,8 +92,10 @@ git push origin staging
 
 Render will automatically:
 1. Build the application
-2. Run migrations in the `staging` schema
-3. Start the server
+2. Create `staging` schema if it doesn't exist
+3. Run migrations in the `staging` schema
+4. Seed the database with test data
+5. Start the server
 
 ## Workflow
 
@@ -163,12 +165,20 @@ Staging
 ✅ **Easy setup** - Just copy database credentials
 ✅ **Independent data** - Safe to reset staging anytime
 
-## Migrations
+## Migrations & Seeding
 
-Migrations run automatically on both environments:
+**Migrations** run automatically on both environments:
 - Staging migrations go to `staging` schema
 - Production migrations go to `public` schema
 - Test migrations in staging before deploying to production
+
+**Seeding** (staging only):
+After migrations, staging is automatically seeded with test data:
+- Test accounts: `admin@staging.test`, `user@staging.test`
+- Sample team: "Staging Test Team"
+- Integration connection stubs
+
+This gives you a working environment immediately after deploy!
 
 ## Cleanup
 
