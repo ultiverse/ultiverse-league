@@ -12,10 +12,14 @@ export class CreateAccountsAndIntegrations1701000000000
   name = 'CreateAccountsAndIntegrations1701000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Get schema from connection configuration
+    const schema = (queryRunner.connection.driver.options as any).schema;
+
     // Create accounts table
     await queryRunner.createTable(
       new Table({
         name: 'accounts',
+        schema,
         columns: [
           {
             name: 'id',
@@ -76,6 +80,7 @@ export class CreateAccountsAndIntegrations1701000000000
     await queryRunner.createTable(
       new Table({
         name: 'profiles',
+        schema,
         columns: [
           {
             name: 'id',
@@ -160,6 +165,7 @@ export class CreateAccountsAndIntegrations1701000000000
     await queryRunner.createTable(
       new Table({
         name: 'integration_connections',
+        schema,
         columns: [
           {
             name: 'id',
