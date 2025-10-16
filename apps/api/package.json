@@ -19,6 +19,7 @@
 		"migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts",
 		"migration:create": "typeorm-ts-node-commonjs migration:create",
 		"migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
+		"migration:run:prod": "node dist/database/run-migrations.js",
 		"migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts",
 		"seed:dev": "ts-node -r tsconfig-paths/register src/database/seeds/seed-dev.ts",
 		"seed:staging": "tsx src/database/seeds/seed-staging.ts",

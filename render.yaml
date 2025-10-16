@@ -22,7 +22,6 @@ services:
         value: 3000
       - key: DATABASE_URL
         sync: false
-        buildtime: true
       - key: NODE_ENV
         value: production
       - key: JWT_SECRET
@@ -51,8 +50,8 @@ services:
       pnpm build:web
       pnpm build:api
       bash apps/api/scripts/create-schema.sh
-      pnpm -C apps/api migration:run
-      pnpm -C apps/api seed:staging
+      pnpm --filter ./apps/api migration:run:prod
+      pnpm --filter ./apps/api seed:staging
     startCommand: node apps/api/dist/main.js
     envVars:
       - key: NODE_VERSION
@@ -61,7 +60,6 @@ services:
         value: 3000
       - key: DATABASE_URL
         sync: false
-        buildtime: true
       - key: NODE_ENV
         value: staging
       - key: JWT_SECRET

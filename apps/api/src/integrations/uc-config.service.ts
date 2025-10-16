@@ -17,7 +17,15 @@ export class UCConfigService implements OnModuleInit {
   async onModuleInit() {
     // Set up the circular reference
     this.integrationsService.setUCConfigService(this);
-    await this.configureUCClient();
+    // Don't block startup if UC credentials can't be loaded
+    // (e.g., during first deployment when tables don't exist yet)
+    try {
+      await this.configureUCClient();
+    } catch (error) {
+      this.logger.warn(
+        'Failed to configure UC client on startup - will retry on first use',
+      );
+    }
   }
 
   /**
