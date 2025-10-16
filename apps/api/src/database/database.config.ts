@@ -17,13 +17,11 @@ export const getDatabaseConfig = (
   // Auto-determine schema from NODE_ENV: staging uses 'staging' schema, others use 'public'
   const schema = nodeEnv === 'staging' ? 'staging' : 'public';
 
-  return {
-    type: 'postgres',
-    host: configService.get('DATABASE_HOST', 'localhost'),
-    port: parseInt(configService.get('DATABASE_PORT', '5432'), 10),
-    username: configService.get('DATABASE_USERNAME', 'postgres'),
-    password: configService.get('DATABASE_PASSWORD', 'postgres'),
-    database: configService.get('DATABASE_NAME', 'ultiverse'),
+  // Use DATABASE_URL if available, otherwise fall back to individual variables for local dev
+  const databaseUrl = configService.get<string>('DATABASE_URL');
+
+  const baseConfig = {
+    type: 'postgres' as const,
     schema,
     entities: [
       Account,
@@ -41,5 +39,21 @@ export const getDatabaseConfig = (
       nodeEnv === 'production' || nodeEnv === 'staging'
         ? { rejectUnauthorized: false }
         : false,
+  };
+
+  if (databaseUrl) {
+    return {
+      ...baseConfig,
+      url: databaseUrl,
+    };
+  }
+
+  return {
+    ...baseConfig,
+    host: configService.get<string>('DATABASE_HOST', 'localhost'),
+    port: parseInt(configService.get<string>('DATABASE_PORT', '5432'), 10),
+    username: configService.get<string>('DATABASE_USERNAME', 'postgres'),
+    password: configService.get<string>('DATABASE_PASSWORD', 'postgres'),
+    database: configService.get<string>('DATABASE_NAME', 'ultiverse'),
   };
 };

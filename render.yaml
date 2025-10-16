@@ -20,15 +20,7 @@ services:
         value: 20
       - key: PORT
         value: 3000
-      - key: DATABASE_HOST
-        sync: false
-      - key: DATABASE_PORT
-        sync: false
-      - key: DATABASE_NAME
-        sync: false
-      - key: DATABASE_USERNAME
-        sync: false
-      - key: DATABASE_PASSWORD
+      - key: DATABASE_URL
         sync: false
       - key: NODE_ENV
         value: production
@@ -66,15 +58,7 @@ services:
         value: 20
       - key: PORT
         value: 3000
-      - key: DATABASE_HOST
-        sync: false
-      - key: DATABASE_PORT
-        sync: false
-      - key: DATABASE_NAME
-        sync: false
-      - key: DATABASE_USERNAME
-        sync: false
-      - key: DATABASE_PASSWORD
+      - key: DATABASE_URL
         sync: false
       - key: NODE_ENV
         value: staging
@@ -90,3 +74,4 @@ services:
         - apps/api/**
         - apps/web/**
         - packages/**
+        - render.yaml
