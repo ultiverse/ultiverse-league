@@ -89,12 +89,7 @@ async function main() {
       )
       RETURNING id;
       `,
-      [
-        organizationId,
-        'Staging Test Team',
-        'Vancouver, BC',
-        adminId,
-      ],
+      [organizationId, 'Staging Test Team', 'Vancouver, BC', adminId],
     )) as Array<{ id: string }>;
 
     console.log('✓ Created sample team: Staging Test Team');

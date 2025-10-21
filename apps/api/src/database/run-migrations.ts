@@ -1,49 +1,69 @@
 import { AppDataSource } from './data-source';
 
+interface TableRow {
+  table_name: string;
+}
+
+interface MigrationRow {
+  id: number;
+  timestamp: string;
+  name: string;
+}
+
 async function runMigrations() {
   try {
     console.log('🔄 Initializing database connection...');
     console.log(`Environment: ${process.env.NODE_ENV}`);
-    const schema = (AppDataSource.options as any).schema || 'public';
+    const schema =
+      (AppDataSource.options as { schema?: string }).schema || 'public';
     console.log(`Schema: ${schema}`);
 
     await AppDataSource.initialize();
     console.log('✅ Database connection established');
 
     // Check if tables exist in the target schema
-    const tables = await AppDataSource.query(`
+    const tables = (await AppDataSource.query(
+      `
       SELECT table_name
       FROM information_schema.tables
       WHERE table_schema = $1
       AND table_name IN ('accounts', 'profiles', 'integration_connections', 'teams', 'players')
       ORDER BY table_name;
-    `, [schema]);
+    `,
+      [schema],
+    )) as TableRow[];
 
-    console.log(`\n📊 Found ${tables.length} application tables in ${schema} schema`);
+    console.log(
+      `\n📊 Found ${tables.length} application tables in ${schema} schema`,
+    );
     if (tables.length > 0) {
-      tables.forEach((t: any) => console.log(`  - ${t.table_name}`));
+      tables.forEach((t) => console.log(`  - ${t.table_name}`));
     }
 
     // Check migration tracking table
-    let migrationRecords = [];
+    let migrationRecords: MigrationRow[] = [];
     try {
-      migrationRecords = await AppDataSource.query(
+      migrationRecords = (await AppDataSource.query(
         `SELECT * FROM "${schema}".migrations ORDER BY timestamp`,
+      )) as MigrationRow[];
+      console.log(
+        `\n📋 Migration tracking: ${migrationRecords.length} recorded migrations`,
       );
-      console.log(`\n📋 Migration tracking: ${migrationRecords.length} recorded migrations`);
       if (migrationRecords.length > 0) {
-        migrationRecords.forEach((m: any) => {
+        migrationRecords.forEach((m) => {
           console.log(`  ✓ ${m.name}`);
         });
       }
-    } catch (error) {
+    } catch (_error) {
       console.log('\n📋 No migration tracking table found yet');
     }
 
     // If migrations are recorded but tables don't exist, clear the migration table
     if (migrationRecords.length > 0 && tables.length === 0) {
       console.log('\n⚠️  WARNING: Migrations recorded but tables missing!');
-      console.log('🔄 Clearing migration tracking table to re-run migrations...');
+      console.log(
+        '🔄 Clearing migration tracking table to re-run migrations...',
+      );
       await AppDataSource.query(`DELETE FROM "${schema}".migrations`);
       console.log('✅ Migration tracking cleared');
     }
@@ -63,17 +83,24 @@ async function runMigrations() {
     }
 
     // Verify tables were created
-    const finalTables = await AppDataSource.query(`
+    const finalTables = (await AppDataSource.query(
+      `
       SELECT table_name
       FROM information_schema.tables
       WHERE table_schema = $1
       AND table_name IN ('accounts', 'profiles', 'integration_connections', 'teams', 'players')
       ORDER BY table_name;
-    `, [schema]);
+    `,
+      [schema],
+    )) as TableRow[];
 
-    console.log(`\n✅ Final verification: ${finalTables.length} application tables exist`);
+    console.log(
+      `\n✅ Final verification: ${finalTables.length} application tables exist`,
+    );
     if (finalTables.length < 5) {
-      throw new Error(`Expected 5 core tables but found ${finalTables.length}`);
+      throw new Error(
+        `Expected 5 core tables but found ${finalTables.length}`,
+      );
     }
 
     await AppDataSource.destroy();
@@ -85,4 +112,4 @@ async function runMigrations() {
   }
 }
 
-runMigrations();
+void runMigrations();

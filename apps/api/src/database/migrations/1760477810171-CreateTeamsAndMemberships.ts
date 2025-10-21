@@ -5,7 +5,8 @@ export class CreateTeamsAndMemberships1760477810171
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as any).schema;
+    const schema = (queryRunner.connection.driver.options as { schema?: string })
+      .schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Enable citext extension for case-insensitive email
@@ -95,12 +96,17 @@ export class CreateTeamsAndMemberships1760477810171
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as any).schema;
+    const schema = (queryRunner.connection.driver.options as { schema?: string })
+      .schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Drop tables in reverse order (respecting foreign keys)
-    await queryRunner.query(`DROP TABLE IF EXISTS ${schemaPrefix}external_team_sources`);
-    await queryRunner.query(`DROP TABLE IF EXISTS ${schemaPrefix}user_team_memberships`);
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS ${schemaPrefix}external_team_sources`,
+    );
+    await queryRunner.query(
+      `DROP TABLE IF EXISTS ${schemaPrefix}user_team_memberships`,
+    );
     await queryRunner.query(`DROP TABLE IF EXISTS ${schemaPrefix}players`);
     await queryRunner.query(`DROP TABLE IF EXISTS ${schemaPrefix}teams`);
     await queryRunner.query(`DROP EXTENSION IF EXISTS citext`);
