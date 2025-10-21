@@ -10,6 +10,7 @@ import { UCTeamsService } from './uc.teams/uc.teams.service';
 import { UCGamesService } from './uc.games/uc.games.service';
 import { UCFieldsService } from './uc.fields/uc.fields.service';
 import { UCEnrichmentService } from './uc-enrichment.service';
+import { UCLeagueAdapter } from './uc-league.adapter';
 
 import { UCAdapter } from './uc.adapter';
 import {
@@ -19,9 +20,10 @@ import {
   GAMES_PROVIDER,
 } from '../ports';
 import { TeamsModule } from '../../teams/teams.module';
+import { ImportModule } from '../../imports/import.module';
 
 @Module({
-  imports: [ConfigModule, TeamsModule],
+  imports: [ConfigModule, TeamsModule, ImportModule],
   controllers: [UCController],
   providers: [
     UCClient,
@@ -31,6 +33,7 @@ import { TeamsModule } from '../../teams/teams.module';
     UCGamesService,
     UCFieldsService,
     UCEnrichmentService,
+    UCLeagueAdapter,
     UCAdapter,
 
     // expose adapter under port tokens
@@ -54,6 +57,7 @@ import { TeamsModule } from '../../teams/teams.module';
     UCGamesService,
     UCFieldsService,
     UCEnrichmentService,
+    UCLeagueAdapter,
   ],
 })
 export class UCModule {}
