@@ -20,10 +20,12 @@ import { IntegrationsService } from './integrations.service';
 import { AccountsService } from './accounts.service';
 import { UCConfigService } from './uc-config.service';
 import { Account, Profile, IntegrationConnection } from '../database/entities';
+import { ImportModule } from '../imports/import.module';
 
 @Module({
   imports: [
-    UCModule, // This exports UCEnrichmentService
+    UCModule, // This exports UCEnrichmentService and UCLeagueAdapter
+    ImportModule, // This exports ImportService
     TypeOrmModule.forFeature([Account, Profile, IntegrationConnection]),
   ],
   controllers: [IntegrationsController],

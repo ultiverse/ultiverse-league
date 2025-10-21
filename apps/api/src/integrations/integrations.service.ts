@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, OnModuleInit } from '@nestjs/common';
 import {
   IntegrationProvider,
   IntegrationConnection as SharedIntegrationConnection,
@@ -8,6 +8,8 @@ import {
 } from '@ultiverse/shared-types';
 import { AccountsService } from './accounts.service';
 import { UCEnrichmentService } from './uc/uc-enrichment.service';
+import { UCLeagueAdapter } from './uc/uc-league.adapter';
+import { ImportService } from '../imports/import.service';
 import axios from 'axios';
 
 interface UCConfigService {
@@ -28,13 +30,23 @@ const TEMP_SEEDED_ACCOUNT_EMAIL = 'greg@gregpike.ca';
 const TEMP_ORGANIZATION_ID = '00000000-0000-0000-0000-000000000001';
 
 @Injectable()
-export class IntegrationsService {
+export class IntegrationsService implements OnModuleInit {
   private ucConfigService?: UCConfigService; // Injected later to avoid circular dependency
 
   constructor(
     private readonly accountsService: AccountsService,
     private readonly ucEnrichmentService: UCEnrichmentService,
+    private readonly importService: ImportService,
+    private readonly ucLeagueAdapter: UCLeagueAdapter,
   ) {}
+
+  /**
+   * Register UC adapter with ImportService on module initialization
+   */
+  onModuleInit(): void {
+    this.importService.registerAdapter('uc', this.ucLeagueAdapter);
+    this.importService.registerAdapter('ultimate_central', this.ucLeagueAdapter);
+  }
 
   setUCConfigService(ucConfigService: UCConfigService): void {
     this.ucConfigService = ucConfigService;
@@ -203,19 +215,18 @@ export class IntegrationsService {
           await this.ucConfigService.refreshUCClient();
         }
 
-        // Import teams from Ultimate Central into canonical schema
-        void this.ucEnrichmentService
-          .importTeamsForUser(account.id, TEMP_ORGANIZATION_ID)
-          .then((importResult) => {
+        // Import leagues from Ultimate Central into canonical schema
+        void this.importLeaguesFromUC(account.id, TEMP_ORGANIZATION_ID)
+          .then((result) => {
             console.log(
-              `Imported ${importResult.imported} teams from UC (${importResult.errors} errors)`,
+              `Imported ${result.imported} leagues from UC (${result.errors} errors)`,
             );
           })
           .catch((error: unknown) => {
             console.error(
-              `Failed to import teams during UC connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              `Failed to import leagues during UC connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
             );
-            // Don't fail the connection if team import fails
+            // Don't fail the connection if league import fails
           });
 
         return {
@@ -487,6 +498,47 @@ export class IntegrationsService {
       throw new Error(
         `Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
+    }
+  }
+
+  /**
+   * Import leagues from Ultimate Central for a user
+   */
+  private async importLeaguesFromUC(
+    userId: string,
+    organizationId: string,
+  ): Promise<{ imported: number; errors: number }> {
+    try {
+      // Get user's leagues from UC
+      const leagues = await this.ucLeagueAdapter.listMyLeagues();
+
+      let imported = 0;
+      let errors = 0;
+
+      // Import each league (which also imports teams)
+      for (const league of leagues) {
+        try {
+          await this.importService.importLeague(
+            'ultimate_central',
+            { provider: 'ultimate_central', externalId: league.externalId },
+            userId,
+            organizationId,
+          );
+          imported++;
+        } catch (error) {
+          console.error(
+            `Failed to import league ${league.name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
+          errors++;
+        }
+      }
+
+      return { imported, errors };
+    } catch (error) {
+      console.error(
+        `Failed to list leagues from UC: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      return { imported: 0, errors: 1 };
     }
   }
 

@@ -1,5 +1,5 @@
-import { Controller, Get } from '@nestjs/common';
-import { UserService } from './user.service';
+import { Controller, Get, Query } from '@nestjs/common';
+import { UserService, MeLeaguesResponse } from './user.service';
 import { UserProfile } from '../integrations/ports/user.port';
 
 @Controller('user')
@@ -9,5 +9,21 @@ export class UserController {
   @Get('me')
   async getCurrentUser(): Promise<UserProfile | null> {
     return this.userService.getCurrentUser();
+  }
+
+  @Get('me/leagues')
+  async getMyLeagues(
+    @Query('fresh') fresh?: 'if-stale' | 'force',
+  ): Promise<MeLeaguesResponse> {
+    // TODO: Get user ID from authentication
+    // For now, get it from the hardcoded email
+    const email = 'greg@gregpike.ca';
+    const account = await this.userService['accountsService'].findByEmail(email);
+
+    if (!account) {
+      return { leagues: [], connections: [] };
+    }
+
+    return this.userService.getMyLeagues(account.id, { fresh });
   }
 }
