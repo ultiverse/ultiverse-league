@@ -13,7 +13,10 @@ import { Team } from './team.entity';
 import { League } from './league.entity';
 
 @Entity('memberships')
-@Check('check_membership_identity', 'user_id IS NOT NULL OR player_id IS NOT NULL')
+@Check(
+  'check_membership_identity',
+  '"userId" IS NOT NULL OR "playerId" IS NOT NULL',
+)
 export class Membership {
   @PrimaryGeneratedColumn('uuid')
   id: string;

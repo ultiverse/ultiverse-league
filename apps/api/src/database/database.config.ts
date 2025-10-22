@@ -1,21 +1,13 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import {
-  Account,
-  Profile,
-  IntegrationConnection,
-  Team,
-  Player,
-  UserTeamMembership,
-  ExternalTeamSource,
-} from './entities';
 
 export const getDatabaseConfig = (
   configService: ConfigService,
 ): TypeOrmModuleOptions => {
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
-  // Auto-determine schema from NODE_ENV: staging uses 'staging' schema, others use 'public'
-  const schema = nodeEnv === 'staging' ? 'staging' : 'public';
+  // Use 'public' schema for all environments (Supabase default)
+  // Can override with DATABASE_SCHEMA env var if needed
+  const schema = configService.get<string>('DATABASE_SCHEMA', 'public');
 
   // Use DATABASE_URL if available, otherwise fall back to individual variables for local dev
   const databaseUrl = configService.get<string>('DATABASE_URL');
@@ -23,17 +15,10 @@ export const getDatabaseConfig = (
   const baseConfig = {
     type: 'postgres' as const,
     schema,
-    entities: [
-      Account,
-      Profile,
-      IntegrationConnection,
-      Team,
-      Player,
-      UserTeamMembership,
-      ExternalTeamSource,
-    ],
+    entities: [__dirname + '/**/*.entity{.js,.ts}'],
     migrations: [__dirname + '/migrations/*{.ts,.js}'],
-    synchronize: nodeEnv === 'development', // Only for development
+    synchronize: false, // Disabled - use migrations instead
+    migrationsRun: nodeEnv !== 'production', // Auto-run migrations in dev/staging
     logging: nodeEnv === 'development',
     ssl:
       nodeEnv === 'production' || nodeEnv === 'staging'

@@ -15,36 +15,36 @@ export class CreateExternalLeagueSources1760482000000
     await queryRunner.query(`
       CREATE TABLE ${schemaPrefix}external_league_sources (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        league_id UUID NOT NULL REFERENCES ${schemaPrefix}leagues(id) ON DELETE CASCADE,
+        "leagueId" UUID NOT NULL REFERENCES ${schemaPrefix}leagues(id) ON DELETE CASCADE,
         provider TEXT NOT NULL,
-        external_id TEXT NOT NULL,
-        raw_data JSONB NOT NULL,
+        "externalId" TEXT NOT NULL,
+        "rawData" JSONB NOT NULL,
         etag TEXT,
-        last_modified_at TIMESTAMPTZ,
-        last_synced_at TIMESTAMPTZ DEFAULT now(),
-        sync_status TEXT NOT NULL DEFAULT 'active',
-        created_at TIMESTAMPTZ DEFAULT now(),
-        updated_at TIMESTAMPTZ DEFAULT now(),
-        UNIQUE (provider, external_id)
+        "lastModifiedAt" TIMESTAMPTZ,
+        "lastSyncedAt" TIMESTAMPTZ DEFAULT now(),
+        "syncStatus" TEXT NOT NULL DEFAULT 'active',
+        "createdAt" TIMESTAMPTZ DEFAULT now(),
+        "updatedAt" TIMESTAMPTZ DEFAULT now(),
+        UNIQUE (provider, "externalId")
       )
     `);
 
     // Index for league lookups
     await queryRunner.query(`
       CREATE INDEX idx_external_league_sources_league
-        ON ${schemaPrefix}external_league_sources(league_id)
+        ON ${schemaPrefix}external_league_sources("leagueId")
     `);
 
     // Index for provider lookups (find by external ID)
     await queryRunner.query(`
       CREATE INDEX idx_external_league_sources_provider
-        ON ${schemaPrefix}external_league_sources(provider, external_id)
+        ON ${schemaPrefix}external_league_sources(provider, "externalId")
     `);
 
     // Index for finding stale leagues
     await queryRunner.query(`
       CREATE INDEX idx_external_league_sources_sync
-        ON ${schemaPrefix}external_league_sources(last_synced_at, sync_status)
+        ON ${schemaPrefix}external_league_sources("lastSyncedAt", "syncStatus")
     `);
   }
 

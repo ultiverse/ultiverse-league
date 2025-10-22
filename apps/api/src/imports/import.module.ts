@@ -13,6 +13,7 @@ import { ImportService } from './import.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      Organization,
       League,
       ExternalLeagueSource,
       Team,

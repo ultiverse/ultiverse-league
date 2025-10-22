@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { ProviderType } from '@ultiverse/shared-types';
 import {
   League,
   ExternalLeagueSource,
@@ -115,9 +116,14 @@ export class ImportService {
     provider: string,
     extLeague: ExternalLeague,
   ): Promise<League> {
+    const providerType = provider as ProviderType;
+
     // Check if league already exists via external source
     const existingSource = await this.leagueSourceRepo.findOne({
-      where: { provider, externalId: extLeague.externalId },
+      where: {
+        provider: providerType,
+        externalId: extLeague.externalId,
+      },
       relations: ['league'],
     });
 
@@ -149,17 +155,19 @@ export class ImportService {
       name: extLeague.name,
       seasonStart: extLeague.seasonStart,
       seasonEnd: extLeague.seasonEnd,
-      sourceType: provider as 'ultimate_central' | 'zuluru',
+      sourceType: providerType,
       isEditable: false, // External leagues are read-only by default
     });
 
     const savedLeague = await this.leagueRepo.save(league);
-    this.logger.log(`Created new league: ${savedLeague.name} (${savedLeague.id})`);
+    this.logger.log(
+      `Created new league: ${savedLeague.name} (${savedLeague.id})`,
+    );
 
     // Create external source
     const source = this.leagueSourceRepo.create({
       leagueId: savedLeague.id,
-      provider: provider as 'ultimate_central' | 'zuluru',
+      provider: providerType,
       externalId: extLeague.externalId,
       rawData: extLeague.rawData,
       lastSyncedAt: new Date(),
@@ -182,10 +190,12 @@ export class ImportService {
     extTeam: ExternalTeam,
     userId: string,
   ): Promise<Team> {
+    const providerType = provider as ProviderType;
+
     // Check if team already exists via external source
     const existingSource = await this.teamSourceRepo.findOne({
       where: {
-        source: provider as 'ultimate_central' | 'zuluru',
+        source: providerType,
         externalId: extTeam.externalId,
       },
       relations: ['team'],
@@ -224,7 +234,7 @@ export class ImportService {
         location: extTeam.location,
         seasonStart: league?.seasonStart || new Date(),
         seasonEnd: league?.seasonEnd,
-        sourceType: provider as 'ultimate_central',
+        sourceType: providerType,
         isEditable: false,
         colour: extTeam.colour || '#000000',
         altColour: extTeam.altColour || '#ffffff',
@@ -236,7 +246,7 @@ export class ImportService {
       // Create external source
       const source = this.teamSourceRepo.create({
         teamId: team.id,
-        source: provider as 'ultimate_central' | 'zuluru',
+        source: providerType,
         externalId: extTeam.externalId,
         rawData: extTeam.rawData,
         lastSyncedAt: new Date(),
@@ -267,7 +277,10 @@ export class ImportService {
     });
 
     if (!existingMembership) {
-      const joinedViaMap: Record<string, 'manual' | 'uc_import' | 'zuluru_import'> = {
+      const joinedViaMap: Record<
+        string,
+        'manual' | 'uc_import' | 'zuluru_import'
+      > = {
         ultimate_central: 'uc_import',
         uc: 'uc_import',
         zuluru: 'zuluru_import',
@@ -284,7 +297,9 @@ export class ImportService {
       });
 
       await this.membershipRepo.save(membership);
-      this.logger.log(`Created membership for user ${userId} to team ${teamId}`);
+      this.logger.log(
+        `Created membership for user ${userId} to team ${teamId}`,
+      );
     }
   }
 

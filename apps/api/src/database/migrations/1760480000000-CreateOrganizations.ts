@@ -15,8 +15,8 @@ export class CreateOrganizations1760480000000 implements MigrationInterface {
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         name TEXT NOT NULL,
         slug TEXT UNIQUE,
-        created_at TIMESTAMPTZ DEFAULT now(),
-        updated_at TIMESTAMPTZ DEFAULT now()
+        "createdAt" TIMESTAMPTZ DEFAULT now(),
+        "updatedAt" TIMESTAMPTZ DEFAULT now()
       )
     `);
 
@@ -27,13 +27,8 @@ export class CreateOrganizations1760480000000 implements MigrationInterface {
       ON CONFLICT (id) DO NOTHING
     `);
 
-    // Add FK constraint to teams
-    // Note: This assumes teams table already exists (from CreateTeamsAndMemberships migration)
-    await queryRunner.query(`
-      ALTER TABLE ${schemaPrefix}teams
-        ADD CONSTRAINT fk_teams_organization
-        FOREIGN KEY (organization_id) REFERENCES ${schemaPrefix}organizations(id)
-    `);
+    // Note: FK constraint for teams.organization_id is now added in a separate migration
+    // after both tables are confirmed to exist and have correct structure
 
     // Create index for organization lookups
     await queryRunner.query(`

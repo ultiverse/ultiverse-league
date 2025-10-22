@@ -13,40 +13,40 @@ export class CreateLeagues1760481000000 implements MigrationInterface {
     await queryRunner.query(`
       CREATE TABLE ${schemaPrefix}leagues (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        organization_id UUID NOT NULL REFERENCES ${schemaPrefix}organizations(id),
+        "organizationId" UUID NOT NULL REFERENCES ${schemaPrefix}organizations(id),
         name TEXT NOT NULL,
-        season_start DATE,
-        season_end DATE,
-        source_type TEXT NOT NULL DEFAULT 'ultiverse',
-        is_editable BOOLEAN NOT NULL DEFAULT true,
+        "seasonStart" DATE,
+        "seasonEnd" DATE,
+        "sourceType" TEXT NOT NULL DEFAULT 'ultiverse',
+        "isEditable" BOOLEAN NOT NULL DEFAULT true,
         visibility TEXT DEFAULT 'public',
-        created_at TIMESTAMPTZ DEFAULT now(),
-        updated_at TIMESTAMPTZ DEFAULT now()
+        "createdAt" TIMESTAMPTZ DEFAULT now(),
+        "updatedAt" TIMESTAMPTZ DEFAULT now()
       )
     `);
 
-    // Add league_id to teams (nullable - teams can exist without leagues)
+    // Add leagueId to teams (nullable - teams can exist without leagues)
     await queryRunner.query(`
       ALTER TABLE ${schemaPrefix}teams
-        ADD COLUMN league_id UUID REFERENCES ${schemaPrefix}leagues(id)
+        ADD COLUMN "leagueId" UUID REFERENCES ${schemaPrefix}leagues(id)
     `);
 
     // Dedupe index - prevent duplicate leagues with same name/season in an org
     await queryRunner.query(`
       CREATE UNIQUE INDEX leagues_dedupe_hint
-        ON ${schemaPrefix}leagues (organization_id, lower(name), season_start)
-        WHERE season_start IS NOT NULL
+        ON ${schemaPrefix}leagues ("organizationId", lower(name), "seasonStart")
+        WHERE "seasonStart" IS NOT NULL
     `);
 
     // Index for common queries (list leagues by org, sorted by season)
     await queryRunner.query(`
       CREATE INDEX idx_leagues_org_season
-        ON ${schemaPrefix}leagues(organization_id, season_start DESC, season_end DESC)
+        ON ${schemaPrefix}leagues("organizationId", "seasonStart" DESC, "seasonEnd" DESC)
     `);
 
     // Index for team lookups
     await queryRunner.query(`
-      CREATE INDEX idx_teams_league ON ${schemaPrefix}teams(league_id)
+      CREATE INDEX idx_teams_league ON ${schemaPrefix}teams("leagueId")
     `);
   }
 

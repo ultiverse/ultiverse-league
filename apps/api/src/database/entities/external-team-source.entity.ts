@@ -8,6 +8,7 @@ import {
   JoinColumn,
   Unique,
 } from 'typeorm';
+import type { ProviderType } from '@ultiverse/shared-types';
 import { Team } from './team.entity';
 
 @Entity('external_team_sources')
@@ -20,7 +21,7 @@ export class ExternalTeamSource {
   teamId: string;
 
   @Column({ type: 'varchar' })
-  source: 'ultimate_central' | 'zuluru';
+  source: ProviderType;
 
   @Column({ type: 'varchar' })
   externalId: string;

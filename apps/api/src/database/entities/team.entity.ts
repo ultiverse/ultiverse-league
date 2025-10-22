@@ -8,6 +8,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
+import type { ProviderType } from '@ultiverse/shared-types';
 import { Account } from './account.entity';
 import { Organization } from './organization.entity';
 import { League } from './league.entity';
@@ -41,7 +42,7 @@ export class Team {
   createdByUserId?: string;
 
   @Column({ type: 'varchar', default: 'ultiverse' })
-  sourceType: 'ultiverse' | 'ultimate_central';
+  sourceType: ProviderType;
 
   @Column({ type: 'boolean', default: true })
   isEditable: boolean;

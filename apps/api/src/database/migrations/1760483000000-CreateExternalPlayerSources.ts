@@ -15,28 +15,28 @@ export class CreateExternalPlayerSources1760483000000
     await queryRunner.query(`
       CREATE TABLE ${schemaPrefix}external_player_sources (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        player_id UUID NOT NULL REFERENCES ${schemaPrefix}players(id) ON DELETE CASCADE,
+        "playerId" UUID NOT NULL REFERENCES ${schemaPrefix}players(id) ON DELETE CASCADE,
         provider TEXT NOT NULL,
-        external_id TEXT NOT NULL,
-        raw_data JSONB NOT NULL,
+        "externalId" TEXT NOT NULL,
+        "rawData" JSONB NOT NULL,
         etag TEXT,
-        last_synced_at TIMESTAMPTZ DEFAULT now(),
-        created_at TIMESTAMPTZ DEFAULT now(),
-        updated_at TIMESTAMPTZ DEFAULT now(),
-        UNIQUE (provider, external_id)
+        "lastSyncedAt" TIMESTAMPTZ DEFAULT now(),
+        "createdAt" TIMESTAMPTZ DEFAULT now(),
+        "updatedAt" TIMESTAMPTZ DEFAULT now(),
+        UNIQUE (provider, "externalId")
       )
     `);
 
     // Index for player lookups
     await queryRunner.query(`
       CREATE INDEX idx_external_player_sources_player
-        ON ${schemaPrefix}external_player_sources(player_id)
+        ON ${schemaPrefix}external_player_sources("playerId")
     `);
 
     // Index for provider lookups (find by external ID)
     await queryRunner.query(`
       CREATE INDEX idx_external_player_sources_provider
-        ON ${schemaPrefix}external_player_sources(provider, external_id)
+        ON ${schemaPrefix}external_player_sources(provider, "externalId")
     `);
   }
 
