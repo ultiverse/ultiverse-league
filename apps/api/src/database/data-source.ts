@@ -12,6 +12,8 @@ import {
   ExternalTeamSource,
   ExternalLeagueSource,
   ExternalPlayerSource,
+  Game,
+  ExternalGameSource,
 } from './entities';
 
 // Auto-determine schema from NODE_ENV: staging uses 'staging' schema, others use 'public'
@@ -57,6 +59,8 @@ export const AppDataSource = new DataSource(
           ExternalTeamSource,
           ExternalLeagueSource,
           ExternalPlayerSource,
+          Game,
+          ExternalGameSource,
         ],
         migrations: [__dirname + '/migrations/*{.ts,.js}'],
         synchronize: false, // Always false for migrations

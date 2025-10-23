@@ -1,4 +1,15 @@
-import { Controller, Get, Param, Query, Inject } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  Query,
+  Inject,
+  HttpCode,
+  HttpStatus,
+  NotFoundException,
+  Logger,
+} from '@nestjs/common';
 import { FixturesService } from '../fixtures/fixtures.service';
 import {
   LEAGUE_PROVIDER,
@@ -10,14 +21,31 @@ import type {
   ITeamsProvider,
   IFieldsProvider,
 } from '../integrations/ports';
+import { LeagueDiscoveryService } from '../integrations/league-discovery.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import {
+  League,
+  ExternalLeagueSource,
+  IntegrationConnection,
+} from '../database/entities';
 
 @Controller('leagues')
 export class LeaguesController {
+  private readonly logger = new Logger(LeaguesController.name);
+
   constructor(
     private fixtures: FixturesService,
     @Inject(LEAGUE_PROVIDER) private leagueProvider: ILeagueProvider,
     @Inject(TEAMS_PROVIDER) private teamsProvider: ITeamsProvider,
     @Inject(FIELDS_PROVIDER) private fieldsProvider: IFieldsProvider,
+    private leagueDiscovery: LeagueDiscoveryService,
+    @InjectRepository(League)
+    private readonly leagueRepo: Repository<League>,
+    @InjectRepository(ExternalLeagueSource)
+    private readonly externalSourceRepo: Repository<ExternalLeagueSource>,
+    @InjectRepository(IntegrationConnection)
+    private readonly integrationRepo: Repository<IntegrationConnection>,
   ) {}
 
   @Get('latest')
@@ -111,5 +139,111 @@ export class LeaguesController {
     // For now, return empty array for internal data
     // Later we can implement fixtures.getFields(id) if needed
     return [];
+  }
+
+  /**
+   * POST /leagues/:id/refresh
+   * On-demand refresh of external league data.
+   * Returns 202 Accepted immediately and refreshes in background.
+   */
+  @Post(':id/refresh')
+  @HttpCode(HttpStatus.ACCEPTED)
+  async refreshLeague(@Param('id') leagueId: string) {
+    this.logger.log(`Refresh requested for league: ${leagueId}`);
+
+    // Find the league and its external source
+    const league = await this.leagueRepo.findOne({
+      where: { id: leagueId },
+      relations: ['externalSources'],
+    });
+
+    if (!league) {
+      throw new NotFoundException(`League ${leagueId} not found`);
+    }
+
+    const externalSource = league.externalSources?.[0];
+    if (!externalSource) {
+      this.logger.warn(
+        `League ${leagueId} is not an external league, skipping refresh`,
+      );
+      return {
+        message: 'League is not from an external source',
+        leagueId,
+      };
+    }
+
+    // Check if the league is stale (>7 days)
+    const isStale = await this.leagueDiscovery.isLeagueStale(leagueId);
+
+    if (!isStale) {
+      this.logger.log(
+        `League ${leagueId} is not stale (last synced: ${externalSource.lastSyncedAt}), skipping refresh`,
+      );
+      return {
+        message: 'League data is already fresh',
+        leagueId,
+        lastSyncedAt: externalSource.lastSyncedAt,
+      };
+    }
+
+    // Get the account that has a connection for this provider
+    const connection = await this.integrationRepo.findOne({
+      where: {
+        provider: externalSource.provider,
+        isConnected: true,
+      },
+    });
+
+    if (!connection) {
+      this.logger.warn(
+        `No active connection found for provider ${externalSource.provider}`,
+      );
+      return {
+        message: `No active connection for provider ${externalSource.provider}`,
+        leagueId,
+      };
+    }
+
+    // Queue background refresh (for now, just run async)
+    void this.performRefresh(
+      connection.accountId,
+      externalSource.provider,
+      leagueId,
+    );
+
+    return {
+      message: 'Refresh queued',
+      leagueId,
+      status: 'accepted',
+    };
+  }
+
+  /**
+   * Background refresh logic
+   */
+  private async performRefresh(
+    accountId: string,
+    provider: string,
+    leagueId: string,
+  ) {
+    try {
+      this.logger.log(
+        `Starting background refresh for league ${leagueId} from provider ${provider}`,
+      );
+
+      // Discover and update leagues from the provider
+      await this.leagueDiscovery.discoverLeaguesForAccount(
+        accountId,
+        provider as any,
+      );
+
+      this.logger.log(
+        `Successfully refreshed league ${leagueId} from provider ${provider}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to refresh league ${leagueId}: ${error instanceof Error ? error.message : error}`,
+      );
+    }
   }
 }

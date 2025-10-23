@@ -11,6 +11,7 @@ import {
 import type { ProviderType } from '@ultiverse/shared-types';
 import { Organization } from './organization.entity';
 import { Team } from './team.entity';
+import { Game } from './game.entity';
 import { ExternalLeagueSource } from './external-league-source.entity';
 import { Membership } from './membership.entity';
 
@@ -53,6 +54,9 @@ export class League {
 
   @OneToMany(() => Team, (team) => team.league)
   teams: Team[];
+
+  @OneToMany(() => Game, (game) => game.league)
+  games: Game[];
 
   @OneToMany(() => ExternalLeagueSource, (source) => source.league)
   externalSources: ExternalLeagueSource[];

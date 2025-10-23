@@ -20,6 +20,7 @@ import { IntegrationsService } from './integrations.service';
 import { AccountsService } from './accounts.service';
 import { UCConfigService } from './uc-config.service';
 import { LeagueDiscoveryService } from './league-discovery.service';
+import { TeamDiscoveryService } from './team-discovery.service';
 import {
   Account,
   Profile,
@@ -27,6 +28,8 @@ import {
   League,
   ExternalLeagueSource,
   Organization,
+  Team,
+  ExternalTeamSource,
 } from '../database/entities';
 import { ImportModule } from '../imports/import.module';
 
@@ -41,6 +44,8 @@ import { ImportModule } from '../imports/import.module';
       League,
       ExternalLeagueSource,
       Organization,
+      Team,
+      ExternalTeamSource,
     ]),
   ],
   controllers: [IntegrationsController],
@@ -50,6 +55,7 @@ import { ImportModule } from '../imports/import.module';
     AccountsService,
     UCConfigService,
     LeagueDiscoveryService,
+    TeamDiscoveryService,
     // concrete UC services used by the adapter (imported from UCModule)
     UCEventsService,
     UCRegistrationsService,
@@ -69,6 +75,8 @@ import { ImportModule } from '../imports/import.module';
   exports: [
     IntegrationsService,
     AccountsService,
+    LeagueDiscoveryService,
+    TeamDiscoveryService,
     LEAGUE_PROVIDER,
     TEAMS_PROVIDER,
     REGISTRATION_PROVIDER,
