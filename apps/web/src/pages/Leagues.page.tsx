@@ -54,10 +54,18 @@ export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
 
             {leaguesQuery.isLoading && <CircularProgress />}
             {leaguesQuery.isError && (
-                <Alert severity="error">{String(leaguesQuery.error)}</Alert>
+                <Alert severity="error">
+                    Failed to load leagues: {leaguesQuery.error instanceof Error ? leaguesQuery.error.message : String(leaguesQuery.error)}
+                </Alert>
             )}
 
-            {leaguesQuery.data && (
+            {leaguesQuery.data && leaguesQuery.data.length === 0 && (
+                <Alert severity="info">
+                    No leagues found. Connect an integration to import your leagues.
+                </Alert>
+            )}
+
+            {leaguesQuery.data && leaguesQuery.data.length > 0 && (
                 <TableContainer component={Paper} sx={{ maxHeight: 600 }}>
                     <Table stickyHeader size="small">
                         <TableHead>

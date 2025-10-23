@@ -16,10 +16,10 @@ export function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (email.trim()) {
-      login(email.trim());
+      await login(email.trim());
       navigate('/leagues');
     }
   };

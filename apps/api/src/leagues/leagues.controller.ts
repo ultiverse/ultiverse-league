@@ -23,8 +23,15 @@ export class LeaguesController {
   @Get('latest')
   async latest(@Query('integration') integration?: string) {
     if (integration === 'external') {
-      const leagues = await this.leagueProvider.listRecent();
-      return leagues[0] ?? null;
+      try {
+        const leagues = await this.leagueProvider.listRecent();
+        return leagues[0] ?? null;
+      } catch (error) {
+        console.warn(
+          'External integration not configured, falling back to fixtures:',
+          error instanceof Error ? error.message : error,
+        );
+      }
     }
     return this.fixtures.getLeagues()[0] ?? null;
   }
@@ -39,12 +46,20 @@ export class LeaguesController {
     const limitNum = limit ? Number(limit) : 10;
 
     if (integration === 'external') {
-      const leagues = await this.leagueProvider.listRecent({
-        limit: limitNum,
-        order_by: orderBy,
-        start: start,
-      });
-      return leagues;
+      try {
+        const leagues = await this.leagueProvider.listRecent({
+          limit: limitNum,
+          order_by: orderBy,
+          start: start,
+        });
+        return leagues;
+      } catch (error) {
+        // Fall back to fixture data if external integration is not configured
+        console.warn(
+          'External integration not configured, falling back to fixtures:',
+          error instanceof Error ? error.message : error,
+        );
+      }
     }
 
     const rows = this.fixtures.getLeagues();
@@ -69,8 +84,15 @@ export class LeaguesController {
     @Query('integration') integration?: string,
   ) {
     if (integration === 'external') {
-      const teams = await this.teamsProvider.listTeams(id);
-      return teams;
+      try {
+        const teams = await this.teamsProvider.listTeams(id);
+        return teams;
+      } catch (error) {
+        console.warn(
+          'External integration not configured, falling back to fixtures:',
+          error instanceof Error ? error.message : error,
+        );
+      }
     }
 
     const kind = pods === 'true' ? 'pod' : undefined;

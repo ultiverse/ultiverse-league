@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 
 interface AuthContextType {
   email: string | null;
-  login: (email: string) => void;
+  login: (email: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -22,7 +22,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const login = (userEmail: string) => {
+  const login = async (userEmail: string) => {
+    // Call the API to create/update the account
+    try {
+      await fetch('/api/v1/user/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail }),
+      });
+    } catch (error) {
+      console.error('Failed to create account:', error);
+      // Continue anyway - we'll create the account later if needed
+    }
+
     setEmail(userEmail);
     sessionStorage.setItem(AUTH_STORAGE_KEY, userEmail);
   };

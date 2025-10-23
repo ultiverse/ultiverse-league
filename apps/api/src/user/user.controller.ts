@@ -1,6 +1,7 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { UserService, MeLeaguesResponse } from './user.service';
 import { UserProfile } from '../integrations/ports/user.port';
+import { Account } from '../database/entities';
 
 @Controller('user')
 export class UserController {
@@ -9,6 +10,30 @@ export class UserController {
   @Get('me')
   async getCurrentUser(): Promise<UserProfile | null> {
     return this.userService.getCurrentUser();
+  }
+
+  @Post('login')
+  async login(@Body('email') email: string): Promise<Account> {
+    if (!email || typeof email !== 'string') {
+      throw new Error('Email is required');
+    }
+
+    // Find or create account
+    let account = await this.userService['accountsService'].findByEmail(email);
+
+    if (!account) {
+      // Create new account
+      account = await this.userService['accountsService'].createAccountFromIntegration(
+        email,
+        'email',
+        email, // Use email as external user ID for email-based accounts
+      );
+    } else {
+      // Update last login
+      await this.userService['accountsService'].updateLastLogin(account.id, 'email');
+    }
+
+    return account;
   }
 
   @Get('me/leagues')

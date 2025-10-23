@@ -28,7 +28,7 @@ export interface MeLeaguesResponse {
 }
 
 export async function getMyLeagues(fresh?: 'if-stale' | 'force'): Promise<MeLeaguesResponse> {
-  const url = fresh ? `/user/me/leagues?fresh=${fresh}` : '/user/me/leagues';
+  const url = fresh ? `/api/v1/user/me/leagues?fresh=${fresh}` : '/api/v1/user/me/leagues';
   const response = await fetch(url);
 
   if (!response.ok) {
