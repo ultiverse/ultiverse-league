@@ -19,14 +19,29 @@ import { IntegrationsController } from './integrations.controller';
 import { IntegrationsService } from './integrations.service';
 import { AccountsService } from './accounts.service';
 import { UCConfigService } from './uc-config.service';
-import { Account, Profile, IntegrationConnection } from '../database/entities';
+import { LeagueDiscoveryService } from './league-discovery.service';
+import {
+  Account,
+  Profile,
+  IntegrationConnection,
+  League,
+  ExternalLeagueSource,
+  Organization,
+} from '../database/entities';
 import { ImportModule } from '../imports/import.module';
 
 @Module({
   imports: [
     UCModule, // This exports UCEnrichmentService and UCLeagueAdapter
     ImportModule, // This exports ImportService
-    TypeOrmModule.forFeature([Account, Profile, IntegrationConnection]),
+    TypeOrmModule.forFeature([
+      Account,
+      Profile,
+      IntegrationConnection,
+      League,
+      ExternalLeagueSource,
+      Organization,
+    ]),
   ],
   controllers: [IntegrationsController],
   providers: [
@@ -34,6 +49,7 @@ import { ImportModule } from '../imports/import.module';
     IntegrationsService,
     AccountsService,
     UCConfigService,
+    LeagueDiscoveryService,
     // concrete UC services used by the adapter (imported from UCModule)
     UCEventsService,
     UCRegistrationsService,

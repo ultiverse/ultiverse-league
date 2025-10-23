@@ -10,6 +10,7 @@ import { AccountsService } from './accounts.service';
 import { UCEnrichmentService } from './uc/uc-enrichment.service';
 import { UCLeagueAdapter } from './uc/uc-league.adapter';
 import { ImportService } from '../imports/import.service';
+import { LeagueDiscoveryService } from './league-discovery.service';
 import axios from 'axios';
 
 interface UCConfigService {
@@ -38,6 +39,7 @@ export class IntegrationsService implements OnModuleInit {
     private readonly ucEnrichmentService: UCEnrichmentService,
     private readonly importService: ImportService,
     private readonly ucLeagueAdapter: UCLeagueAdapter,
+    private readonly leagueDiscoveryService: LeagueDiscoveryService,
   ) {}
 
   /**
@@ -215,18 +217,19 @@ export class IntegrationsService implements OnModuleInit {
           await this.ucConfigService.refreshUCClient();
         }
 
-        // Import leagues from Ultimate Central into canonical schema
-        void this.importLeaguesFromUC(account.id, TEMP_ORGANIZATION_ID)
-          .then((result) => {
+        // Discover and persist leagues from Ultimate Central
+        void this.leagueDiscoveryService
+          .discoverLeaguesForAccount(account.id, 'ultimate_central')
+          .then((discoveredLeagues) => {
             console.log(
-              `Imported ${result.imported} leagues from UC (${result.errors} errors)`,
+              `Discovered ${discoveredLeagues.length} leagues from Ultimate Central`,
             );
           })
           .catch((error: unknown) => {
             console.error(
-              `Failed to import leagues during UC connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              `Failed to discover leagues during UC connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
             );
-            // Don't fail the connection if league import fails
+            // Don't fail the connection if league discovery fails
           });
 
         return {
