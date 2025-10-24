@@ -48,6 +48,71 @@ export class LeaguesController {
     private readonly integrationRepo: Repository<IntegrationConnection>,
   ) {}
 
+  /**
+   * GET /leagues
+   * Return all discovered leagues for the current user's organization
+   */
+  @Get()
+  async getAllLeagues() {
+    this.logger.log('Getting all discovered leagues for user organization');
+
+    // TODO: Get account from authentication
+    const TEMP_ACCOUNT_ID = 'b935e0fb-4075-43af-b736-166001a32272';
+
+    // Get all leagues that have been discovered
+    const leagues = await this.leagueRepo
+      .createQueryBuilder('league')
+      .leftJoinAndSelect('league.organization', 'organization')
+      .leftJoinAndSelect('league.externalSources', 'source')
+      .innerJoin('league.organization', 'org')
+      .innerJoin(
+        'integration_connections',
+        'conn',
+        'conn."accountId" = :accountId AND league."organizationId" = org.id',
+        { accountId: TEMP_ACCOUNT_ID },
+      )
+      .orderBy('league.seasonStart', 'DESC')
+      .addOrderBy('league.seasonEnd', 'DESC')
+      .getMany();
+
+    this.logger.log(`Found ${leagues.length} leagues`);
+
+    // Helper to safely convert date to ISO string
+    const toISOString = (
+      date: Date | string | null | undefined,
+    ): string | undefined => {
+      if (!date) return undefined;
+      if (typeof date === 'string') return date;
+      return date.toISOString();
+    };
+
+    // Map source type to badge
+    const badgeMap: Record<string, 'UV' | 'UC' | 'Z'> = {
+      ultiverse: 'UV',
+      ultimate_central: 'UC',
+      zuluru: 'Z',
+    };
+
+    return leagues.map((league) => {
+      const source = league.externalSources?.[0];
+      return {
+        id: league.id,
+        organization: {
+          id: league.organization?.id || league.organizationId,
+          name: league.organization?.name || 'Unknown',
+        },
+        name: league.name,
+        seasonStart: toISOString(league.seasonStart),
+        seasonEnd: toISOString(league.seasonEnd),
+        source: league.sourceType,
+        badge: badgeMap[league.sourceType] || 'UV',
+        lastSyncedAt: toISOString(source?.lastSyncedAt),
+        syncStatus: source?.syncStatus,
+        roles: ['org_admin'], // For org-level admin view, all leagues are accessible
+      };
+    });
+  }
+
   @Get('latest')
   async latest(@Query('integration') integration?: string) {
     if (integration === 'external') {

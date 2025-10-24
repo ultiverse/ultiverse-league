@@ -6,15 +6,18 @@ import {
   Chip,
   Box,
   useTheme,
+  Button,
+  CardActions,
 } from '@mui/material';
 import { formatDistanceToNow } from 'date-fns';
 import type { MeLeague } from '../../api/user';
 
 interface LeagueCardProps {
   league: MeLeague;
+  onSelect?: (league: MeLeague) => void;
 }
 
-export function LeagueCard({ league }: LeagueCardProps) {
+export function LeagueCard({ league, onSelect }: LeagueCardProps) {
   const theme = useTheme();
 
   const getBadgeColor = (badge: string) => {
@@ -47,6 +50,17 @@ export function LeagueCard({ league }: LeagueCardProps) {
     }
   };
 
+  const formatRole = (role: string) => {
+    if (role === 'org_admin') return 'Admin';
+    // Capitalize first letter
+    return role.charAt(0).toUpperCase() + role.slice(1);
+  };
+
+  const shouldShowOrganization = (orgName: string) => {
+    // Hide auto-generated organization names
+    return !orgName.startsWith('Organization for');
+  };
+
   return (
     <Card
       sx={{
@@ -73,9 +87,11 @@ export function LeagueCard({ league }: LeagueCardProps) {
                   color: 'white',
                 }}
               />
-              <Typography variant="caption" color="text.secondary">
-                {league.organization.name}
-              </Typography>
+              {shouldShowOrganization(league.organization.name) && (
+                <Typography variant="caption" color="text.secondary">
+                  {league.organization.name}
+                </Typography>
+              )}
             </Stack>
             <Typography variant="h6" component="h3" fontWeight="bold">
               {league.name}
@@ -98,11 +114,27 @@ export function LeagueCard({ league }: LeagueCardProps) {
 
           <Stack direction="row" spacing={1} flexWrap="wrap">
             {league.roles.map((role) => (
-              <Chip key={role} label={role} size="small" variant="outlined" />
+              <Chip
+                key={role}
+                label={formatRole(role)}
+                size="small"
+                variant="outlined"
+              />
             ))}
           </Stack>
         </Stack>
       </CardContent>
+      {onSelect && (
+        <CardActions sx={{ px: 2, pb: 2 }}>
+          <Button
+            fullWidth
+            variant="contained"
+            onClick={() => onSelect(league)}
+          >
+            Select League
+          </Button>
+        </CardActions>
+      )}
     </Card>
   );
 }

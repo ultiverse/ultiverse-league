@@ -37,3 +37,18 @@ export async function getMyLeagues(fresh?: 'if-stale' | 'force'): Promise<MeLeag
 
   return response.json();
 }
+
+/**
+ * Get all discovered leagues for the organization (org-level admin view)
+ * This returns all leagues that have been discovered via integrations,
+ * regardless of whether the user has team memberships
+ */
+export async function getAllLeagues(): Promise<MeLeague[]> {
+  const response = await fetch('/api/v1/leagues');
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch leagues: ${response.statusText}`);
+  }
+
+  return response.json();
+}

@@ -3,7 +3,7 @@ import { ScheduleView, UserProfile, Field } from '@ultiverse/shared-types';
 import { LeagueSummary, TeamSummary, GenerateScheduleRequest } from '../types/api';
 
 export const getLeagues = () =>
-  api<LeagueSummary[]>('/leagues/recent?order_by=date_desc&limit=20');
+  api<LeagueSummary[]>('/leagues');
 
 export const getTeamsByLeague = (eventId: string) =>
   api<Omit<TeamSummary, 'source' | 'syncStatus' | 'integrationProvider'>[]>(`/leagues/${eventId}/teams`);

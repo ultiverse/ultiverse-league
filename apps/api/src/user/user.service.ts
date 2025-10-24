@@ -175,6 +175,44 @@ export class UserService {
   }
 
   /**
+   * Get all leagues in the user's organization
+   * For org-level admins to see all discovered leagues
+   */
+  async getOrgLeagues(userId: string): Promise<MeLeaguesResponse> {
+    this.logger.log(`Getting org leagues for user ${userId}`);
+
+    // Get all leagues that have been discovered for this account
+    // This returns leagues linked to the account's organization via integration connections
+    const leagues = await this.leagueRepo
+      .createQueryBuilder('league')
+      .leftJoinAndSelect('league.organization', 'organization')
+      .leftJoinAndSelect('league.externalSources', 'source')
+      .innerJoin('league.organization', 'org')
+      .innerJoin(
+        'integration_connections',
+        'conn',
+        'conn."accountId" = :accountId AND league."organizationId" = org.id',
+        { accountId: userId },
+      )
+      .orderBy('league.seasonStart', 'DESC')
+      .addOrderBy('league.seasonEnd', 'DESC')
+      .getMany();
+
+    this.logger.log(`Found ${leagues.length} org leagues`);
+
+    // Get integration connections
+    const connections = await this.integrationRepo.find({
+      where: { accountId: userId },
+    });
+
+    // Format response
+    return {
+      leagues: leagues.map((league) => this.formatLeague(league)),
+      connections: connections.map((conn) => this.formatConnection(conn)),
+    };
+  }
+
+  /**
    * Refresh stale leagues
    */
   private async refreshStaleLeagues(
@@ -216,6 +254,13 @@ export class UserService {
       zuluru: 'Z',
     };
 
+    // Helper to safely convert date to ISO string
+    const toISOString = (date: Date | string | null | undefined): string | undefined => {
+      if (!date) return undefined;
+      if (typeof date === 'string') return date;
+      return date.toISOString();
+    };
+
     return {
       id: league.id,
       organization: {
@@ -223,11 +268,11 @@ export class UserService {
         name: league.organization?.name || 'Unknown',
       },
       name: league.name,
-      seasonStart: league.seasonStart?.toISOString(),
-      seasonEnd: league.seasonEnd?.toISOString(),
+      seasonStart: toISOString(league.seasonStart),
+      seasonEnd: toISOString(league.seasonEnd),
       source: league.sourceType,
       badge: badgeMap[league.sourceType] || 'UV',
-      lastSyncedAt: source?.lastSyncedAt?.toISOString(),
+      lastSyncedAt: toISOString(source?.lastSyncedAt),
       syncStatus: source?.syncStatus,
       roles: ['player'], // TODO: Extract actual roles from memberships
     };

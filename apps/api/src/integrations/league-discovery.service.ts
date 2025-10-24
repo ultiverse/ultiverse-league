@@ -60,9 +60,10 @@ export class LeagueDiscoveryService {
     );
 
     // Get the integration connection to ensure it's valid
-    const connection = await this.integrationRepo.findOne({
-      where: { accountId, provider },
-    });
+    const connection: IntegrationConnection | null =
+      await this.integrationRepo.findOne({
+        where: { accountId, provider },
+      });
 
     if (!connection || !connection.isConnected) {
       throw new Error(
@@ -82,7 +83,7 @@ export class LeagueDiscoveryService {
       rawData: Record<string, unknown>;
     }> = [];
 
-    if (provider === 'ultimate_central' || provider === 'uc') {
+    if (provider === 'ultimate_central') {
       const ucLeagues = await this.ucAdapter.listRecent({ limit: 100 });
       externalLeagues = ucLeagues.map((league) => ({
         externalId: league.id,

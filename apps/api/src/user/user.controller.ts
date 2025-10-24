@@ -51,4 +51,18 @@ export class UserController {
 
     return this.userService.getMyLeagues(account.id, { fresh });
   }
+
+  @Get('me/org-leagues')
+  async getOrgLeagues(): Promise<MeLeaguesResponse> {
+    // TODO: Get user ID from authentication
+    // For now, get it from the hardcoded email
+    const email = 'greg@gregpike.ca';
+    const account = await this.userService['accountsService'].findByEmail(email);
+
+    if (!account) {
+      return { leagues: [], connections: [] };
+    }
+
+    return this.userService.getOrgLeagues(account.id);
+  }
 }

@@ -8,20 +8,42 @@ import {
   Grid,
   Box,
 } from '@mui/material';
-import { getMyLeagues } from '../api/user';
+import { getAllLeagues, MeLeague } from '../api/user';
 import { useAuth } from '../context/AuthContext';
 import { LeagueCard } from '../components/Leagues/LeagueCard';
 import { LeaguesEmptyState } from '../components/Leagues/LeaguesEmptyState';
 import { LeaguesHeader } from '../components/Leagues/LeaguesHeader';
-import { ConnectionStatus } from '../components/Leagues/ConnectionStatus';
+import { useLeague } from '../hooks/useLeague';
+import { LeagueSummary } from '../types/api';
 
 export function LeaguesListPage() {
   const navigate = useNavigate();
   const { email } = useAuth();
+  const { setSelectedLeague } = useLeague();
+
+  const handleSelectLeague = (league: MeLeague) => {
+    // Convert MeLeague to LeagueSummary format
+    const leagueSummary: LeagueSummary = {
+      id: league.id,
+      name: league.name,
+      start: league.seasonStart,
+      end: league.seasonEnd,
+      source: league.source === 'ultimate_central' ? 'uc' : league.source as any,
+      syncStatus: (league.syncStatus as any) || 'synced',
+      integrationProvider: league.badge === 'UC' ? 'uc' : undefined,
+    };
+
+    // Set the selected league in context
+    setSelectedLeague(leagueSummary);
+    console.log('Selected league:', leagueSummary);
+
+    // Navigate to teams page
+    navigate('/teams');
+  };
 
   const leaguesQuery = useQuery({
-    queryKey: ['me', 'leagues'],
-    queryFn: () => getMyLeagues('if-stale'),
+    queryKey: ['leagues', 'all'],
+    queryFn: () => getAllLeagues(),
     staleTime: 60_000, // 1 minute
   });
 
@@ -33,7 +55,7 @@ export function LeaguesListPage() {
     navigate('/integrations');
   };
 
-  const hasLeagues = leaguesQuery.data && leaguesQuery.data.leagues.length > 0;
+  const hasLeagues = leaguesQuery.data && leaguesQuery.data.length > 0;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -45,11 +67,6 @@ export function LeaguesListPage() {
           onConnectIntegration={handleConnectIntegration}
           isRefreshing={leaguesQuery.isFetching}
         />
-
-        {/* Connection Status */}
-        {leaguesQuery.data?.connections && (
-          <ConnectionStatus connections={leaguesQuery.data.connections} />
-        )}
 
         {/* Loading State */}
         {leaguesQuery.isLoading && (
@@ -73,9 +90,9 @@ export function LeaguesListPage() {
         {/* Leagues Grid */}
         {hasLeagues && (
           <Grid container spacing={3}>
-            {leaguesQuery.data.leagues.map((league) => (
+            {leaguesQuery.data.map((league) => (
               <Grid item xs={12} sm={6} md={4} key={league.id}>
-                <LeagueCard league={league} />
+                <LeagueCard league={league} onSelect={handleSelectLeague} />
               </Grid>
             ))}
           </Grid>

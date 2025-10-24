@@ -103,7 +103,8 @@ export class IntegrationsService implements OnModuleInit {
     );
 
     return connections.map((conn) => ({
-      provider: conn.provider,
+      // Denormalize provider: 'ultimate_central' -> 'uc' for frontend compatibility
+      provider: conn.provider === 'ultimate_central' ? 'uc' : conn.provider,
       isConnected: conn.isConnected,
       status: conn.status,
       connectedEmail: conn.connectedEmail ?? undefined,
@@ -132,6 +133,9 @@ export class IntegrationsService implements OnModuleInit {
       );
     }
 
+    // Normalize provider: 'uc' -> 'ultimate_central'
+    const normalizedProvider = provider === 'uc' ? 'ultimate_central' : provider;
+
     // Validate provider
     const availableProviders = this.getAvailableProviders();
     const providerConfig = availableProviders.find(
@@ -149,7 +153,7 @@ export class IntegrationsService implements OnModuleInit {
     }
 
     // Check if already connected
-    const existingConnection = await this.getConnection(provider);
+    const existingConnection = await this.getConnection(normalizedProvider);
     if (existingConnection?.isConnected) {
       return {
         success: true,
@@ -159,7 +163,7 @@ export class IntegrationsService implements OnModuleInit {
     }
 
     // Handle OAuth flow for UC
-    if (provider === 'uc') {
+    if (normalizedProvider === 'ultimate_central') {
       // Validate OAuth credentials if provided
       if (
         connectionData &&
@@ -193,7 +197,7 @@ export class IntegrationsService implements OnModuleInit {
         // Update database connection with OAuth credentials
         await this.accountsService.updateIntegrationConnection(
           account.id,
-          provider,
+          normalizedProvider,
           {
             isConnected: true,
             status: 'connected',
@@ -212,25 +216,24 @@ export class IntegrationsService implements OnModuleInit {
           },
         );
 
-        // Refresh UC client with new credentials
+        // Refresh UC client with new credentials and then discover leagues
         if (this.ucConfigService) {
           await this.ucConfigService.refreshUCClient();
-        }
 
-        // Discover and persist leagues from Ultimate Central
-        void this.leagueDiscoveryService
-          .discoverLeaguesForAccount(account.id, 'ultimate_central')
-          .then((discoveredLeagues) => {
+          // Now discover leagues after UC client is configured
+          try {
+            const discoveredLeagues = await this.leagueDiscoveryService
+              .discoverLeaguesForAccount(account.id, normalizedProvider);
             console.log(
               `Discovered ${discoveredLeagues.length} leagues from Ultimate Central`,
             );
-          })
-          .catch((error: unknown) => {
+          } catch (error: unknown) {
             console.error(
               `Failed to discover leagues during UC connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
             );
             // Don't fail the connection if league discovery fails
-          });
+          }
+        }
 
         return {
           success: true,
@@ -262,11 +265,14 @@ export class IntegrationsService implements OnModuleInit {
       throw new Error('No account found');
     }
 
+    // Normalize provider: 'uc' -> 'ultimate_central'
+    const normalizedProvider = provider === 'uc' ? 'ultimate_central' : provider;
+
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
       account.id,
     );
-    const connection = connections.find((conn) => conn.provider === provider);
+    const connection = connections.find((conn) => conn.provider === normalizedProvider);
 
     if (!connection) {
       throw new Error(`Unknown provider: ${provider}`);
@@ -282,7 +288,7 @@ export class IntegrationsService implements OnModuleInit {
     // Update database connection
     await this.accountsService.updateIntegrationConnection(
       account.id,
-      provider,
+      normalizedProvider,
       {
         isConnected: false,
         status: 'disconnected',
@@ -316,11 +322,14 @@ export class IntegrationsService implements OnModuleInit {
       throw new Error('No account found');
     }
 
+    // Normalize provider: 'uc' -> 'ultimate_central'
+    const normalizedProvider = provider === 'uc' ? 'ultimate_central' : provider;
+
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
       account.id,
     );
-    const connection = connections.find((conn) => conn.provider === provider);
+    const connection = connections.find((conn) => conn.provider === normalizedProvider);
 
     if (!connection) {
       throw new Error(`Unknown provider: ${provider}`);
@@ -333,10 +342,31 @@ export class IntegrationsService implements OnModuleInit {
     // Simulate refresh process
     await this.simulateAsync(800);
 
+    // Trigger league discovery for UC
+    if (normalizedProvider === 'ultimate_central') {
+      // Refresh UC client with credentials before discovering leagues
+      if (this.ucConfigService) {
+        await this.ucConfigService.refreshUCClient();
+
+        try {
+          const discoveredLeagues = await this.leagueDiscoveryService
+            .discoverLeaguesForAccount(account.id, normalizedProvider);
+          console.log(
+            `Discovered ${discoveredLeagues.length} leagues from Ultimate Central via refresh`,
+          );
+        } catch (error: unknown) {
+          console.error(
+            `Failed to discover leagues during refresh: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
+          // Don't fail the refresh if league discovery fails
+        }
+      }
+    }
+
     // Update last sync time
     await this.accountsService.updateIntegrationConnection(
       account.id,
-      provider,
+      normalizedProvider,
       {
         lastSyncAt: new Date(),
       },
@@ -416,7 +446,9 @@ export class IntegrationsService implements OnModuleInit {
       account.id,
     );
     const ucConnection = connections.find(
-      (conn) => conn.provider === 'uc' && conn.isConnected,
+      (conn) =>
+        (conn.provider === 'uc' || conn.provider === 'ultimate_central') &&
+        conn.isConnected,
     );
 
     if (!ucConnection || !ucConnection.providerData) {
