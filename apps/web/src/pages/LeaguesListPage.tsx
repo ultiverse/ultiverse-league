@@ -9,12 +9,12 @@ import {
   Box,
 } from '@mui/material';
 import { getAllLeagues, MeLeague } from '../api/user';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { LeagueCard } from '../components/Leagues/LeagueCard';
 import { LeaguesEmptyState } from '../components/Leagues/LeaguesEmptyState';
 import { LeaguesHeader } from '../components/Leagues/LeaguesHeader';
 import { useLeague } from '../hooks/useLeague';
-import { LeagueSummary } from '../types/api';
+import { LeagueSummary, DataSource, SyncStatus } from '../types/api';
 
 export function LeaguesListPage() {
   const navigate = useNavigate();
@@ -23,13 +23,20 @@ export function LeaguesListPage() {
 
   const handleSelectLeague = async (league: MeLeague) => {
     // Convert MeLeague to LeagueSummary format
+    const normalizedSource: DataSource =
+      league.source === 'ultimate_central' ? 'uc' :
+      (league.source as DataSource);
+
+    const normalizedSyncStatus: SyncStatus =
+      (league.syncStatus as SyncStatus) || 'synced';
+
     const leagueSummary: LeagueSummary = {
       id: league.id,
       name: league.name,
       start: league.seasonStart,
       end: league.seasonEnd,
-      source: league.source === 'ultimate_central' ? 'uc' : league.source as any,
-      syncStatus: (league.syncStatus as any) || 'synced',
+      source: normalizedSource,
+      syncStatus: normalizedSyncStatus,
       integrationProvider: league.badge === 'UC' ? 'uc' : undefined,
     };
 

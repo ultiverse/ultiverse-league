@@ -27,8 +27,6 @@ interface UCProviderData {
 
 // TODO: Remove this constant once proper authentication is implemented
 const TEMP_SEEDED_ACCOUNT_EMAIL = 'greg@gregpike.ca';
-// TODO: This should come from the user's organization
-const TEMP_ORGANIZATION_ID = '00000000-0000-0000-0000-000000000001';
 
 @Injectable()
 export class IntegrationsService implements OnModuleInit {
@@ -47,7 +45,10 @@ export class IntegrationsService implements OnModuleInit {
    */
   onModuleInit(): void {
     this.importService.registerAdapter('uc', this.ucLeagueAdapter);
-    this.importService.registerAdapter('ultimate_central', this.ucLeagueAdapter);
+    this.importService.registerAdapter(
+      'ultimate_central',
+      this.ucLeagueAdapter,
+    );
   }
 
   setUCConfigService(ucConfigService: UCConfigService): void {
@@ -134,7 +135,8 @@ export class IntegrationsService implements OnModuleInit {
     }
 
     // Normalize provider: 'uc' -> 'ultimate_central'
-    const normalizedProvider = provider === 'uc' ? 'ultimate_central' : provider;
+    const normalizedProvider =
+      provider === 'uc' ? 'ultimate_central' : provider;
 
     // Validate provider
     const availableProviders = this.getAvailableProviders();
@@ -222,8 +224,11 @@ export class IntegrationsService implements OnModuleInit {
 
           // Now discover leagues after UC client is configured
           try {
-            const discoveredLeagues = await this.leagueDiscoveryService
-              .discoverLeaguesForAccount(account.id, normalizedProvider);
+            const discoveredLeagues =
+              await this.leagueDiscoveryService.discoverLeaguesForAccount(
+                account.id,
+                normalizedProvider,
+              );
             console.log(
               `Discovered ${discoveredLeagues.length} leagues from Ultimate Central`,
             );
@@ -266,13 +271,16 @@ export class IntegrationsService implements OnModuleInit {
     }
 
     // Normalize provider: 'uc' -> 'ultimate_central'
-    const normalizedProvider = provider === 'uc' ? 'ultimate_central' : provider;
+    const normalizedProvider =
+      provider === 'uc' ? 'ultimate_central' : provider;
 
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
       account.id,
     );
-    const connection = connections.find((conn) => conn.provider === normalizedProvider);
+    const connection = connections.find(
+      (conn) => conn.provider === normalizedProvider,
+    );
 
     if (!connection) {
       throw new Error(`Unknown provider: ${provider}`);
@@ -323,13 +331,16 @@ export class IntegrationsService implements OnModuleInit {
     }
 
     // Normalize provider: 'uc' -> 'ultimate_central'
-    const normalizedProvider = provider === 'uc' ? 'ultimate_central' : provider;
+    const normalizedProvider =
+      provider === 'uc' ? 'ultimate_central' : provider;
 
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
       account.id,
     );
-    const connection = connections.find((conn) => conn.provider === normalizedProvider);
+    const connection = connections.find(
+      (conn) => conn.provider === normalizedProvider,
+    );
 
     if (!connection) {
       throw new Error(`Unknown provider: ${provider}`);
@@ -349,8 +360,11 @@ export class IntegrationsService implements OnModuleInit {
         await this.ucConfigService.refreshUCClient();
 
         try {
-          const discoveredLeagues = await this.leagueDiscoveryService
-            .discoverLeaguesForAccount(account.id, normalizedProvider);
+          const discoveredLeagues =
+            await this.leagueDiscoveryService.discoverLeaguesForAccount(
+              account.id,
+              normalizedProvider,
+            );
           console.log(
             `Discovered ${discoveredLeagues.length} leagues from Ultimate Central via refresh`,
           );

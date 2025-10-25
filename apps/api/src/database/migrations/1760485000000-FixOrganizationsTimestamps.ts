@@ -5,8 +5,9 @@ export class FixOrganizationsTimestamps1760485000000
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as { schema?: string })
-      .schema;
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Rename created_at to createdAt
@@ -24,8 +25,9 @@ export class FixOrganizationsTimestamps1760485000000
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as { schema?: string })
-      .schema;
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Revert createdAt to created_at

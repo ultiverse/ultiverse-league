@@ -23,14 +23,19 @@ export class UserController {
 
     if (!account) {
       // Create new account
-      account = await this.userService['accountsService'].createAccountFromIntegration(
+      account = await this.userService[
+        'accountsService'
+      ].createAccountFromIntegration(
         email,
         'email',
         email, // Use email as external user ID for email-based accounts
       );
     } else {
       // Update last login
-      await this.userService['accountsService'].updateLastLogin(account.id, 'email');
+      await this.userService['accountsService'].updateLastLogin(
+        account.id,
+        'email',
+      );
     }
 
     return account;
@@ -43,7 +48,8 @@ export class UserController {
     // TODO: Get user ID from authentication
     // For now, get it from the hardcoded email
     const email = 'greg@gregpike.ca';
-    const account = await this.userService['accountsService'].findByEmail(email);
+    const account =
+      await this.userService['accountsService'].findByEmail(email);
 
     if (!account) {
       return { leagues: [], connections: [] };
@@ -57,7 +63,8 @@ export class UserController {
     // TODO: Get user ID from authentication
     // For now, get it from the hardcoded email
     const email = 'greg@gregpike.ca';
-    const account = await this.userService['accountsService'].findByEmail(email);
+    const account =
+      await this.userService['accountsService'].findByEmail(email);
 
     if (!account) {
       return { leagues: [], connections: [] };

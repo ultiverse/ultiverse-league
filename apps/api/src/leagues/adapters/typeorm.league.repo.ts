@@ -3,10 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { League as DomainLeague } from '@ultiverse/shared-types';
 import { LeagueRepository } from '../ports/league.repository';
-import {
-  League as LeagueEntity,
-  ExternalLeagueSource,
-} from '../../database/entities';
+import { League as LeagueEntity } from '../../database/entities';
 
 /**
  * TypeORM-based implementation of LeagueRepository.

@@ -188,7 +188,9 @@ export class LeaguesController {
     });
 
     if (teams.length > 0) {
-      this.logger.log(`Found ${teams.length} teams for league ${id} in database`);
+      this.logger.log(
+        `Found ${teams.length} teams for league ${id} in database`,
+      );
       return teams.map((team) => ({
         id: team.id,
         name: team.name,
@@ -214,8 +216,8 @@ export class LeaguesController {
     }
 
     // Final fallback to fixtures
-    const kind = pods === 'true' ? 'pod' : undefined;
-    return this.fixtures.getTeams(id, kind as any);
+    const kind: 'pod' | undefined = pods === 'true' ? 'pod' : undefined;
+    return this.fixtures.getTeams(id, kind);
   }
 
   @Get(':id/fields')
@@ -275,8 +277,11 @@ export class LeaguesController {
       const isStale = await this.leagueDiscovery.isLeagueStale(leagueId);
 
       if (!isStale) {
+        const lastSynced = externalSource.lastSyncedAt
+          ? externalSource.lastSyncedAt.toISOString()
+          : 'never';
         this.logger.log(
-          `League ${leagueId} is not stale (last synced: ${externalSource.lastSyncedAt}), skipping refresh`,
+          `League ${leagueId} is not stale (last synced: ${lastSynced}), skipping refresh`,
         );
         return {
           message: 'League data is already fresh',

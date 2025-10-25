@@ -8,7 +8,7 @@ import {
   Paper,
   Stack,
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 export function LoginPage() {

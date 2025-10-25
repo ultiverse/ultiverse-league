@@ -11,34 +11,13 @@ import {
 } from '../../imports/ports/league-adapter.interface';
 import { UCStartParam } from '@ultiverse/shared-types';
 
-interface UCEvent {
+interface UCTeamWithColor {
   id: number;
   name: string;
-  open: string; // ISO date
-  close: string; // ISO date
-  [key: string]: unknown;
-}
-
-interface UCTeam {
-  id: number;
-  name: string;
+  color?: string;
   colour?: string;
   alt_colour?: string;
   [key: string]: unknown;
-}
-
-interface UCEventsResponse {
-  action: string;
-  status: number;
-  count: number;
-  result: UCEvent[];
-}
-
-interface UCTeamsResponse {
-  action: string;
-  status: number;
-  count: number;
-  result: UCTeam[];
 }
 
 @Injectable()
@@ -88,22 +67,25 @@ export class UCLeagueAdapter implements LeagueAdapter {
       return [];
     }
 
-    return response.result.map((team) => ({
-      externalId: team.id.toString(),
-      name: team.name,
-      colour: (team as any).color ?? '#000000', // UC uses American spelling
-      altColour: '#ffffff', // UC doesn't provide altColour
-      rawData: team,
-    }));
+    return response.result.map((team) => {
+      const teamWithColor = team as UCTeamWithColor;
+      return {
+        externalId: team.id.toString(),
+        name: team.name,
+        colour: teamWithColor.color ?? '#000000', // UC uses American spelling
+        altColour: '#ffffff', // UC doesn't provide altColour
+        rawData: team,
+      };
+    });
   }
 
-  async fetchPlayers(teamExtId: string): Promise<ExternalPlayer[]> {
+  fetchPlayers(teamExtId: string): Promise<ExternalPlayer[]> {
     this.logger.log(`Fetching roster for team ${teamExtId} from UC`);
 
     // TODO: Implement when UC roster endpoint is known
     // For now, return empty array
     this.logger.warn('fetchPlayers not yet implemented for UC');
-    return [];
+    return Promise.resolve([]);
   }
 
   async listMyLeagues(): Promise<ExternalLeague[]> {

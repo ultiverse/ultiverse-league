@@ -255,7 +255,9 @@ export class UserService {
     };
 
     // Helper to safely convert date to ISO string
-    const toISOString = (date: Date | string | null | undefined): string | undefined => {
+    const toISOString = (
+      date: Date | string | null | undefined,
+    ): string | undefined => {
       if (!date) return undefined;
       if (typeof date === 'string') return date;
       return date.toISOString();

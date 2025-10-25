@@ -5,8 +5,9 @@ export class EnhanceMemberships1760484000000 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as { schema?: string })
-      .schema;
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Rename table to memberships
@@ -83,8 +84,9 @@ export class EnhanceMemberships1760484000000 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as { schema?: string })
-      .schema;
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Drop indexes

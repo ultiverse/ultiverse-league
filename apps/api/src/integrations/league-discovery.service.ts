@@ -258,9 +258,13 @@ export class LeagueDiscoveryService {
             where: { slug: orgSlug },
           });
           if (!org) {
-            throw new Error('Failed to create or find organization after conflict');
+            throw new Error(
+              'Failed to create or find organization after conflict',
+            );
           }
-          this.logger.log(`Found existing organization after conflict: ${org.id}`);
+          this.logger.log(
+            `Found existing organization after conflict: ${org.id}`,
+          );
         } else {
           throw error;
         }

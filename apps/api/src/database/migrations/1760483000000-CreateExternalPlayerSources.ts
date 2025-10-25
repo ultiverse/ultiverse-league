@@ -7,8 +7,9 @@ export class CreateExternalPlayerSources1760483000000
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as { schema?: string })
-      .schema;
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Create external_player_sources table
@@ -42,8 +43,9 @@ export class CreateExternalPlayerSources1760483000000
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as { schema?: string })
-      .schema;
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Drop indexes

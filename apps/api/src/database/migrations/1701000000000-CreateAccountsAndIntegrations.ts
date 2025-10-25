@@ -13,8 +13,9 @@ export class CreateAccountsAndIntegrations1701000000000
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as { schema?: string })
-      .schema;
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
 
     // Create accounts table
     await queryRunner.createTable(

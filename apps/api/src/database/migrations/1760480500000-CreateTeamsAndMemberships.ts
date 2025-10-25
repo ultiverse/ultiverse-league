@@ -5,8 +5,9 @@ export class CreateTeamsAndMemberships1760480500000
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as { schema?: string })
-      .schema;
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Enable citext extension for case-insensitive email
@@ -96,8 +97,9 @@ export class CreateTeamsAndMemberships1760480500000
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     // Get schema from connection configuration
-    const schema = (queryRunner.connection.driver.options as { schema?: string })
-      .schema;
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
     const schemaPrefix = schema ? `"${schema}".` : '';
 
     // Drop tables in reverse order (respecting foreign keys)

@@ -9,7 +9,7 @@ if (!globalThis.crypto) {
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, RequestMethod } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import * as express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import { join } from 'path';

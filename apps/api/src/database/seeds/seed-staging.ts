@@ -11,7 +11,7 @@ async function main() {
 
   try {
     // Create test admin user
-    const [{ id: adminId }] = (await AppDataSource.query(
+    const [{ id: adminId }] = await AppDataSource.query(
       `
       INSERT INTO accounts (id, email, "passwordHash", status, "createdAt", "updatedAt")
       VALUES (gen_random_uuid(), $1, $2, 'active', now(), now())
@@ -20,7 +20,7 @@ async function main() {
       RETURNING id;
       `,
       ['admin@staging.test', '$2a$10$dummyhashforstagin'], // Dummy hash for staging
-    )) as Array<{ id: string }>;
+    );
 
     await AppDataSource.query(
       `
@@ -34,7 +34,7 @@ async function main() {
     console.log('✓ Created admin user: admin@staging.test');
 
     // Create test regular user
-    const [{ id: userId }] = (await AppDataSource.query(
+    const [{ id: userId }] = await AppDataSource.query(
       `
       INSERT INTO accounts (id, email, "passwordHash", status, "createdAt", "updatedAt")
       VALUES (gen_random_uuid(), $1, $2, 'active', now(), now())
@@ -43,7 +43,7 @@ async function main() {
       RETURNING id;
       `,
       ['user@staging.test', '$2a$10$dummyhashforstagin'], // Dummy hash for staging
-    )) as Array<{ id: string }>;
+    );
 
     await AppDataSource.query(
       `
@@ -75,7 +75,7 @@ async function main() {
 
     // Create sample team
     const organizationId = '00000000-0000-0000-0000-000000000001';
-    const [{ id: teamId }] = (await AppDataSource.query(
+    const [{ id: teamId }] = await AppDataSource.query(
       `
       INSERT INTO teams (
         id, "organizationId", name, location, "sourceType", "isEditable",
@@ -90,7 +90,7 @@ async function main() {
       RETURNING id;
       `,
       [organizationId, 'Staging Test Team', 'Vancouver, BC', adminId],
-    )) as Array<{ id: string }>;
+    );
 
     console.log('✓ Created sample team: Staging Test Team');
 
