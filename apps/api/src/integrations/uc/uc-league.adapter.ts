@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { UCClient } from './uc.client';
+import { UCEventsService } from './uc.events/uc.events.service';
+import { UCTeamsService } from './uc.teams/uc.teams.service';
 import {
   LeagueAdapter,
   LeagueKey,
@@ -7,6 +9,7 @@ import {
   ExternalTeam,
   ExternalPlayer,
 } from '../../imports/ports/league-adapter.interface';
+import { UCStartParam } from '@ultiverse/shared-types';
 
 interface UCEvent {
   id: number;
@@ -42,37 +45,43 @@ interface UCTeamsResponse {
 export class UCLeagueAdapter implements LeagueAdapter {
   private readonly logger = new Logger(UCLeagueAdapter.name);
 
-  constructor(private readonly client: UCClient) {}
+  constructor(
+    private readonly client: UCClient,
+    private readonly events: UCEventsService,
+    private readonly teams: UCTeamsService,
+  ) {}
 
   async fetchLeague(leagueKey: LeagueKey): Promise<ExternalLeague> {
-    this.logger.log(`Fetching league ${leagueKey.externalId} from UC`);
-
-    const response = await this.client.get<{ result: UCEvent[] }>(
-      `/api/events/${leagueKey.externalId}`,
+    const eventId = Number(leagueKey.externalId);
+    this.logger.log(
+      `Fetching league ${leagueKey.externalId} (eventId: ${eventId}) from UC`,
     );
 
-    if (!response?.result?.[0]) {
+    const event = await this.events.getById(eventId);
+
+    if (!event) {
       throw new Error(`League ${leagueKey.externalId} not found in UC`);
     }
-
-    const event = response.result[0];
 
     return {
       externalId: event.id.toString(),
       name: event.name,
-      seasonStart: event.open ? new Date(event.open) : undefined,
-      seasonEnd: event.close ? new Date(event.close) : undefined,
+      seasonStart: event.start ? new Date(event.start) : undefined,
+      seasonEnd: event.end ? new Date(event.end) : undefined,
       rawData: event,
     };
   }
 
   async fetchTeams(leagueKey: LeagueKey): Promise<ExternalTeam[]> {
-    this.logger.log(`Fetching teams for league ${leagueKey.externalId} from UC`);
-
-    // UC API endpoint for teams in an event
-    const response = await this.client.get<UCTeamsResponse>(
-      `/api/events/${leagueKey.externalId}/teams`,
+    const eventId = Number(leagueKey.externalId);
+    this.logger.log(
+      `Fetching teams for league ${leagueKey.externalId} (eventId: ${eventId}) from UC`,
     );
+
+    // Use UCTeamsService to fetch teams for this event
+    const response = await this.teams.list({
+      event_id: eventId,
+    });
 
     if (!response?.result) {
       this.logger.warn(`No teams found for league ${leagueKey.externalId}`);
@@ -82,8 +91,8 @@ export class UCLeagueAdapter implements LeagueAdapter {
     return response.result.map((team) => ({
       externalId: team.id.toString(),
       name: team.name,
-      colour: team.colour || '#000000',
-      altColour: team.alt_colour || '#ffffff',
+      colour: (team as any).color ?? '#000000', // UC uses American spelling
+      altColour: '#ffffff', // UC doesn't provide altColour
       rawData: team,
     }));
   }
@@ -98,50 +107,31 @@ export class UCLeagueAdapter implements LeagueAdapter {
   }
 
   async listMyLeagues(): Promise<ExternalLeague[]> {
-    this.logger.log('Fetching user leagues from UC /api/persons/me');
+    this.logger.log('Fetching organization leagues from UC /api/events');
 
-    interface UCPersonsResponse {
-      action: string;
-      status: number;
-      count: number;
-      result: Array<{
-        id: number;
-        teams?: Array<{
-          id: number;
-          event?: UCEvent;
-          [key: string]: unknown;
-        }>;
-      }>;
-    }
+    // Fetch all recent league-type events
+    // Use 'all' to get all leagues (past, current, and future)
+    const response = await this.events.list({
+      start: 'all' as UCStartParam,
+      type: ['league'],
+      order_by: 'date_desc',
+      per_page: 100, // Get up to 100 recent leagues
+    });
 
-    const response = await this.client.get<UCPersonsResponse>('/api/persons/me');
-
-    if (!response?.result?.[0]?.teams) {
-      this.logger.log('No teams found for user in UC');
+    if (!response?.result || response.result.length === 0) {
+      this.logger.log('No leagues found in UC');
       return [];
     }
 
-    const teams = response.result[0].teams;
+    const leagues: ExternalLeague[] = response.result.map((event) => ({
+      externalId: event.id.toString(),
+      name: event.name,
+      seasonStart: event.start ? new Date(event.start) : undefined,
+      seasonEnd: event.end ? new Date(event.end) : undefined,
+      rawData: event,
+    }));
 
-    // Extract unique events from teams
-    const eventsMap = new Map<number, UCEvent>();
-    for (const team of teams) {
-      if (team.event) {
-        eventsMap.set(team.event.id, team.event);
-      }
-    }
-
-    const leagues: ExternalLeague[] = Array.from(eventsMap.values()).map(
-      (event) => ({
-        externalId: event.id.toString(),
-        name: event.name,
-        seasonStart: event.open ? new Date(event.open) : undefined,
-        seasonEnd: event.close ? new Date(event.close) : undefined,
-        rawData: event,
-      }),
-    );
-
-    this.logger.log(`Found ${leagues.length} leagues for user`);
+    this.logger.log(`Found ${leagues.length} leagues from organization`);
     return leagues;
   }
 }

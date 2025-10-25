@@ -15,12 +15,12 @@ export class EnhanceMemberships1760484000000 implements MigrationInterface {
         RENAME TO memberships
     `);
 
-    // Add new columns
+    // Add new columns (using camelCase to match existing table schema)
     await queryRunner.query(`
       ALTER TABLE ${schemaPrefix}memberships
-        ADD COLUMN "playerId" UUID REFERENCES ${schemaPrefix}players(id),
-        ADD COLUMN "leagueId" UUID REFERENCES ${schemaPrefix}leagues(id),
-        ADD COLUMN "isActive" BOOLEAN NOT NULL DEFAULT true
+        ADD COLUMN IF NOT EXISTS "playerId" UUID REFERENCES ${schemaPrefix}players(id),
+        ADD COLUMN IF NOT EXISTS "leagueId" UUID REFERENCES ${schemaPrefix}leagues(id),
+        ADD COLUMN IF NOT EXISTS "isActive" BOOLEAN NOT NULL DEFAULT true
     `);
 
     // Add check constraint (must have userId OR playerId)

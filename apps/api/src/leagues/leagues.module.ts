@@ -6,19 +6,23 @@ import { LEAGUE_REPO } from './ports/league.repository';
 import { TypeOrmLeagueRepository } from './adapters/typeorm.league.repo';
 import { FixturesService } from 'src/fixtures/fixtures.service';
 import { IntegrationsModule } from '../integrations/integrations.module';
+import { ImportModule } from '../imports/import.module';
 import {
   League,
   ExternalLeagueSource,
   IntegrationConnection,
+  Team,
 } from '../database/entities';
 
 @Module({
   imports: [
     IntegrationsModule,
+    ImportModule,
     TypeOrmModule.forFeature([
       League,
       ExternalLeagueSource,
       IntegrationConnection,
+      Team,
     ]),
   ],
   controllers: [LeaguesController],

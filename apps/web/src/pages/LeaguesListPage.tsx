@@ -21,7 +21,7 @@ export function LeaguesListPage() {
   const { email } = useAuth();
   const { setSelectedLeague } = useLeague();
 
-  const handleSelectLeague = (league: MeLeague) => {
+  const handleSelectLeague = async (league: MeLeague) => {
     // Convert MeLeague to LeagueSummary format
     const leagueSummary: LeagueSummary = {
       id: league.id,
@@ -36,6 +36,21 @@ export function LeaguesListPage() {
     // Set the selected league in context
     setSelectedLeague(leagueSummary);
     console.log('Selected league:', leagueSummary);
+
+    // Always trigger league import/refresh to ensure data is loaded
+    // Use force=true if never synced or sync status is not active
+    const shouldForce = !league.lastSyncedAt || league.syncStatus !== 'active';
+    const refreshUrl = `/api/v1/leagues/${league.id}/refresh${shouldForce ? '?force=true' : ''}`;
+
+    console.log(`Triggering league import for: ${league.name}${shouldForce ? ' (force)' : ''}`);
+    try {
+      await fetch(refreshUrl, {
+        method: 'POST',
+      });
+      console.log('League import started');
+    } catch (error) {
+      console.error('Failed to trigger league import:', error);
+    }
 
     // Navigate to teams page
     navigate('/teams');

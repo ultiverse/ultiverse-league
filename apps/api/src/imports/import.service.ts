@@ -272,6 +272,11 @@ export class ImportService {
     leagueId: string,
     provider: string,
   ): Promise<void> {
+    // Skip membership creation if no userId provided (e.g., during refresh)
+    if (!userId) {
+      return;
+    }
+
     const existingMembership = await this.membershipRepo.findOne({
       where: { userId, teamId, leagueId, isActive: true },
     });

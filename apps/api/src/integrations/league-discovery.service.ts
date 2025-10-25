@@ -227,19 +227,44 @@ export class LeagueDiscoveryService {
   private async getOrCreateDefaultOrganization(
     accountId: string,
   ): Promise<Organization> {
-    // Try to find existing organization for this account
-    // For MVP, we'll just create one if needed with a default name
+    const orgSlug = `org-${accountId.substring(0, 8)}`;
+    const orgName = `Organization for ${accountId}`;
+
+    // Try to find existing organization for this account by slug (unique key)
     let org = await this.orgRepo.findOne({
-      where: { name: `Organization for ${accountId}` },
+      where: { slug: orgSlug },
     });
 
     if (!org) {
-      org = this.orgRepo.create({
-        name: `Organization for ${accountId}`,
-        slug: `org-${accountId.substring(0, 8)}`,
+      // Also check by name in case slug was not set
+      org = await this.orgRepo.findOne({
+        where: { name: orgName },
       });
-      org = await this.orgRepo.save(org);
-      this.logger.log(`Created default organization: ${org.id}`);
+    }
+
+    if (!org) {
+      try {
+        org = this.orgRepo.create({
+          name: orgName,
+          slug: orgSlug,
+        });
+        org = await this.orgRepo.save(org);
+        this.logger.log(`Created default organization: ${org.id}`);
+      } catch (error) {
+        // Handle race condition - organization might have been created by another request
+        if (error instanceof Error && error.message.includes('duplicate key')) {
+          // Try to find it again
+          org = await this.orgRepo.findOne({
+            where: { slug: orgSlug },
+          });
+          if (!org) {
+            throw new Error('Failed to create or find organization after conflict');
+          }
+          this.logger.log(`Found existing organization after conflict: ${org.id}`);
+        } else {
+          throw error;
+        }
+      }
     }
 
     return org;

@@ -22,12 +22,14 @@ import type {
   IFieldsProvider,
 } from '../integrations/ports';
 import { LeagueDiscoveryService } from '../integrations/league-discovery.service';
+import { ImportService } from '../imports/import.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
   League,
   ExternalLeagueSource,
   IntegrationConnection,
+  Team,
 } from '../database/entities';
 
 @Controller('leagues')
@@ -40,12 +42,15 @@ export class LeaguesController {
     @Inject(TEAMS_PROVIDER) private teamsProvider: ITeamsProvider,
     @Inject(FIELDS_PROVIDER) private fieldsProvider: IFieldsProvider,
     private leagueDiscovery: LeagueDiscoveryService,
+    private importService: ImportService,
     @InjectRepository(League)
     private readonly leagueRepo: Repository<League>,
     @InjectRepository(ExternalLeagueSource)
     private readonly externalSourceRepo: Repository<ExternalLeagueSource>,
     @InjectRepository(IntegrationConnection)
     private readonly integrationRepo: Repository<IntegrationConnection>,
+    @InjectRepository(Team)
+    private readonly teamRepo: Repository<Team>,
   ) {}
 
   /**
@@ -176,10 +181,30 @@ export class LeaguesController {
     @Query('pods') pods?: string,
     @Query('integration') integration?: string,
   ) {
+    // First try to get teams from database
+    const teams = await this.teamRepo.find({
+      where: { leagueId: id },
+      order: { name: 'ASC' },
+    });
+
+    if (teams.length > 0) {
+      this.logger.log(`Found ${teams.length} teams for league ${id} in database`);
+      return teams.map((team) => ({
+        id: team.id,
+        name: team.name,
+        location: team.location,
+        colour: team.colour,
+        altColour: team.altColour,
+        seasonStart: team.seasonStart,
+        seasonEnd: team.seasonEnd,
+      }));
+    }
+
+    // Fallback to external integration if no teams in database
     if (integration === 'external') {
       try {
-        const teams = await this.teamsProvider.listTeams(id);
-        return teams;
+        const externalTeams = await this.teamsProvider.listTeams(id);
+        return externalTeams;
       } catch (error) {
         console.warn(
           'External integration not configured, falling back to fixtures:',
@@ -188,6 +213,7 @@ export class LeaguesController {
       }
     }
 
+    // Final fallback to fixtures
     const kind = pods === 'true' ? 'pod' : undefined;
     return this.fixtures.getTeams(id, kind as any);
   }
@@ -207,14 +233,21 @@ export class LeaguesController {
   }
 
   /**
-   * POST /leagues/:id/refresh
+   * POST /leagues/:id/refresh?force=true
    * On-demand refresh of external league data.
    * Returns 202 Accepted immediately and refreshes in background.
+   * Use ?force=true to bypass staleness check and force refresh.
    */
   @Post(':id/refresh')
   @HttpCode(HttpStatus.ACCEPTED)
-  async refreshLeague(@Param('id') leagueId: string) {
-    this.logger.log(`Refresh requested for league: ${leagueId}`);
+  async refreshLeague(
+    @Param('id') leagueId: string,
+    @Query('force') force?: string,
+  ) {
+    const forceRefresh = force === 'true';
+    this.logger.log(
+      `Refresh requested for league: ${leagueId}${forceRefresh ? ' (force)' : ''}`,
+    );
 
     // Find the league and its external source
     const league = await this.leagueRepo.findOne({
@@ -237,18 +270,24 @@ export class LeaguesController {
       };
     }
 
-    // Check if the league is stale (>7 days)
-    const isStale = await this.leagueDiscovery.isLeagueStale(leagueId);
+    // Check if the league is stale (>7 days) unless force refresh
+    if (!forceRefresh) {
+      const isStale = await this.leagueDiscovery.isLeagueStale(leagueId);
 
-    if (!isStale) {
+      if (!isStale) {
+        this.logger.log(
+          `League ${leagueId} is not stale (last synced: ${externalSource.lastSyncedAt}), skipping refresh`,
+        );
+        return {
+          message: 'League data is already fresh',
+          leagueId,
+          lastSyncedAt: externalSource.lastSyncedAt,
+        };
+      }
+    } else {
       this.logger.log(
-        `League ${leagueId} is not stale (last synced: ${externalSource.lastSyncedAt}), skipping refresh`,
+        `Force refresh enabled, bypassing staleness check for league ${leagueId}`,
       );
-      return {
-        message: 'League data is already fresh',
-        leagueId,
-        lastSyncedAt: externalSource.lastSyncedAt,
-      };
     }
 
     // Get the account that has a connection for this provider
@@ -296,11 +335,8 @@ export class LeaguesController {
         `Starting background refresh for league ${leagueId} from provider ${provider}`,
       );
 
-      // Discover and update leagues from the provider
-      await this.leagueDiscovery.discoverLeaguesForAccount(
-        accountId,
-        provider as any,
-      );
+      // Use ImportService to refresh the league with full team/player data
+      await this.importService.refreshLeague(leagueId);
 
       this.logger.log(
         `Successfully refreshed league ${leagueId} from provider ${provider}`,
