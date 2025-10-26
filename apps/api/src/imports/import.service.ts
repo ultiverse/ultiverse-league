@@ -26,6 +26,8 @@ export interface ImportOptions {
 export class ImportService {
   private readonly logger = new Logger(ImportService.name);
   private adapters = new Map<string, LeagueAdapter>();
+  private playerDiscoveryService?: any; // Injected via setter to avoid circular dependency
+  private gameDiscoveryService?: any; // Injected via setter to avoid circular dependency
 
   constructor(
     @InjectRepository(League)
@@ -41,6 +43,20 @@ export class ImportService {
     @InjectRepository(Organization)
     private organizationRepo: Repository<Organization>,
   ) {}
+
+  /**
+   * Set the PlayerDiscoveryService (injected after module initialization to avoid circular deps)
+   */
+  setPlayerDiscoveryService(service: any): void {
+    this.playerDiscoveryService = service;
+  }
+
+  /**
+   * Set the GameDiscoveryService (injected after module initialization to avoid circular deps)
+   */
+  setGameDiscoveryService(service: any): void {
+    this.gameDiscoveryService = service;
+  }
 
   /**
    * Register an adapter for a provider
@@ -99,6 +115,44 @@ export class ImportService {
         extTeam,
         userId,
       );
+    }
+
+    // 4) Fetch and import players/rosters if PlayerDiscoveryService is available
+    if (this.playerDiscoveryService) {
+      try {
+        this.logger.log(`Discovering players for league ${league.name}`);
+        const players = await this.playerDiscoveryService.discoverPlayersForLeague(
+          league.id,
+          provider as ProviderType,
+        );
+        this.logger.log(
+          `Successfully discovered ${players.length} players for league ${league.name}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to discover players for league ${league.name}: ${error instanceof Error ? error.message : error}`,
+        );
+        // Don't fail the entire import if player discovery fails
+      }
+    }
+
+    // 5) Fetch and import games/schedule if GameDiscoveryService is available
+    if (this.gameDiscoveryService) {
+      try {
+        this.logger.log(`Discovering games for league ${league.name}`);
+        const games = await this.gameDiscoveryService.discoverGamesForLeague(
+          league.id,
+          provider as ProviderType,
+        );
+        this.logger.log(
+          `Successfully discovered ${games.length} games for league ${league.name}`,
+        );
+      } catch (error) {
+        this.logger.error(
+          `Failed to discover games for league ${league.name}: ${error instanceof Error ? error.message : error}`,
+        );
+        // Don't fail the entire import if game discovery fails
+      }
     }
 
     this.logger.log(
