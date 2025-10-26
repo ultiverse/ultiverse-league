@@ -9,6 +9,15 @@ import {
   TEAMS_PROVIDER,
   FIELDS_PROVIDER,
 } from '../integrations/ports';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import {
+  League,
+  ExternalLeagueSource,
+  IntegrationConnection,
+  Team,
+} from '../database/entities';
+import { LeagueDiscoveryService } from '../integrations/league-discovery.service';
+import { ImportService } from '../imports/import.service';
 
 describe('LeaguesController', () => {
   let controller: LeaguesController;
@@ -32,6 +41,36 @@ describe('LeaguesController', () => {
     listFields: jest.fn(),
   };
 
+  const leagueDiscoveryMock = {
+    discoverLeagues: jest.fn(),
+    areLeaguesStale: jest.fn(),
+  };
+
+  const importServiceMock = {
+    importLeague: jest.fn(),
+  };
+
+  const leagueRepoMock = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+    save: jest.fn(),
+  };
+
+  const externalSourceRepoMock = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+  };
+
+  const integrationRepoMock = {
+    find: jest.fn(),
+    findOne: jest.fn(),
+  };
+
+  const teamRepoMock = {
+    find: jest.fn(),
+    count: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -42,6 +81,18 @@ describe('LeaguesController', () => {
         { provide: LEAGUE_PROVIDER, useValue: leagueProviderMock },
         { provide: TEAMS_PROVIDER, useValue: teamsProviderMock },
         { provide: FIELDS_PROVIDER, useValue: fieldsProviderMock },
+        { provide: LeagueDiscoveryService, useValue: leagueDiscoveryMock },
+        { provide: ImportService, useValue: importServiceMock },
+        { provide: getRepositoryToken(League), useValue: leagueRepoMock },
+        {
+          provide: getRepositoryToken(ExternalLeagueSource),
+          useValue: externalSourceRepoMock,
+        },
+        {
+          provide: getRepositoryToken(IntegrationConnection),
+          useValue: integrationRepoMock,
+        },
+        { provide: getRepositoryToken(Team), useValue: teamRepoMock },
       ],
     }).compile();
 
@@ -141,22 +192,31 @@ describe('LeaguesController', () => {
 
   describe('byIdTeams(id, pods?)', () => {
     it('passes kind=undefined when pods param is not "true"', async () => {
-      fixturesMock.getTeams.mockReturnValueOnce([{ id: 'T1' }]);
+      teamRepoMock.find.mockResolvedValueOnce([
+        { id: 'T1', name: 'Team 1' },
+      ]);
 
       const out = await controller.byIdTeams('L1', undefined);
-      expect(out).toEqual([{ id: 'T1' }]);
-      expect(fixturesMock.getTeams).toHaveBeenCalledWith('L1', undefined);
+      expect(out).toEqual([{ id: 'T1', name: 'Team 1' }]);
+      expect(teamRepoMock.find).toHaveBeenCalledWith({
+        where: { leagueId: 'L1' },
+        order: { name: 'ASC' },
+      });
     });
 
     it('passes kind="pod" when pods="true"', async () => {
-      fixturesMock.getTeams.mockReturnValueOnce([{ id: 'P1' }]);
+      teamRepoMock.find.mockResolvedValueOnce([{ id: 'P1', name: 'Pod 1' }]);
 
       const out = await controller.byIdTeams('L1', 'true');
-      expect(out).toEqual([{ id: 'P1' }]);
-      expect(fixturesMock.getTeams).toHaveBeenCalledWith('L1', 'pod');
+      expect(out).toEqual([{ id: 'P1', name: 'Pod 1' }]);
+      expect(teamRepoMock.find).toHaveBeenCalledWith({
+        where: { leagueId: 'L1' },
+        order: { name: 'ASC' },
+      });
     });
 
     it('returns teams from external integration when specified', async () => {
+      teamRepoMock.find.mockResolvedValueOnce([]);
       const extTeams = [{ id: 'EXTT1' }, { id: 'EXTT2' }];
       teamsProviderMock.listTeams.mockResolvedValueOnce(extTeams);
 
