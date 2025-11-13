@@ -167,8 +167,7 @@ export class PlayerDiscoveryService {
       const eventId = Number(leagueSource.externalId);
 
       // Fetch registrations for the event
-      const response =
-        await this.ucRegistrationsService.list(eventId, true);
+      const response = await this.ucRegistrationsService.list(eventId, true);
 
       // Filter registrations by team_id if available in rawData
       // Note: UC registrations might not have team assignments in the API
@@ -269,9 +268,7 @@ export class PlayerDiscoveryService {
 
       await this.externalPlayerSourceRepo.save(externalSource);
 
-      this.logger.log(
-        `Created new player: ${player.fullName} (${player.id})`,
-      );
+      this.logger.log(`Created new player: ${player.fullName} (${player.id})`);
     }
 
     // Create/update membership if team and league are provided

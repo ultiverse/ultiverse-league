@@ -85,9 +85,7 @@ export class LeaguesController {
     }
 
     if (!account.organizationId) {
-      this.logger.warn(
-        `Account ${userEmail} has no organization assigned`,
-      );
+      this.logger.warn(`Account ${userEmail} has no organization assigned`);
       return [];
     }
 

@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { GameDiscoveryService } from './game-discovery.service';
 import {
   Game,
@@ -14,13 +13,6 @@ import { UCGamesService } from './uc/uc.games/uc.games.service';
 
 describe('GameDiscoveryService', () => {
   let service: GameDiscoveryService;
-  let gameRepo: jest.Mocked<Repository<Game>>;
-  let externalGameSourceRepo: jest.Mocked<Repository<ExternalGameSource>>;
-  let leagueRepo: jest.Mocked<Repository<League>>;
-  let externalLeagueSourceRepo: jest.Mocked<Repository<ExternalLeagueSource>>;
-  let teamRepo: jest.Mocked<Repository<Team>>;
-  let externalTeamSourceRepo: jest.Mocked<Repository<ExternalTeamSource>>;
-  let ucGamesService: jest.Mocked<UCGamesService>;
 
   const mockGameRepo = {
     create: jest.fn(),
@@ -93,19 +85,6 @@ describe('GameDiscoveryService', () => {
     }).compile();
 
     service = module.get<GameDiscoveryService>(GameDiscoveryService);
-    gameRepo = module.get(getRepositoryToken(Game));
-    externalGameSourceRepo = module.get(
-      getRepositoryToken(ExternalGameSource),
-    );
-    leagueRepo = module.get(getRepositoryToken(League));
-    externalLeagueSourceRepo = module.get(
-      getRepositoryToken(ExternalLeagueSource),
-    );
-    teamRepo = module.get(getRepositoryToken(Team));
-    externalTeamSourceRepo = module.get(
-      getRepositoryToken(ExternalTeamSource),
-    );
-    ucGamesService = module.get(UCGamesService);
   });
 
   it('should be defined', () => {
@@ -156,13 +135,11 @@ describe('GameDiscoveryService', () => {
         .mockResolvedValueOnce({ teamId: 'team-3' } as any)
         .mockResolvedValueOnce({ teamId: 'team-4' } as any);
       mockExternalGameSourceRepo.findOne.mockResolvedValue(null);
-      mockGameRepo.create.mockImplementation((data) => data as any);
+      mockGameRepo.create.mockImplementation((data: any) => data);
       mockGameRepo.save.mockImplementation((game) =>
-        Promise.resolve({ ...game, id: 'game-' + Math.random() } as any),
+        Promise.resolve({ ...game, id: 'game-' + Math.random() }),
       );
-      mockExternalGameSourceRepo.create.mockImplementation(
-        (data) => data as any,
-      );
+      mockExternalGameSourceRepo.create.mockImplementation((data: any) => data);
       mockExternalGameSourceRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverGamesForLeague(leagueId, provider);
@@ -288,13 +265,11 @@ describe('GameDiscoveryService', () => {
       mockLeagueRepo.findOne.mockResolvedValue(mockLeague as any);
       mockUCGamesService.list.mockResolvedValue(mockGames as any);
       mockExternalGameSourceRepo.findOne.mockResolvedValue(null);
-      mockGameRepo.create.mockImplementation((data) => data as any);
+      mockGameRepo.create.mockImplementation((data: any) => data);
       mockGameRepo.save.mockImplementation((game) =>
-        Promise.resolve({ ...game, id: 'game-123' } as any),
+        Promise.resolve({ ...game, id: 'game-123' }),
       );
-      mockExternalGameSourceRepo.create.mockImplementation(
-        (data) => data as any,
-      );
+      mockExternalGameSourceRepo.create.mockImplementation((data: any) => data);
       mockExternalGameSourceRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverGamesForLeague(leagueId, provider);
@@ -337,13 +312,11 @@ describe('GameDiscoveryService', () => {
       mockLeagueRepo.findOne.mockResolvedValue(mockLeague as any);
       mockUCGamesService.list.mockResolvedValue(mockGames as any);
       mockExternalGameSourceRepo.findOne.mockResolvedValue(null);
-      mockGameRepo.create.mockImplementation((data) => data as any);
+      mockGameRepo.create.mockImplementation((data: any) => data);
       mockGameRepo.save.mockImplementation((game) =>
-        Promise.resolve({ ...game, id: 'game-' + Math.random() } as any),
+        Promise.resolve({ ...game, id: 'game-' + Math.random() }),
       );
-      mockExternalGameSourceRepo.create.mockImplementation(
-        (data) => data as any,
-      );
+      mockExternalGameSourceRepo.create.mockImplementation((data: any) => data);
       mockExternalGameSourceRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverGamesForLeague(leagueId, provider);
@@ -476,13 +449,11 @@ describe('GameDiscoveryService', () => {
         .mockResolvedValueOnce({ teamId: 'team-1' } as any)
         .mockResolvedValueOnce({ teamId: 'team-2' } as any);
       mockExternalGameSourceRepo.findOne.mockResolvedValue(null);
-      mockGameRepo.create.mockImplementation((data) => data as any);
+      mockGameRepo.create.mockImplementation((data: any) => data);
       mockGameRepo.save.mockImplementation((game) =>
-        Promise.resolve({ ...game, id: 'game-' + Math.random() } as any),
+        Promise.resolve({ ...game, id: 'game-' + Math.random() }),
       );
-      mockExternalGameSourceRepo.create.mockImplementation(
-        (data) => data as any,
-      );
+      mockExternalGameSourceRepo.create.mockImplementation((data: any) => data);
       mockExternalGameSourceRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverGamesForLeague(leagueId, provider);
@@ -516,13 +487,11 @@ describe('GameDiscoveryService', () => {
       mockLeagueRepo.findOne.mockResolvedValue(mockLeague as any);
       mockUCGamesService.list.mockResolvedValue(mockGames as any);
       mockExternalGameSourceRepo.findOne.mockResolvedValue(null);
-      mockGameRepo.create.mockImplementation((data) => data as any);
+      mockGameRepo.create.mockImplementation((data: any) => data);
       mockGameRepo.save.mockImplementation((game) =>
-        Promise.resolve({ ...game, id: 'game-123' } as any),
+        Promise.resolve({ ...game, id: 'game-123' }),
       );
-      mockExternalGameSourceRepo.create.mockImplementation(
-        (data) => data as any,
-      );
+      mockExternalGameSourceRepo.create.mockImplementation((data: any) => data);
       mockExternalGameSourceRepo.save.mockResolvedValue({} as any);
 
       await service.discoverGamesForLeague(leagueId, provider);
@@ -557,11 +526,9 @@ describe('GameDiscoveryService', () => {
       mockLeagueRepo.findOne.mockResolvedValue(mockLeague as any);
       mockUCGamesService.list.mockResolvedValue(mockGames as any);
       mockExternalGameSourceRepo.findOne.mockResolvedValue(null);
-      mockGameRepo.create.mockImplementation((data) => data as any);
+      mockGameRepo.create.mockImplementation((data: any) => data);
       mockGameRepo.save.mockResolvedValue({ id: 'game-123' } as any);
-      mockExternalGameSourceRepo.create.mockImplementation(
-        (data) => data as any,
-      );
+      mockExternalGameSourceRepo.create.mockImplementation((data: any) => data);
       mockExternalGameSourceRepo.save.mockResolvedValue({} as any);
 
       await service.discoverGamesForLeague(leagueId, provider);

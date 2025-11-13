@@ -48,6 +48,7 @@ export class ImportService {
    * Set the PlayerDiscoveryService (injected after module initialization to avoid circular deps)
    */
   setPlayerDiscoveryService(service: any): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.playerDiscoveryService = service;
   }
 
@@ -55,6 +56,7 @@ export class ImportService {
    * Set the GameDiscoveryService (injected after module initialization to avoid circular deps)
    */
   setGameDiscoveryService(service: any): void {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     this.gameDiscoveryService = service;
   }
 
@@ -86,7 +88,7 @@ export class ImportService {
     leagueKey: LeagueKey,
     userId: string,
     organizationId: string,
-    opts?: ImportOptions,
+    _opts?: ImportOptions,
   ): Promise<string> {
     this.logger.log(
       `Importing league ${leagueKey.externalId} from ${provider}`,
@@ -121,11 +123,14 @@ export class ImportService {
     if (this.playerDiscoveryService) {
       try {
         this.logger.log(`Discovering players for league ${league.name}`);
-        const players = await this.playerDiscoveryService.discoverPlayersForLeague(
-          league.id,
-          provider as ProviderType,
-        );
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const players =
+          await this.playerDiscoveryService.discoverPlayersForLeague(
+            league.id,
+            provider as ProviderType,
+          );
         this.logger.log(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           `Successfully discovered ${players.length} players for league ${league.name}`,
         );
       } catch (error) {
@@ -140,11 +145,13 @@ export class ImportService {
     if (this.gameDiscoveryService) {
       try {
         this.logger.log(`Discovering games for league ${league.name}`);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         const games = await this.gameDiscoveryService.discoverGamesForLeague(
           league.id,
           provider as ProviderType,
         );
         this.logger.log(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           `Successfully discovered ${games.length} games for league ${league.name}`,
         );
       } catch (error) {

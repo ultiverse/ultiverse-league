@@ -140,10 +140,7 @@ export class GameDiscoveryService {
           : undefined;
 
         // Combine date and time to create startTime
-        const startTime = this.parseGameDateTime(
-          extGame.date,
-          extGame.time,
-        );
+        const startTime = this.parseGameDateTime(extGame.date, extGame.time);
 
         if (!startTime) {
           this.logger.warn(
@@ -197,10 +194,7 @@ export class GameDiscoveryService {
   /**
    * Parse game date and time into a Date object
    */
-  private parseGameDateTime(
-    date?: string,
-    time?: string,
-  ): Date | undefined {
+  private parseGameDateTime(date?: string, time?: string): Date | undefined {
     if (!date) return undefined;
 
     // UC format: date='YYYY-MM-DD', time='HH:mm:ss'
@@ -289,9 +283,7 @@ export class GameDiscoveryService {
     } else {
       // Create new canonical Game + ExternalGameSource
       if (!startTime) {
-        throw new Error(
-          `Cannot create game ${externalId} without startTime`,
-        );
+        throw new Error(`Cannot create game ${externalId} without startTime`);
       }
 
       game = this.gameRepo.create({
@@ -320,7 +312,7 @@ export class GameDiscoveryService {
       await this.externalGameSourceRepo.save(externalSource);
 
       this.logger.log(
-        `Created new game: ${game.homeTeamId || 'TBD'} vs ${game.awayTeamId || 'TBD'} at ${game.startTime.toISOString()} (${game.id})`,
+        `Created new game: ${game.homeTeamId || 'TBD'} vs ${game.awayTeamId || 'TBD'} at ${game.startTime?.toISOString() || 'unknown time'} (${game.id})`,
       );
 
       return {

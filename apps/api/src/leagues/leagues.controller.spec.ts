@@ -15,6 +15,7 @@ import {
   ExternalLeagueSource,
   IntegrationConnection,
   Team,
+  Account,
 } from '../database/entities';
 import { LeagueDiscoveryService } from '../integrations/league-discovery.service';
 import { ImportService } from '../imports/import.service';
@@ -71,6 +72,10 @@ describe('LeaguesController', () => {
     count: jest.fn(),
   };
 
+  const accountRepoMock = {
+    findOne: jest.fn(),
+  };
+
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -93,6 +98,7 @@ describe('LeaguesController', () => {
           useValue: integrationRepoMock,
         },
         { provide: getRepositoryToken(Team), useValue: teamRepoMock },
+        { provide: getRepositoryToken(Account), useValue: accountRepoMock },
       ],
     }).compile();
 
@@ -192,9 +198,7 @@ describe('LeaguesController', () => {
 
   describe('byIdTeams(id, pods?)', () => {
     it('passes kind=undefined when pods param is not "true"', async () => {
-      teamRepoMock.find.mockResolvedValueOnce([
-        { id: 'T1', name: 'Team 1' },
-      ]);
+      teamRepoMock.find.mockResolvedValueOnce([{ id: 'T1', name: 'Team 1' }]);
 
       const out = await controller.byIdTeams('L1', undefined);
       expect(out).toEqual([{ id: 'T1', name: 'Team 1' }]);

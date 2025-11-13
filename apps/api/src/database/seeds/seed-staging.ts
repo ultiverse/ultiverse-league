@@ -32,11 +32,7 @@ async function main() {
         SET "updatedAt" = now(), "organizationId" = $3
       RETURNING id;
       `,
-      [
-        'admin@staging.test',
-        '$2a$10$dummyhashforstagin',
-        organizationId,
-      ], // Dummy hash for staging
+      ['admin@staging.test', '$2a$10$dummyhashforstagin', organizationId], // Dummy hash for staging
     );
 
     await AppDataSource.query(
@@ -59,11 +55,7 @@ async function main() {
         SET "updatedAt" = now(), "organizationId" = $3
       RETURNING id;
       `,
-      [
-        'user@staging.test',
-        '$2a$10$dummyhashforstagin',
-        organizationId,
-      ], // Dummy hash for staging
+      ['user@staging.test', '$2a$10$dummyhashforstagin', organizationId], // Dummy hash for staging
     );
 
     await AppDataSource.query(

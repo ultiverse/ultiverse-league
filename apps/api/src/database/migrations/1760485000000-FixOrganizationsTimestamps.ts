@@ -11,15 +11,15 @@ export class FixOrganizationsTimestamps1760485000000
     const schemaPrefix = schema ? `"${schema}".` : '"public".';
 
     // Check if columns exist before renaming (they may already be correct)
-    const result = await queryRunner.query(`
+    const result = (await queryRunner.query(`
       SELECT column_name
       FROM information_schema.columns
       WHERE table_schema = 'public'
         AND table_name = 'organizations'
         AND column_name IN ('created_at', 'updated_at', 'createdAt', 'updatedAt')
-    `);
+    `)) as Array<{ column_name: string }>;
 
-    const columnNames = result.map((row: any) => row.column_name);
+    const columnNames: string[] = result.map((row) => row.column_name);
 
     // Only rename if old column names exist
     if (columnNames.includes('created_at')) {

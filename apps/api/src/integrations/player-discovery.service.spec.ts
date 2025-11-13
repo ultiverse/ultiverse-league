@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { PlayerDiscoveryService } from './player-discovery.service';
 import {
   Player,
@@ -13,12 +12,6 @@ import { UCRegistrationsService } from './uc/uc.registrations/uc.registrations.s
 
 describe('PlayerDiscoveryService', () => {
   let service: PlayerDiscoveryService;
-  let playerRepo: jest.Mocked<Repository<Player>>;
-  let externalPlayerSourceRepo: jest.Mocked<Repository<ExternalPlayerSource>>;
-  let membershipRepo: jest.Mocked<Repository<Membership>>;
-  let teamRepo: jest.Mocked<Repository<Team>>;
-  let externalTeamSourceRepo: jest.Mocked<Repository<ExternalTeamSource>>;
-  let ucRegistrationsService: jest.Mocked<UCRegistrationsService>;
 
   const mockPlayerRepo = {
     create: jest.fn(),
@@ -90,16 +83,6 @@ describe('PlayerDiscoveryService', () => {
     }).compile();
 
     service = module.get<PlayerDiscoveryService>(PlayerDiscoveryService);
-    playerRepo = module.get(getRepositoryToken(Player));
-    externalPlayerSourceRepo = module.get(
-      getRepositoryToken(ExternalPlayerSource),
-    );
-    membershipRepo = module.get(getRepositoryToken(Membership));
-    teamRepo = module.get(getRepositoryToken(Team));
-    externalTeamSourceRepo = module.get(
-      getRepositoryToken(ExternalTeamSource),
-    );
-    ucRegistrationsService = module.get(UCRegistrationsService);
   });
 
   it('should be defined', () => {
@@ -159,16 +142,16 @@ describe('PlayerDiscoveryService', () => {
         mockRegistrations as any,
       );
       mockExternalPlayerSourceRepo.findOne.mockResolvedValue(null);
-      mockPlayerRepo.create.mockImplementation((data) => data as any);
+      mockPlayerRepo.create.mockImplementation((data: any) => data);
       mockPlayerRepo.save.mockImplementation((player) =>
-        Promise.resolve({ ...player, id: 'player-' + Math.random() } as any),
+        Promise.resolve({ ...player, id: 'player-' + Math.random() }),
       );
       mockExternalPlayerSourceRepo.create.mockImplementation(
-        (data) => data as any,
+        (data: any) => data,
       );
       mockExternalPlayerSourceRepo.save.mockResolvedValue({} as any);
       mockMembershipRepo.findOne.mockResolvedValue(null);
-      mockMembershipRepo.create.mockImplementation((data) => data as any);
+      mockMembershipRepo.create.mockImplementation((data: any) => data);
       mockMembershipRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverPlayersForLeague(leagueId, provider);
@@ -229,21 +212,21 @@ describe('PlayerDiscoveryService', () => {
         mockRegistrations as any,
       );
       mockExternalPlayerSourceRepo.findOne.mockResolvedValue(null);
-      mockPlayerRepo.create.mockImplementation((data) => data as any);
+      mockPlayerRepo.create.mockImplementation((data: any) => data);
       mockPlayerRepo.save.mockResolvedValue({
         id: 'new-player-id',
         fullName: 'New Player',
         primaryEmail: 'newplayer@example.com',
       } as any);
       mockExternalPlayerSourceRepo.create.mockImplementation(
-        (data) => data as any,
+        (data: any) => data,
       );
       mockExternalPlayerSourceRepo.save.mockResolvedValue({
         provider,
         externalId: '1',
       } as any);
       mockMembershipRepo.findOne.mockResolvedValue(null);
-      mockMembershipRepo.create.mockImplementation((data) => data as any);
+      mockMembershipRepo.create.mockImplementation((data: any) => data);
       mockMembershipRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverPlayersForTeam(
@@ -318,7 +301,7 @@ describe('PlayerDiscoveryService', () => {
         primaryEmail: 'updated@example.com',
       } as any);
       mockMembershipRepo.findOne.mockResolvedValue(null);
-      mockMembershipRepo.create.mockImplementation((data) => data as any);
+      mockMembershipRepo.create.mockImplementation((data: any) => data);
       mockMembershipRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverPlayersForTeam(
@@ -417,13 +400,13 @@ describe('PlayerDiscoveryService', () => {
         mockRegistrations as any,
       );
       mockExternalPlayerSourceRepo.findOne.mockResolvedValue(null);
-      mockPlayerRepo.create.mockImplementation((data) => data as any);
+      mockPlayerRepo.create.mockImplementation((data: any) => data);
       mockPlayerRepo.save.mockResolvedValue({
         id: 'player-123',
         fullName: 'Player Name',
       } as any);
       mockExternalPlayerSourceRepo.create.mockImplementation(
-        (data) => data as any,
+        (data: any) => data,
       );
       mockExternalPlayerSourceRepo.save.mockResolvedValue({} as any);
       mockMembershipRepo.findOne.mockResolvedValue(existingMembership as any);
@@ -510,7 +493,11 @@ describe('PlayerDiscoveryService', () => {
       mockTeamRepo.findOne.mockResolvedValue(mockTeam as any);
 
       await expect(
-        service.discoverPlayersForTeam('team-123', 'league-123', 'ultimate_central'),
+        service.discoverPlayersForTeam(
+          'team-123',
+          'league-123',
+          'ultimate_central',
+        ),
       ).rejects.toThrow(
         'No external source found for team team-123 with provider ultimate_central',
       );

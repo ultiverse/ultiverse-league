@@ -21,6 +21,8 @@ export class ImportConfigService implements OnModuleInit {
     // Wire up discovery services to ImportService
     this.importService.setPlayerDiscoveryService(this.playerDiscoveryService);
     this.importService.setGameDiscoveryService(this.gameDiscoveryService);
-    this.logger.log('Wired up PlayerDiscoveryService and GameDiscoveryService to ImportService');
+    this.logger.log(
+      'Wired up PlayerDiscoveryService and GameDiscoveryService to ImportService',
+    );
   }
 }

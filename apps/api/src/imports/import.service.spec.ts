@@ -108,9 +108,7 @@ describe('ImportService', () => {
       getRepositoryToken(ExternalLeagueSource),
     );
     teamRepo = module.get(getRepositoryToken(Team));
-    externalTeamSourceRepo = module.get(
-      getRepositoryToken(ExternalTeamSource),
-    );
+    externalTeamSourceRepo = module.get(getRepositoryToken(ExternalTeamSource));
     membershipRepo = module.get(getRepositoryToken(Membership));
     organizationRepo = module.get(getRepositoryToken(Organization));
 
@@ -176,19 +174,19 @@ describe('ImportService', () => {
       mockLeagueRepo.create.mockReturnValue(mockSavedLeague as any);
       mockLeagueRepo.save.mockResolvedValue(mockSavedLeague as any);
       mockExternalLeagueSourceRepo.create.mockImplementation(
-        (data) => data as any,
+        (data: any) => data,
       );
       mockExternalLeagueSourceRepo.save.mockResolvedValue({} as any);
       mockExternalTeamSourceRepo.findOne.mockResolvedValue(null);
       mockTeamRepo.create.mockReturnValue(mockSavedTeam as any);
       mockTeamRepo.save.mockResolvedValue(mockSavedTeam as any);
-      mockTeamRepo.findOne.mockResolvedValue({ seasonStart: new Date() } as any);
-      mockExternalTeamSourceRepo.create.mockImplementation(
-        (data) => data as any,
-      );
+      mockTeamRepo.findOne.mockResolvedValue({
+        seasonStart: new Date(),
+      } as any);
+      mockExternalTeamSourceRepo.create.mockImplementation((data: any) => data);
       mockExternalTeamSourceRepo.save.mockResolvedValue({} as any);
       mockMembershipRepo.findOne.mockResolvedValue(null);
-      mockMembershipRepo.create.mockImplementation((data) => data as any);
+      mockMembershipRepo.create.mockImplementation((data: any) => data);
       mockMembershipRepo.save.mockResolvedValue({} as any);
       mockPlayerDiscoveryService.discoverPlayersForLeague.mockResolvedValue([
         { id: 'player-1', fullName: 'John Doe' },
@@ -259,7 +257,9 @@ describe('ImportService', () => {
       mockExternalLeagueSourceRepo.findOne.mockResolvedValue(
         existingSource as any,
       );
-      mockExternalLeagueSourceRepo.save.mockResolvedValue(existingSource as any);
+      mockExternalLeagueSourceRepo.save.mockResolvedValue(
+        existingSource as any,
+      );
       mockLeagueRepo.save.mockResolvedValue(existingLeague as any);
       mockPlayerDiscoveryService.discoverPlayersForLeague.mockResolvedValue([]);
       mockGameDiscoveryService.discoverGamesForLeague.mockResolvedValue([]);
@@ -303,7 +303,7 @@ describe('ImportService', () => {
       mockLeagueRepo.create.mockReturnValue(mockSavedLeague as any);
       mockLeagueRepo.save.mockResolvedValue(mockSavedLeague as any);
       mockExternalLeagueSourceRepo.create.mockImplementation(
-        (data) => data as any,
+        (data: any) => data,
       );
       mockExternalLeagueSourceRepo.save.mockResolvedValue({} as any);
       mockPlayerDiscoveryService.discoverPlayersForLeague.mockRejectedValue(
@@ -345,7 +345,7 @@ describe('ImportService', () => {
       mockLeagueRepo.create.mockReturnValue(mockSavedLeague as any);
       mockLeagueRepo.save.mockResolvedValue(mockSavedLeague as any);
       mockExternalLeagueSourceRepo.create.mockImplementation(
-        (data) => data as any,
+        (data: any) => data,
       );
       mockExternalLeagueSourceRepo.save.mockResolvedValue({} as any);
       mockPlayerDiscoveryService.discoverPlayersForLeague.mockResolvedValue([]);
@@ -392,7 +392,7 @@ describe('ImportService', () => {
       mockLeagueRepo.create.mockReturnValue(mockSavedLeague as any);
       mockLeagueRepo.save.mockResolvedValue(mockSavedLeague as any);
       mockExternalLeagueSourceRepo.create.mockImplementation(
-        (data) => data as any,
+        (data: any) => data,
       );
       mockExternalLeagueSourceRepo.save.mockResolvedValue({} as any);
 
@@ -432,7 +432,9 @@ describe('ImportService', () => {
         rawData: {},
       });
       mockAdapter.fetchTeams.mockResolvedValue([]);
-      mockExternalLeagueSourceRepo.save.mockResolvedValue(existingSource as any);
+      mockExternalLeagueSourceRepo.save.mockResolvedValue(
+        existingSource as any,
+      );
       mockLeagueRepo.save.mockResolvedValue(existingSource.league as any);
       mockPlayerDiscoveryService.discoverPlayersForLeague.mockResolvedValue([]);
       mockGameDiscoveryService.discoverGamesForLeague.mockResolvedValue([]);

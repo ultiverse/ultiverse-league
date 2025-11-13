@@ -42,7 +42,7 @@ function AppContent() {
     // Redirect to last URL on initial load
     useEffect(() => {
         redirectToLastUrl();
-    }, []);
+    }, [redirectToLastUrl]);
 
     const handleLeagueClick = () => {
         setShowLeagueModal(true);
