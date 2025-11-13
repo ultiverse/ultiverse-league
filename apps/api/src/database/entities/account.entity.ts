@@ -6,9 +6,12 @@ import {
   UpdateDateColumn,
   OneToOne,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Profile } from './profile.entity';
 import { IntegrationConnection } from './integration-connection.entity';
+import { Organization } from './organization.entity';
 
 @Entity('accounts')
 export class Account {
@@ -34,6 +37,9 @@ export class Account {
   @Column({ type: 'varchar', nullable: true })
   lastLoginProvider?: string; // Track which integration they last used to log in
 
+  @Column({ type: 'uuid', nullable: true })
+  organizationId?: string;
+
   @CreateDateColumn()
   createdAt: Date;
 
@@ -51,4 +57,8 @@ export class Account {
     cascade: true,
   })
   integrationConnections: IntegrationConnection[];
+
+  @ManyToOne(() => Organization, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'organizationId' })
+  organization?: Organization;
 }

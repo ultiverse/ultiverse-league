@@ -9,6 +9,7 @@ import {
   HttpStatus,
   NotFoundException,
   Logger,
+  Headers,
 } from '@nestjs/common';
 import { FixturesService } from '../fixtures/fixtures.service';
 import {
@@ -30,6 +31,7 @@ import {
   ExternalLeagueSource,
   IntegrationConnection,
   Team,
+  Account,
 } from '../database/entities';
 
 @Controller('leagues')
@@ -51,6 +53,8 @@ export class LeaguesController {
     private readonly integrationRepo: Repository<IntegrationConnection>,
     @InjectRepository(Team)
     private readonly teamRepo: Repository<Team>,
+    @InjectRepository(Account)
+    private readonly accountRepo: Repository<Account>,
   ) {}
 
   /**
@@ -58,24 +62,43 @@ export class LeaguesController {
    * Return all discovered leagues for the current user's organization
    */
   @Get()
-  async getAllLeagues() {
+  async getAllLeagues(@Headers('x-user-email') userEmail?: string) {
     this.logger.log('Getting all discovered leagues for user organization');
 
-    // TODO: Get account from authentication
-    const TEMP_ACCOUNT_ID = 'b935e0fb-4075-43af-b736-166001a32272';
+    // TEMPORARY: Use email from header until proper authentication is implemented
+    // Frontend sends email via X-User-Email header from sessionStorage
+    // TODO: Replace with proper authentication (@CurrentUser() decorator with JWT/sessions)
+    if (!userEmail) {
+      this.logger.warn('No user email provided in request');
+      return [];
+    }
 
-    // Get all leagues that have been discovered
+    // Get account with organization to enforce security boundary
+    const account = await this.accountRepo.findOne({
+      where: { email: userEmail },
+      select: ['id', 'email', 'organizationId'],
+    });
+
+    if (!account) {
+      this.logger.warn(`Account ${userEmail} not found`);
+      return [];
+    }
+
+    if (!account.organizationId) {
+      this.logger.warn(
+        `Account ${userEmail} has no organization assigned`,
+      );
+      return [];
+    }
+
+    // Get all leagues that belong to the account's organization
     const leagues = await this.leagueRepo
       .createQueryBuilder('league')
       .leftJoinAndSelect('league.organization', 'organization')
       .leftJoinAndSelect('league.externalSources', 'source')
-      .innerJoin('league.organization', 'org')
-      .innerJoin(
-        'integration_connections',
-        'conn',
-        'conn."accountId" = :accountId AND league."organizationId" = org.id',
-        { accountId: TEMP_ACCOUNT_ID },
-      )
+      .where('league.organizationId = :organizationId', {
+        organizationId: account.organizationId,
+      })
       .orderBy('league.seasonStart', 'DESC')
       .addOrderBy('league.seasonEnd', 'DESC')
       .getMany();

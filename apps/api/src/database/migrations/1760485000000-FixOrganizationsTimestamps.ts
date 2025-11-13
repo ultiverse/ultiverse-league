@@ -8,19 +8,33 @@ export class FixOrganizationsTimestamps1760485000000
     const schema = (
       queryRunner.connection.driver.options as { schema?: string }
     ).schema;
-    const schemaPrefix = schema ? `"${schema}".` : '';
+    const schemaPrefix = schema ? `"${schema}".` : '"public".';
 
-    // Rename created_at to createdAt
-    await queryRunner.query(`
-      ALTER TABLE ${schemaPrefix}organizations
-        RENAME COLUMN created_at TO "createdAt"
+    // Check if columns exist before renaming (they may already be correct)
+    const result = await queryRunner.query(`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_schema = 'public'
+        AND table_name = 'organizations'
+        AND column_name IN ('created_at', 'updated_at', 'createdAt', 'updatedAt')
     `);
 
-    // Rename updated_at to updatedAt
-    await queryRunner.query(`
-      ALTER TABLE ${schemaPrefix}organizations
-        RENAME COLUMN updated_at TO "updatedAt"
-    `);
+    const columnNames = result.map((row: any) => row.column_name);
+
+    // Only rename if old column names exist
+    if (columnNames.includes('created_at')) {
+      await queryRunner.query(`
+        ALTER TABLE ${schemaPrefix}organizations
+          RENAME COLUMN created_at TO "createdAt"
+      `);
+    }
+
+    if (columnNames.includes('updated_at')) {
+      await queryRunner.query(`
+        ALTER TABLE ${schemaPrefix}organizations
+          RENAME COLUMN updated_at TO "updatedAt"
+      `);
+    }
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

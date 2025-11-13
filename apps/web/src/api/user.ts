@@ -44,7 +44,15 @@ export async function getMyLeagues(fresh?: 'if-stale' | 'force'): Promise<MeLeag
  * regardless of whether the user has team memberships
  */
 export async function getAllLeagues(): Promise<MeLeague[]> {
-  const response = await fetch('/api/v1/leagues');
+  // Get user email from session storage for authentication
+  const email = sessionStorage.getItem('ultiverse_user_email');
+  const headers: HeadersInit = {};
+
+  if (email) {
+    headers['X-User-Email'] = email;
+  }
+
+  const response = await fetch('/api/v1/leagues', { headers });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch leagues: ${response.statusText}`);
