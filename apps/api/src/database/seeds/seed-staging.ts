@@ -1,6 +1,30 @@
 import 'reflect-metadata';
 import { AppDataSource } from '../data-source';
 
+interface IdRow {
+  id: string;
+}
+
+function assertIdRow(row: unknown, context: string): asserts row is IdRow {
+  if (
+    typeof row !== 'object' ||
+    row === null ||
+    !('id' in row) ||
+    typeof (row as Partial<IdRow>).id !== 'string'
+  ) {
+    throw new Error(`Result row for ${context} is missing a string id`);
+  }
+}
+
+function extractId(rows: unknown, context: string): string {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error(`Expected at least one result row for ${context}`);
+  }
+  const row: unknown = rows[0];
+  assertIdRow(row, context);
+  return row.id;
+}
+
 /**
  * Seed script for staging environment
  * Creates test users and sample data for testing
@@ -24,15 +48,18 @@ async function main() {
     console.log('✓ Created staging organization');
 
     // Create test admin user with organizationId
-    const [{ id: adminId }] = await AppDataSource.query(
-      `
+    const adminId = extractId(
+      await AppDataSource.query(
+        `
       INSERT INTO accounts (id, email, "passwordHash", status, "organizationId", "createdAt", "updatedAt")
       VALUES (gen_random_uuid(), $1, $2, 'active', $3, now(), now())
       ON CONFLICT (email) DO UPDATE
         SET "updatedAt" = now(), "organizationId" = $3
       RETURNING id;
       `,
-      ['admin@staging.test', '$2a$10$dummyhashforstagin', organizationId], // Dummy hash for staging
+        ['admin@staging.test', '$2a$10$dummyhashforstagin', organizationId], // Dummy hash for staging
+      ),
+      'admin account insert',
     );
 
     await AppDataSource.query(
@@ -47,15 +74,18 @@ async function main() {
     console.log('✓ Created admin user: admin@staging.test');
 
     // Create test regular user with organizationId
-    const [{ id: userId }] = await AppDataSource.query(
-      `
+    const userId = extractId(
+      await AppDataSource.query(
+        `
       INSERT INTO accounts (id, email, "passwordHash", status, "organizationId", "createdAt", "updatedAt")
       VALUES (gen_random_uuid(), $1, $2, 'active', $3, now(), now())
       ON CONFLICT (email) DO UPDATE
         SET "updatedAt" = now(), "organizationId" = $3
       RETURNING id;
       `,
-      ['user@staging.test', '$2a$10$dummyhashforstagin', organizationId], // Dummy hash for staging
+        ['user@staging.test', '$2a$10$dummyhashforstagin', organizationId], // Dummy hash for staging
+      ),
+      'test user account insert',
     );
 
     await AppDataSource.query(
@@ -87,8 +117,9 @@ async function main() {
     console.log('✓ Created integration connection stubs');
 
     // Create sample team (using the same organizationId from above)
-    const [{ id: teamId }] = await AppDataSource.query(
-      `
+    const teamId = extractId(
+      await AppDataSource.query(
+        `
       INSERT INTO teams (
         id, "organizationId", name, location, "sourceType", "isEditable",
         "seasonStart", "seasonEnd", colour, "altColour", "createdByUserId",
@@ -101,7 +132,9 @@ async function main() {
       )
       RETURNING id;
       `,
-      [organizationId, 'Staging Test Team', 'Vancouver, BC', adminId],
+        [organizationId, 'Staging Test Team', 'Vancouver, BC', adminId],
+      ),
+      'team insert',
     );
 
     console.log('✓ Created sample team: Staging Test Team');

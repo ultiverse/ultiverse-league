@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module';
 
 describe('PodScheduler (e2e)', () => {
   let app: INestApplication;
+  const getServer = () => app.getHttpServer() as Parameters<typeof request>[0];
 
   beforeAll(async () => {
     const mod = await Test.createTestingModule({
@@ -23,7 +24,7 @@ describe('PodScheduler (e2e)', () => {
   afterAll(async () => app.close());
 
   it('generates blocks with no overlaps (8 pods → 2 blocks per round)', async () => {
-    const res = await request(app.getHttpServer())
+    const res = await request(getServer())
       .post('/api/v1/schedule/pods')
       .send({ podIds: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], rounds: 1 })
       .expect(201);
@@ -43,7 +44,7 @@ describe('PodScheduler (e2e)', () => {
   it('generates valid pairings with recency window setting', async () => {
     const podIds = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
-    const res = await request(app.getHttpServer())
+    const res = await request(getServer())
       .post('/api/v1/schedule/pods')
       .send({
         podIds,

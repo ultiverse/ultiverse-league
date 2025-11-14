@@ -9,6 +9,7 @@ import {
   Unique,
 } from 'typeorm';
 import { Player } from './player.entity';
+import type { ProviderType } from '@ultiverse/shared-types';
 
 @Entity('external_player_sources')
 @Unique(['provider', 'externalId'])
@@ -20,7 +21,7 @@ export class ExternalPlayerSource {
   playerId: string;
 
   @Column({ type: 'varchar' })
-  provider: 'ultimate_central' | 'zuluru';
+  provider: ProviderType;
 
   @Column({ type: 'varchar' })
   externalId: string;

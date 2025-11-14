@@ -6,7 +6,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 const createEventsMock = jest.fn();
 jest.mock('ics', () => ({
   __esModule: true,
-  createEvents: (...args: any[]) => createEventsMock(...args),
+  createEvents: (...args: unknown[]) => createEventsMock(...args),
 }));
 
 import { ExportsService } from './exports.service';

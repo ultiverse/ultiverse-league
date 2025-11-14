@@ -1,6 +1,12 @@
 import { Controller, Get, Post, Delete, Param, Body } from '@nestjs/common';
 import { IntegrationsService } from './integrations.service';
 
+interface ConnectProviderBody {
+  clientId: string;
+  clientSecret: string;
+  domain: string;
+}
+
 /**
  * IntegrationsController
  *
@@ -38,7 +44,7 @@ export class IntegrationsController {
   @Post('connect/:provider')
   async connectProvider(
     @Param('provider') provider: string,
-    @Body() connectionData?: any,
+    @Body() connectionData?: ConnectProviderBody,
   ) {
     return this.integrationsService.connectProvider(provider, connectionData);
   }

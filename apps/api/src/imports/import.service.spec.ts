@@ -11,6 +11,8 @@ import {
   Organization,
 } from '../database/entities';
 
+const identity = <T>(value: T): T => value;
+
 describe('ImportService', () => {
   let service: ImportService;
   let leagueRepo: jest.Mocked<Repository<League>>;
@@ -173,9 +175,7 @@ describe('ImportService', () => {
       mockExternalLeagueSourceRepo.findOne.mockResolvedValue(null);
       mockLeagueRepo.create.mockReturnValue(mockSavedLeague as any);
       mockLeagueRepo.save.mockResolvedValue(mockSavedLeague as any);
-      mockExternalLeagueSourceRepo.create.mockImplementation(
-        (data: any) => data,
-      );
+      mockExternalLeagueSourceRepo.create.mockImplementation(identity);
       mockExternalLeagueSourceRepo.save.mockResolvedValue({} as any);
       mockExternalTeamSourceRepo.findOne.mockResolvedValue(null);
       mockTeamRepo.create.mockReturnValue(mockSavedTeam as any);
@@ -183,10 +183,10 @@ describe('ImportService', () => {
       mockTeamRepo.findOne.mockResolvedValue({
         seasonStart: new Date(),
       } as any);
-      mockExternalTeamSourceRepo.create.mockImplementation((data: any) => data);
+      mockExternalTeamSourceRepo.create.mockImplementation(identity);
       mockExternalTeamSourceRepo.save.mockResolvedValue({} as any);
       mockMembershipRepo.findOne.mockResolvedValue(null);
-      mockMembershipRepo.create.mockImplementation((data: any) => data);
+      mockMembershipRepo.create.mockImplementation(identity);
       mockMembershipRepo.save.mockResolvedValue({} as any);
       mockPlayerDiscoveryService.discoverPlayersForLeague.mockResolvedValue([
         { id: 'player-1', fullName: 'John Doe' },
@@ -302,9 +302,7 @@ describe('ImportService', () => {
       mockExternalLeagueSourceRepo.findOne.mockResolvedValue(null);
       mockLeagueRepo.create.mockReturnValue(mockSavedLeague as any);
       mockLeagueRepo.save.mockResolvedValue(mockSavedLeague as any);
-      mockExternalLeagueSourceRepo.create.mockImplementation(
-        (data: any) => data,
-      );
+      mockExternalLeagueSourceRepo.create.mockImplementation(identity);
       mockExternalLeagueSourceRepo.save.mockResolvedValue({} as any);
       mockPlayerDiscoveryService.discoverPlayersForLeague.mockRejectedValue(
         new Error('UC API error'),
@@ -344,9 +342,7 @@ describe('ImportService', () => {
       mockExternalLeagueSourceRepo.findOne.mockResolvedValue(null);
       mockLeagueRepo.create.mockReturnValue(mockSavedLeague as any);
       mockLeagueRepo.save.mockResolvedValue(mockSavedLeague as any);
-      mockExternalLeagueSourceRepo.create.mockImplementation(
-        (data: any) => data,
-      );
+      mockExternalLeagueSourceRepo.create.mockImplementation(identity);
       mockExternalLeagueSourceRepo.save.mockResolvedValue({} as any);
       mockPlayerDiscoveryService.discoverPlayersForLeague.mockResolvedValue([]);
       mockGameDiscoveryService.discoverGamesForLeague.mockRejectedValue(
@@ -391,9 +387,7 @@ describe('ImportService', () => {
       mockExternalLeagueSourceRepo.findOne.mockResolvedValue(null);
       mockLeagueRepo.create.mockReturnValue(mockSavedLeague as any);
       mockLeagueRepo.save.mockResolvedValue(mockSavedLeague as any);
-      mockExternalLeagueSourceRepo.create.mockImplementation(
-        (data: any) => data,
-      );
+      mockExternalLeagueSourceRepo.create.mockImplementation(identity);
       mockExternalLeagueSourceRepo.save.mockResolvedValue({} as any);
 
       await newService.importLeague(provider, leagueKey, 'user-123', 'org-123');

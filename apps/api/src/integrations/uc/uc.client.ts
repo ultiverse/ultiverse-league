@@ -124,7 +124,10 @@ export class UCClient {
         const statusText = e.response?.status
           ? ` (HTTP ${e.response.status})`
           : '';
-        this.logger.error(`UC request failed${statusText}: ${errorDetails}`, e.stack);
+        this.logger.error(
+          `UC request failed${statusText}: ${errorDetails}`,
+          e.stack,
+        );
         throw new Error(`UC API error${statusText}: ${errorDetails}`);
       }
       this.logger.error(`Unknown error in UC client: ${String(err)}`);

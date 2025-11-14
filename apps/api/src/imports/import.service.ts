@@ -16,6 +16,14 @@ import {
   ExternalLeague,
   ExternalTeam,
 } from './ports/league-adapter.interface';
+import type {
+  PlayerDiscoveryService,
+  DiscoveredPlayer,
+} from '../integrations/player-discovery.service';
+import type {
+  GameDiscoveryService,
+  DiscoveredGame,
+} from '../integrations/game-discovery.service';
 
 export interface ImportOptions {
   onDemand?: boolean;
@@ -26,8 +34,14 @@ export interface ImportOptions {
 export class ImportService {
   private readonly logger = new Logger(ImportService.name);
   private adapters = new Map<string, LeagueAdapter>();
-  private playerDiscoveryService?: any; // Injected via setter to avoid circular dependency
-  private gameDiscoveryService?: any; // Injected via setter to avoid circular dependency
+  private playerDiscoveryService?: Pick<
+    PlayerDiscoveryService,
+    'discoverPlayersForLeague'
+  >;
+  private gameDiscoveryService?: Pick<
+    GameDiscoveryService,
+    'discoverGamesForLeague'
+  >;
 
   constructor(
     @InjectRepository(League)
@@ -47,16 +61,18 @@ export class ImportService {
   /**
    * Set the PlayerDiscoveryService (injected after module initialization to avoid circular deps)
    */
-  setPlayerDiscoveryService(service: any): void {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  setPlayerDiscoveryService(
+    service: Pick<PlayerDiscoveryService, 'discoverPlayersForLeague'>,
+  ): void {
     this.playerDiscoveryService = service;
   }
 
   /**
    * Set the GameDiscoveryService (injected after module initialization to avoid circular deps)
    */
-  setGameDiscoveryService(service: any): void {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  setGameDiscoveryService(
+    service: Pick<GameDiscoveryService, 'discoverGamesForLeague'>,
+  ): void {
     this.gameDiscoveryService = service;
   }
 
@@ -88,10 +104,15 @@ export class ImportService {
     leagueKey: LeagueKey,
     userId: string,
     organizationId: string,
-    _opts?: ImportOptions,
+    opts?: ImportOptions,
   ): Promise<string> {
+    const mode = opts?.forceRefresh
+      ? 'force-refresh'
+      : opts?.onDemand
+        ? 'on-demand'
+        : 'standard';
     this.logger.log(
-      `Importing league ${leagueKey.externalId} from ${provider}`,
+      `Importing league ${leagueKey.externalId} from ${provider} [${mode}]`,
     );
 
     // 1) Fetch league data from provider adapter
@@ -123,14 +144,12 @@ export class ImportService {
     if (this.playerDiscoveryService) {
       try {
         this.logger.log(`Discovering players for league ${league.name}`);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const players =
+        const players: DiscoveredPlayer[] =
           await this.playerDiscoveryService.discoverPlayersForLeague(
             league.id,
             provider as ProviderType,
           );
         this.logger.log(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           `Successfully discovered ${players.length} players for league ${league.name}`,
         );
       } catch (error) {
@@ -145,13 +164,12 @@ export class ImportService {
     if (this.gameDiscoveryService) {
       try {
         this.logger.log(`Discovering games for league ${league.name}`);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-        const games = await this.gameDiscoveryService.discoverGamesForLeague(
-          league.id,
-          provider as ProviderType,
-        );
+        const games: DiscoveredGame[] =
+          await this.gameDiscoveryService.discoverGamesForLeague(
+            league.id,
+            provider as ProviderType,
+          );
         this.logger.log(
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           `Successfully discovered ${games.length} games for league ${league.name}`,
         );
       } catch (error) {

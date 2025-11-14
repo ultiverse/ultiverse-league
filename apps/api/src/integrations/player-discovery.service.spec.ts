@@ -10,6 +10,8 @@ import {
 } from '../database/entities';
 import { UCRegistrationsService } from './uc/uc.registrations/uc.registrations.service';
 
+const identity = <T>(value: T): T => value;
+
 describe('PlayerDiscoveryService', () => {
   let service: PlayerDiscoveryService;
 
@@ -142,16 +144,14 @@ describe('PlayerDiscoveryService', () => {
         mockRegistrations as any,
       );
       mockExternalPlayerSourceRepo.findOne.mockResolvedValue(null);
-      mockPlayerRepo.create.mockImplementation((data: any) => data);
+      mockPlayerRepo.create.mockImplementation(identity);
       mockPlayerRepo.save.mockImplementation((player) =>
         Promise.resolve({ ...player, id: 'player-' + Math.random() }),
       );
-      mockExternalPlayerSourceRepo.create.mockImplementation(
-        (data: any) => data,
-      );
+      mockExternalPlayerSourceRepo.create.mockImplementation(identity);
       mockExternalPlayerSourceRepo.save.mockResolvedValue({} as any);
       mockMembershipRepo.findOne.mockResolvedValue(null);
-      mockMembershipRepo.create.mockImplementation((data: any) => data);
+      mockMembershipRepo.create.mockImplementation(identity);
       mockMembershipRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverPlayersForLeague(leagueId, provider);
@@ -212,21 +212,19 @@ describe('PlayerDiscoveryService', () => {
         mockRegistrations as any,
       );
       mockExternalPlayerSourceRepo.findOne.mockResolvedValue(null);
-      mockPlayerRepo.create.mockImplementation((data: any) => data);
+      mockPlayerRepo.create.mockImplementation(identity);
       mockPlayerRepo.save.mockResolvedValue({
         id: 'new-player-id',
         fullName: 'New Player',
         primaryEmail: 'newplayer@example.com',
       } as any);
-      mockExternalPlayerSourceRepo.create.mockImplementation(
-        (data: any) => data,
-      );
+      mockExternalPlayerSourceRepo.create.mockImplementation(identity);
       mockExternalPlayerSourceRepo.save.mockResolvedValue({
         provider,
         externalId: '1',
       } as any);
       mockMembershipRepo.findOne.mockResolvedValue(null);
-      mockMembershipRepo.create.mockImplementation((data: any) => data);
+      mockMembershipRepo.create.mockImplementation(identity);
       mockMembershipRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverPlayersForTeam(
@@ -301,7 +299,7 @@ describe('PlayerDiscoveryService', () => {
         primaryEmail: 'updated@example.com',
       } as any);
       mockMembershipRepo.findOne.mockResolvedValue(null);
-      mockMembershipRepo.create.mockImplementation((data: any) => data);
+      mockMembershipRepo.create.mockImplementation(identity);
       mockMembershipRepo.save.mockResolvedValue({} as any);
 
       const result = await service.discoverPlayersForTeam(
@@ -400,14 +398,12 @@ describe('PlayerDiscoveryService', () => {
         mockRegistrations as any,
       );
       mockExternalPlayerSourceRepo.findOne.mockResolvedValue(null);
-      mockPlayerRepo.create.mockImplementation((data: any) => data);
+      mockPlayerRepo.create.mockImplementation(identity);
       mockPlayerRepo.save.mockResolvedValue({
         id: 'player-123',
         fullName: 'Player Name',
       } as any);
-      mockExternalPlayerSourceRepo.create.mockImplementation(
-        (data: any) => data,
-      );
+      mockExternalPlayerSourceRepo.create.mockImplementation(identity);
       mockExternalPlayerSourceRepo.save.mockResolvedValue({} as any);
       mockMembershipRepo.findOne.mockResolvedValue(existingMembership as any);
 

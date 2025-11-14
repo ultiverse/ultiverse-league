@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { Account } from './account.entity';
+import { ExternalPlayerSource } from './external-player-source.entity';
 
 @Entity('players')
 export class Player {
@@ -33,4 +35,7 @@ export class Player {
   @ManyToOne(() => Account, { nullable: true })
   @JoinColumn({ name: 'userId' })
   user?: Account;
+
+  @OneToMany(() => ExternalPlayerSource, (source) => source.player)
+  externalSources: ExternalPlayerSource[];
 }

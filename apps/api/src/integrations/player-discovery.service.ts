@@ -6,7 +6,8 @@ import {
   ExternalPlayerSource,
   Membership,
   Team,
-  ExternalTeamSource,
+  League,
+  ExternalLeagueSource,
 } from '../database/entities';
 import { UCRegistrationsService } from './uc/uc.registrations/uc.registrations.service';
 import type { ProviderType } from '@ultiverse/shared-types';
@@ -41,8 +42,6 @@ export class PlayerDiscoveryService {
     private readonly membershipRepo: Repository<Membership>,
     @InjectRepository(Team)
     private readonly teamRepo: Repository<Team>,
-    @InjectRepository(ExternalTeamSource)
-    private readonly externalTeamSourceRepo: Repository<ExternalTeamSource>,
     private readonly ucRegistrationsService: UCRegistrationsService,
   ) {}
 
@@ -145,17 +144,17 @@ export class PlayerDiscoveryService {
     if (provider === 'ultimate_central') {
       // UC uses registrations to get team rosters
       // We need the event_id which is stored in the league's external source
-      const league = await this.teamRepo.manager.findOne('leagues', {
+      const league = (await this.teamRepo.manager.findOne('leagues', {
         where: { id: leagueId },
         relations: ['externalSources'],
-      });
+      })) as (League & { externalSources: ExternalLeagueSource[] }) | null;
 
       if (!league) {
         throw new Error(`League ${leagueId} not found`);
       }
 
-      const leagueSource = (league as any).externalSources?.find(
-        (s: any) => s.provider === provider,
+      const leagueSource = league.externalSources?.find(
+        (s) => s.provider === provider,
       );
 
       if (!leagueSource) {
@@ -349,7 +348,7 @@ export class PlayerDiscoveryService {
       const player = membership.player;
       if (!player) continue;
 
-      const externalSources = (player as any).externalSources;
+      const externalSources = player.externalSources;
       if (!externalSources || externalSources.length === 0) continue;
 
       const externalSource = externalSources[0];
