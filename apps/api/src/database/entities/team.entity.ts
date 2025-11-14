@@ -8,8 +8,11 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
+import type { ProviderType } from '@ultiverse/shared-types';
 import { Account } from './account.entity';
-import { UserTeamMembership } from './user-team-membership.entity';
+import { Organization } from './organization.entity';
+import { League } from './league.entity';
+import { Membership } from './membership.entity';
 import { ExternalTeamSource } from './external-team-source.entity';
 
 @Entity('teams')
@@ -19,6 +22,9 @@ export class Team {
 
   @Column({ type: 'uuid' })
   organizationId: string;
+
+  @Column({ type: 'uuid', nullable: true })
+  leagueId?: string;
 
   @Column({ type: 'varchar' })
   name: string;
@@ -36,7 +42,7 @@ export class Team {
   createdByUserId?: string;
 
   @Column({ type: 'varchar', default: 'ultiverse' })
-  sourceType: 'ultiverse' | 'ultimate_central';
+  sourceType: ProviderType;
 
   @Column({ type: 'boolean', default: true })
   isEditable: boolean;
@@ -54,12 +60,20 @@ export class Team {
   updatedAt: Date;
 
   // Relationships
+  @ManyToOne(() => Organization)
+  @JoinColumn({ name: 'organizationId' })
+  organization: Organization;
+
+  @ManyToOne(() => League, (league) => league.teams, { nullable: true })
+  @JoinColumn({ name: 'leagueId' })
+  league?: League;
+
   @ManyToOne(() => Account, { nullable: true })
   @JoinColumn({ name: 'createdByUserId' })
   createdBy?: Account;
 
-  @OneToMany(() => UserTeamMembership, (membership) => membership.team)
-  memberships: UserTeamMembership[];
+  @OneToMany(() => Membership, (membership) => membership.team)
+  memberships: Membership[];
 
   @OneToMany(() => ExternalTeamSource, (source) => source.team)
   externalSources: ExternalTeamSource[];

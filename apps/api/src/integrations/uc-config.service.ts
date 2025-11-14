@@ -21,7 +21,7 @@ export class UCConfigService implements OnModuleInit {
     // (e.g., during first deployment when tables don't exist yet)
     try {
       await this.configureUCClient();
-    } catch (error) {
+    } catch {
       this.logger.warn(
         'Failed to configure UC client on startup - will retry on first use',
       );

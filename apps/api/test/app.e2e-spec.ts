@@ -5,6 +5,7 @@ import { AppModule } from '../src/app.module';
 
 describe('Health', () => {
   let app: INestApplication;
+  const getServer = () => app.getHttpServer() as Parameters<typeof request>[0];
   beforeAll(async () => {
     const mod = await Test.createTestingModule({
       imports: [AppModule],
@@ -21,7 +22,7 @@ describe('Health', () => {
   afterAll(async () => app.close());
 
   it('/health (GET)', async () => {
-    const res = await request(app.getHttpServer()).get('/health').expect(200);
+    const res = await request(getServer()).get('/health').expect(200);
     expect((res.body as { status: string }).status).toBe('ok');
   });
 });

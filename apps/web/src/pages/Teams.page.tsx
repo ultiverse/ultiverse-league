@@ -1,8 +1,15 @@
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import {
     Grid,
+    Skeleton,
+    Card,
+    CardContent,
+    Box,
+    Button,
     CircularProgress,
 } from '@mui/material';
+import { Refresh as RefreshIcon } from '@mui/icons-material';
 import { getTeamsByLeague } from '../api/uc';
 import { TeamSummary } from '../types/api';
 import { useLeague } from '../hooks/useLeague';
@@ -12,8 +19,29 @@ import { Page } from '../components/Layout/Page.component';
 import { PageAlert } from '../types/components';
 import { transformTeamData } from '../utils/dataTransform';
 
+// Skeleton loading component for team cards
+function TeamCardSkeleton() {
+    return (
+        <Card sx={{ height: '100%' }}>
+            <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                    <Skeleton variant="circular" width={24} height={24} />
+                    <Skeleton variant="text" width={80} height={20} />
+                </Box>
+                <Skeleton variant="text" width="80%" height={32} sx={{ mb: 1 }} />
+                <Skeleton variant="text" width="60%" height={20} sx={{ mb: 2 }} />
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Skeleton variant="rectangular" width={60} height={24} sx={{ borderRadius: 1 }} />
+                    <Skeleton variant="rectangular" width={80} height={24} sx={{ borderRadius: 1 }} />
+                </Box>
+            </CardContent>
+        </Card>
+    );
+}
+
 export function Teams() {
     const { selectedLeague } = useLeague();
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
@@ -25,6 +53,30 @@ export function Teams() {
         staleTime: 30 * 60 * 1000, // 30 minutes - teams rarely change
         gcTime: 60 * 60 * 1000, // 1 hour cache retention
     });
+
+    const handleForceSync = async () => {
+        if (!selectedLeague) return;
+
+        setIsSyncing(true);
+        try {
+            const response = await fetch(`/api/v1/leagues/${selectedLeague.id}/refresh?force=true`, {
+                method: 'POST',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to sync league data');
+            }
+
+            // Wait a moment for the sync to start, then refetch teams
+            setTimeout(() => {
+                teamsQuery.refetch();
+                setIsSyncing(false);
+            }, 2000);
+        } catch (error) {
+            console.error('Failed to force sync:', error);
+            setIsSyncing(false);
+        }
+    };
 
     // Build alerts array
     const alerts: PageAlert[] = [];
@@ -69,9 +121,35 @@ export function Teams() {
                 { label: 'Teams' },
             ]}
         >
-            {teamsQuery.isLoading && <CircularProgress />}
+            {/* Force Sync Button */}
+            {selectedLeague && (
+                <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                    <Button
+                        variant="outlined"
+                        startIcon={isSyncing ? <CircularProgress size={16} /> : <RefreshIcon />}
+                        onClick={handleForceSync}
+                        disabled={isSyncing || teamsQuery.isLoading}
+                    >
+                        {isSyncing ? 'Syncing...' : 'Force Sync'}
+                    </Button>
+                </Box>
+            )}
 
-            {selectedLeague && teamsQuery.data && teamsQuery.data.length > 0 && (
+            {/* Show skeleton cards while loading */}
+            {teamsQuery.isLoading && selectedLeague && (
+                <Section>
+                    <Grid container spacing={3}>
+                        {[...Array(6)].map((_, index) => (
+                            <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+                                <TeamCardSkeleton />
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Section>
+            )}
+
+            {/* Show teams when loaded successfully */}
+            {!teamsQuery.isLoading && selectedLeague && teamsQuery.data && teamsQuery.data.length > 0 && (
                 <Section>
                     <Grid container spacing={3}>
                         {teamsQuery.data.map((team: TeamSummary) => (

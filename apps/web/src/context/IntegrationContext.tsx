@@ -55,7 +55,11 @@ export function IntegrationContextProvider({ children }: IntegrationContextProvi
                 setAvailableIntegrations(providers);
 
                 // Transform API connections to frontend format
-                const transformedConnections = apiConnections.map(conn =>
+                // Filter out internal providers like 'email' that aren't external integrations
+                const externalConnections = apiConnections.filter(conn =>
+                    conn.provider !== 'email'
+                );
+                const transformedConnections = externalConnections.map(conn =>
                     transformApiConnection(conn, providers)
                 );
                 setConnections(transformedConnections);
@@ -80,7 +84,8 @@ export function IntegrationContextProvider({ children }: IntegrationContextProvi
             if (response.success) {
                 // Refresh connections after successful connection
                 const apiConnections = await getIntegrationConnections();
-                const transformedConnections = apiConnections.map(conn =>
+                const externalConnections = apiConnections.filter(conn => conn.provider !== 'email');
+                const transformedConnections = externalConnections.map(conn =>
                     transformApiConnection(conn, availableIntegrations)
                 );
                 setConnections(transformedConnections);
@@ -107,7 +112,8 @@ export function IntegrationContextProvider({ children }: IntegrationContextProvi
             if (response.success) {
                 // Refresh connections after successful disconnection
                 const apiConnections = await getIntegrationConnections();
-                const transformedConnections = apiConnections.map(conn =>
+                const externalConnections = apiConnections.filter(conn => conn.provider !== 'email');
+                const transformedConnections = externalConnections.map(conn =>
                     transformApiConnection(conn, availableIntegrations)
                 );
                 setConnections(transformedConnections);
@@ -133,7 +139,8 @@ export function IntegrationContextProvider({ children }: IntegrationContextProvi
             if (response.success) {
                 // Refresh connections after successful refresh
                 const apiConnections = await getIntegrationConnections();
-                const transformedConnections = apiConnections.map(conn =>
+                const externalConnections = apiConnections.filter(conn => conn.provider !== 'email');
+                const transformedConnections = externalConnections.map(conn =>
                     transformApiConnection(conn, availableIntegrations)
                 );
                 setConnections(transformedConnections);

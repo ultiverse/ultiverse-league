@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import type { QueryDeepPartialEntity } from 'typeorm/query-builder/QueryPartialEntity';
 import { Profile } from '../database/entities';
 import { AccountsService } from '../integrations/accounts.service';
 import { IntegrationsService } from '../integrations/integrations.service';
@@ -107,7 +108,7 @@ export class ProfileService {
       const ucData = await this.ucEnrichmentService.getUserEnrichmentData();
       if (ucData && profile) {
         // Update profile with UC data if Ultiverse fields are empty
-        const updates: Partial<Profile> = {};
+        const updates: QueryDeepPartialEntity<Profile> = {};
 
         if (!profile.firstName && ucData.firstName) {
           updates.firstName = ucData.firstName;
@@ -124,10 +125,7 @@ export class ProfileService {
         }
 
         if (Object.keys(updates).length > 0) {
-          await this.profileRepository.update(
-            { accountId },
-            updates as any, // TypeORM type issue with complex nested properties
-          );
+          await this.profileRepository.update({ accountId }, updates);
         }
       }
     }

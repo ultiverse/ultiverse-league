@@ -1,0 +1,75 @@
+import { MigrationInterface, QueryRunner } from 'typeorm';
+
+export class CreateExternalLeagueSources1760482000000
+  implements MigrationInterface
+{
+  name = 'CreateExternalLeagueSources1760482000000';
+
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    // Get schema from connection configuration
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
+    const schemaPrefix = schema ? `"${schema}".` : '';
+
+    // Create external_league_sources table
+    await queryRunner.query(`
+      CREATE TABLE ${schemaPrefix}external_league_sources (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        "leagueId" UUID NOT NULL REFERENCES ${schemaPrefix}leagues(id) ON DELETE CASCADE,
+        provider TEXT NOT NULL,
+        "externalId" TEXT NOT NULL,
+        "rawData" JSONB NOT NULL,
+        etag TEXT,
+        "lastModifiedAt" TIMESTAMPTZ,
+        "lastSyncedAt" TIMESTAMPTZ DEFAULT now(),
+        "syncStatus" TEXT NOT NULL DEFAULT 'active',
+        "createdAt" TIMESTAMPTZ DEFAULT now(),
+        "updatedAt" TIMESTAMPTZ DEFAULT now(),
+        UNIQUE (provider, "externalId")
+      )
+    `);
+
+    // Index for league lookups
+    await queryRunner.query(`
+      CREATE INDEX idx_external_league_sources_league
+        ON ${schemaPrefix}external_league_sources("leagueId")
+    `);
+
+    // Index for provider lookups (find by external ID)
+    await queryRunner.query(`
+      CREATE INDEX idx_external_league_sources_provider
+        ON ${schemaPrefix}external_league_sources(provider, "externalId")
+    `);
+
+    // Index for finding stale leagues
+    await queryRunner.query(`
+      CREATE INDEX idx_external_league_sources_sync
+        ON ${schemaPrefix}external_league_sources("lastSyncedAt", "syncStatus")
+    `);
+  }
+
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    // Get schema from connection configuration
+    const schema = (
+      queryRunner.connection.driver.options as { schema?: string }
+    ).schema;
+    const schemaPrefix = schema ? `"${schema}".` : '';
+
+    // Drop indexes
+    await queryRunner.query(`
+      DROP INDEX IF EXISTS ${schemaPrefix}idx_external_league_sources_sync
+    `);
+    await queryRunner.query(`
+      DROP INDEX IF EXISTS ${schemaPrefix}idx_external_league_sources_provider
+    `);
+    await queryRunner.query(`
+      DROP INDEX IF EXISTS ${schemaPrefix}idx_external_league_sources_league
+    `);
+
+    // Drop table
+    await queryRunner.query(`
+      DROP TABLE IF EXISTS ${schemaPrefix}external_league_sources
+    `);
+  }
+}

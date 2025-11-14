@@ -3,8 +3,18 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
+import type { Response } from 'express';
 import { ExportsController } from './exports.controller';
 import { ExportsService } from './exports.service';
+
+type IcsRequest = Parameters<ExportsController['ics']>[0];
+
+type ResMocks = {
+  setHeader: jest.Mock;
+  send: jest.Mock;
+};
+
+const asResponse = (res: ResMocks): Response => res as unknown as Response;
 
 describe('ExportsController', () => {
   let controller: ExportsController;
@@ -15,13 +25,10 @@ describe('ExportsController', () => {
   };
 
   // simple express Response mock
-  const makeRes = () => {
-    const res: any = {
-      setHeader: jest.fn(),
-      send: jest.fn((payload) => payload), // return sent payload so controller method returns it
-    };
-    return res;
-  };
+  const makeRes = (): ResMocks => ({
+    setHeader: jest.fn(),
+    send: jest.fn((payload) => payload), // return sent payload so controller method returns it
+  });
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -45,7 +52,7 @@ describe('ExportsController', () => {
       svcMock.toCsv.mockReturnValueOnce(csv);
 
       const res = makeRes();
-      const out = controller.csv({ rows }, res);
+      const out = controller.csv({ rows }, asResponse(res));
 
       expect(svcMock.toCsv).toHaveBeenCalledWith(rows);
       expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/csv');
@@ -57,7 +64,7 @@ describe('ExportsController', () => {
       svcMock.toCsv.mockReturnValueOnce('');
 
       const res = makeRes();
-      const out = controller.csv({} as any, res);
+      const out = controller.csv({}, asResponse(res));
 
       expect(svcMock.toCsv).toHaveBeenCalledWith([]);
       expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'text/csv');
@@ -68,7 +75,7 @@ describe('ExportsController', () => {
 
   describe('POST /schedule/ics', () => {
     it('converts start strings to Date, calls ExportsService.toIcs, sets header, and returns ICS', () => {
-      const body = {
+      const body: IcsRequest = {
         events: [
           {
             title: 'Game',
@@ -82,7 +89,7 @@ describe('ExportsController', () => {
       svcMock.toIcs.mockReturnValueOnce(ics);
 
       const res = makeRes();
-      const out = controller.ics(body as any, res);
+      const out = controller.ics(body, asResponse(res));
 
       // verify mapping to Date
       expect(svcMock.toIcs).toHaveBeenCalledTimes(1);
@@ -113,7 +120,7 @@ describe('ExportsController', () => {
       svcMock.toIcs.mockReturnValueOnce('');
 
       const res = makeRes();
-      const out = controller.ics({} as any, res);
+      const out = controller.ics({}, asResponse(res));
 
       expect(svcMock.toIcs).toHaveBeenCalledWith([]);
       expect(res.setHeader).toHaveBeenCalledWith(

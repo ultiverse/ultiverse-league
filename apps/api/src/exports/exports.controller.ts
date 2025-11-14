@@ -7,7 +7,10 @@ export class ExportsController {
   constructor(private svc: ExportsService) {}
 
   @Post('csv')
-  csv(@Body() body: { rows: Record<string, unknown>[] }, @Res() res: Response) {
+  csv(
+    @Body() body: { rows?: Record<string, unknown>[] },
+    @Res() res: Response,
+  ) {
     const csv = this.svc.toCsv(body.rows ?? []);
     res.setHeader('Content-Type', 'text/csv');
     return res.send(csv);
@@ -17,7 +20,7 @@ export class ExportsController {
   ics(
     @Body()
     body: {
-      events: {
+      events?: {
         title: string;
         start: string;
         durationMins: number;

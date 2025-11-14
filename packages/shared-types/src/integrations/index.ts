@@ -1,4 +1,9 @@
 /**
+ * Supported integration provider types
+ */
+export type ProviderType = 'ultimate_central' | 'zuluru' | 'ultiverse';
+
+/**
  * Integration provider definition
  */
 export interface IntegrationProvider {

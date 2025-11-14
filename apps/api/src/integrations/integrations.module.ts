@@ -19,12 +19,47 @@ import { IntegrationsController } from './integrations.controller';
 import { IntegrationsService } from './integrations.service';
 import { AccountsService } from './accounts.service';
 import { UCConfigService } from './uc-config.service';
-import { Account, Profile, IntegrationConnection } from '../database/entities';
+import { ImportConfigService } from './import-config.service';
+import { LeagueDiscoveryService } from './league-discovery.service';
+import { TeamDiscoveryService } from './team-discovery.service';
+import { PlayerDiscoveryService } from './player-discovery.service';
+import { GameDiscoveryService } from './game-discovery.service';
+import {
+  Account,
+  Profile,
+  IntegrationConnection,
+  League,
+  ExternalLeagueSource,
+  Organization,
+  Team,
+  ExternalTeamSource,
+  Player,
+  ExternalPlayerSource,
+  Membership,
+  Game,
+  ExternalGameSource,
+} from '../database/entities';
+import { ImportModule } from '../imports/import.module';
 
 @Module({
   imports: [
-    UCModule, // This exports UCEnrichmentService
-    TypeOrmModule.forFeature([Account, Profile, IntegrationConnection]),
+    UCModule, // This exports UCEnrichmentService and UCLeagueAdapter
+    ImportModule, // This exports ImportService
+    TypeOrmModule.forFeature([
+      Account,
+      Profile,
+      IntegrationConnection,
+      League,
+      ExternalLeagueSource,
+      Organization,
+      Team,
+      ExternalTeamSource,
+      Player,
+      ExternalPlayerSource,
+      Membership,
+      Game,
+      ExternalGameSource,
+    ]),
   ],
   controllers: [IntegrationsController],
   providers: [
@@ -32,6 +67,11 @@ import { Account, Profile, IntegrationConnection } from '../database/entities';
     IntegrationsService,
     AccountsService,
     UCConfigService,
+    ImportConfigService,
+    LeagueDiscoveryService,
+    TeamDiscoveryService,
+    PlayerDiscoveryService,
+    GameDiscoveryService,
     // concrete UC services used by the adapter (imported from UCModule)
     UCEventsService,
     UCRegistrationsService,
@@ -51,6 +91,10 @@ import { Account, Profile, IntegrationConnection } from '../database/entities';
   exports: [
     IntegrationsService,
     AccountsService,
+    LeagueDiscoveryService,
+    TeamDiscoveryService,
+    PlayerDiscoveryService,
+    GameDiscoveryService,
     LEAGUE_PROVIDER,
     TEAMS_PROVIDER,
     REGISTRATION_PROVIDER,

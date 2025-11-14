@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 
-@Controller('health')
+@Controller()
 export class HealthController {
-  @Get()
+  @Get('health')
   ping() {
     return { status: 'ok', uptime: process.uptime() };
   }

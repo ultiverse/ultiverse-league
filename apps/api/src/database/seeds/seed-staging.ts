@@ -1,6 +1,30 @@
 import 'reflect-metadata';
 import { AppDataSource } from '../data-source';
 
+interface IdRow {
+  id: string;
+}
+
+function assertIdRow(row: unknown, context: string): asserts row is IdRow {
+  if (
+    typeof row !== 'object' ||
+    row === null ||
+    !('id' in row) ||
+    typeof (row as Partial<IdRow>).id !== 'string'
+  ) {
+    throw new Error(`Result row for ${context} is missing a string id`);
+  }
+}
+
+function extractId(rows: unknown, context: string): string {
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error(`Expected at least one result row for ${context}`);
+  }
+  const row: unknown = rows[0];
+  assertIdRow(row, context);
+  return row.id;
+}
+
 /**
  * Seed script for staging environment
  * Creates test users and sample data for testing
@@ -10,17 +34,33 @@ async function main() {
   await AppDataSource.initialize();
 
   try {
-    // Create test admin user
-    const [{ id: adminId }] = (await AppDataSource.query(
+    // Create default staging organization
+    const organizationId = '00000000-0000-0000-0000-000000000001';
+    await AppDataSource.query(
       `
-      INSERT INTO accounts (id, email, "passwordHash", status, "createdAt", "updatedAt")
-      VALUES (gen_random_uuid(), $1, $2, 'active', now(), now())
+      INSERT INTO organizations (id, name, slug, "createdAt", "updatedAt")
+      VALUES ($1, $2, $3, now(), now())
+      ON CONFLICT (id) DO NOTHING;
+      `,
+      [organizationId, 'Staging Organization', 'staging-org'],
+    );
+
+    console.log('✓ Created staging organization');
+
+    // Create test admin user with organizationId
+    const adminId = extractId(
+      await AppDataSource.query(
+        `
+      INSERT INTO accounts (id, email, "passwordHash", status, "organizationId", "createdAt", "updatedAt")
+      VALUES (gen_random_uuid(), $1, $2, 'active', $3, now(), now())
       ON CONFLICT (email) DO UPDATE
-        SET "updatedAt" = now()
+        SET "updatedAt" = now(), "organizationId" = $3
       RETURNING id;
       `,
-      ['admin@staging.test', '$2a$10$dummyhashforstagin'], // Dummy hash for staging
-    )) as Array<{ id: string }>;
+        ['admin@staging.test', '$2a$10$dummyhashforstagin', organizationId], // Dummy hash for staging
+      ),
+      'admin account insert',
+    );
 
     await AppDataSource.query(
       `
@@ -33,17 +73,20 @@ async function main() {
 
     console.log('✓ Created admin user: admin@staging.test');
 
-    // Create test regular user
-    const [{ id: userId }] = (await AppDataSource.query(
-      `
-      INSERT INTO accounts (id, email, "passwordHash", status, "createdAt", "updatedAt")
-      VALUES (gen_random_uuid(), $1, $2, 'active', now(), now())
+    // Create test regular user with organizationId
+    const userId = extractId(
+      await AppDataSource.query(
+        `
+      INSERT INTO accounts (id, email, "passwordHash", status, "organizationId", "createdAt", "updatedAt")
+      VALUES (gen_random_uuid(), $1, $2, 'active', $3, now(), now())
       ON CONFLICT (email) DO UPDATE
-        SET "updatedAt" = now()
+        SET "updatedAt" = now(), "organizationId" = $3
       RETURNING id;
       `,
-      ['user@staging.test', '$2a$10$dummyhashforstagin'], // Dummy hash for staging
-    )) as Array<{ id: string }>;
+        ['user@staging.test', '$2a$10$dummyhashforstagin', organizationId], // Dummy hash for staging
+      ),
+      'test user account insert',
+    );
 
     await AppDataSource.query(
       `
@@ -73,10 +116,10 @@ async function main() {
 
     console.log('✓ Created integration connection stubs');
 
-    // Create sample team
-    const organizationId = '00000000-0000-0000-0000-000000000001';
-    const [{ id: teamId }] = (await AppDataSource.query(
-      `
+    // Create sample team (using the same organizationId from above)
+    const teamId = extractId(
+      await AppDataSource.query(
+        `
       INSERT INTO teams (
         id, "organizationId", name, location, "sourceType", "isEditable",
         "seasonStart", "seasonEnd", colour, "altColour", "createdByUserId",
@@ -89,21 +132,23 @@ async function main() {
       )
       RETURNING id;
       `,
-      [organizationId, 'Staging Test Team', 'Vancouver, BC', adminId],
-    )) as Array<{ id: string }>;
+        [organizationId, 'Staging Test Team', 'Vancouver, BC', adminId],
+      ),
+      'team insert',
+    );
 
     console.log('✓ Created sample team: Staging Test Team');
 
-    // Add users to the team
+    // Add users to the team (table renamed to memberships)
     await AppDataSource.query(
       `
-      INSERT INTO user_team_memberships (
+      INSERT INTO memberships (
         id, "userId", "teamId", role, "joinedVia", "createdAt"
       )
       VALUES
         (gen_random_uuid(), $1, $2, 'captain', 'manual', now()),
         (gen_random_uuid(), $3, $2, 'player', 'manual', now())
-      ON CONFLICT ("userId", "teamId") DO NOTHING;
+      ON CONFLICT DO NOTHING;
       `,
       [adminId, teamId, userId],
     );

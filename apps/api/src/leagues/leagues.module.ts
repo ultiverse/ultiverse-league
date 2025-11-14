@@ -1,18 +1,37 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { LeaguesController } from './leagues.controller';
 import { LeaguesService } from './leagues.service';
 import { LEAGUE_REPO } from './ports/league.repository';
-import { JsonLeagueRepository } from './adapters/json.league.repo';
+import { TypeOrmLeagueRepository } from './adapters/typeorm.league.repo';
 import { FixturesService } from 'src/fixtures/fixtures.service';
 import { IntegrationsModule } from '../integrations/integrations.module';
+import { ImportModule } from '../imports/import.module';
+import {
+  League,
+  ExternalLeagueSource,
+  IntegrationConnection,
+  Team,
+  Account,
+} from '../database/entities';
 
 @Module({
-  imports: [IntegrationsModule],
+  imports: [
+    IntegrationsModule,
+    ImportModule,
+    TypeOrmModule.forFeature([
+      League,
+      ExternalLeagueSource,
+      IntegrationConnection,
+      Team,
+      Account,
+    ]),
+  ],
   controllers: [LeaguesController],
   providers: [
     LeaguesService,
     FixturesService,
-    { provide: LEAGUE_REPO, useClass: JsonLeagueRepository },
+    { provide: LEAGUE_REPO, useClass: TypeOrmLeagueRepository },
   ],
   exports: [LeaguesService, FixturesService],
 })

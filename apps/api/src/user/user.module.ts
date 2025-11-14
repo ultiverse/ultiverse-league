@@ -7,14 +7,28 @@ import { IntegrationsModule } from '../integrations/integrations.module';
 import { UCModule } from '../integrations/uc/uc.module';
 import { UCEnrichmentService } from '../integrations/uc/uc-enrichment.service';
 import { TeamsModule } from '../teams/teams.module';
-import { Profile } from '../database/entities';
+import { ImportModule } from '../imports/import.module';
+import {
+  Profile,
+  League,
+  ExternalLeagueSource,
+  Membership,
+  IntegrationConnection,
+} from '../database/entities';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Profile]),
+    TypeOrmModule.forFeature([
+      Profile,
+      League,
+      ExternalLeagueSource,
+      Membership,
+      IntegrationConnection,
+    ]),
     IntegrationsModule,
     UCModule,
     TeamsModule,
+    ImportModule,
   ],
   controllers: [UserController],
   providers: [UserService, ProfileService, UCEnrichmentService],

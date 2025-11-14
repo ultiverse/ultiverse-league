@@ -1,6 +1,6 @@
 import { AppDataSource } from './data-source';
 
-interface TableRow {
+interface TableNameRow {
   table_name: string;
 }
 
@@ -10,19 +10,64 @@ interface MigrationRow {
   name: string;
 }
 
-async function runMigrations() {
+/** Small helper to strongly type query result rows */
+async function queryRowsStrict<T>(
+  sql: string,
+  params: unknown[] = [],
+  guard: (row: unknown) => row is T,
+): Promise<T[]> {
+  const raw: unknown = await AppDataSource.query(sql, params);
+  if (!Array.isArray(raw)) {
+    throw new Error('Expected query to return an array of rows');
+  }
+  // Validate each row before returning so it's no longer `any`
+  const out: T[] = [];
+  for (const r of raw) {
+    if (!guard(r)) {
+      throw new Error('Query row failed validation');
+    }
+    out.push(r);
+  }
+  return out;
+}
+
+/** Type guard for rows returned by information_schema.tables */
+function isTableNameRow(row: unknown): row is TableNameRow {
+  return (
+    typeof row === 'object' &&
+    row !== null &&
+    'table_name' in row &&
+    typeof (row as { table_name?: unknown }).table_name === 'string'
+  );
+}
+
+/** Type guard for migration tracking rows */
+function isMigrationRow(row: unknown): row is MigrationRow {
+  return (
+    typeof row === 'object' &&
+    row !== null &&
+    'id' in row &&
+    'timestamp' in row &&
+    'name' in row &&
+    typeof (row as { id?: unknown }).id === 'number' &&
+    typeof (row as { timestamp?: unknown }).timestamp === 'string' &&
+    typeof (row as { name?: unknown }).name === 'string'
+  );
+}
+
+async function runMigrations(): Promise<void> {
   try {
     console.log('🔄 Initializing database connection...');
     console.log(`Environment: ${process.env.NODE_ENV}`);
     const schema =
-      (AppDataSource.options as { schema?: string }).schema || 'public';
+      (AppDataSource.options as { schema?: string }).schema ?? 'public';
     console.log(`Schema: ${schema}`);
 
     await AppDataSource.initialize();
     console.log('✅ Database connection established');
 
     // Check if tables exist in the target schema
-    const tables = (await AppDataSource.query(
+    const tables = await queryRowsStrict<TableNameRow>(
       `
       SELECT table_name
       FROM information_schema.tables
@@ -31,7 +76,8 @@ async function runMigrations() {
       ORDER BY table_name;
     `,
       [schema],
-    )) as TableRow[];
+      isTableNameRow,
+    );
 
     console.log(
       `\n📊 Found ${tables.length} application tables in ${schema} schema`,
@@ -43,9 +89,11 @@ async function runMigrations() {
     // Check migration tracking table
     let migrationRecords: MigrationRow[] = [];
     try {
-      migrationRecords = (await AppDataSource.query(
+      migrationRecords = await queryRowsStrict<MigrationRow>(
         `SELECT * FROM "${schema}".migrations ORDER BY timestamp`,
-      )) as MigrationRow[];
+        [],
+        isMigrationRow,
+      );
       console.log(
         `\n📋 Migration tracking: ${migrationRecords.length} recorded migrations`,
       );
@@ -54,7 +102,8 @@ async function runMigrations() {
           console.log(`  ✓ ${m.name}`);
         });
       }
-    } catch (_error) {
+    } catch {
+      // No migration table yet
       console.log('\n📋 No migration tracking table found yet');
     }
 
@@ -69,9 +118,10 @@ async function runMigrations() {
     }
 
     console.log('\n🔄 Running migrations...');
-    const migrations = await AppDataSource.runMigrations({
+    // TypeORM returns an array of migration metadata with a `.name` we log.
+    const migrations = (await AppDataSource.runMigrations({
       transaction: 'each',
-    });
+    })) as ReadonlyArray<{ name: string }>;
 
     if (migrations.length === 0) {
       console.log('✅ No migrations to run - database is up to date');
@@ -83,31 +133,35 @@ async function runMigrations() {
     }
 
     // Verify tables were created
-    const finalTables = (await AppDataSource.query(
+    const finalTables = await queryRowsStrict<TableNameRow>(
       `
-      SELECT table_name
-      FROM information_schema.tables
-      WHERE table_schema = $1
-      AND table_name IN ('accounts', 'profiles', 'integration_connections', 'teams', 'players')
-      ORDER BY table_name;
-    `,
+  SELECT table_name
+  FROM information_schema.tables
+  WHERE table_schema = $1
+  AND table_name IN ('accounts', 'profiles', 'integration_connections', 'teams', 'players')
+  ORDER BY table_name;
+`,
       [schema],
-    )) as TableRow[];
+      isTableNameRow,
+    );
 
     console.log(
       `\n✅ Final verification: ${finalTables.length} application tables exist`,
     );
     if (finalTables.length < 5) {
-      throw new Error(
-        `Expected 5 core tables but found ${finalTables.length}`,
-      );
+      throw new Error(`Expected 5 core tables but found ${finalTables.length}`);
     }
 
     await AppDataSource.destroy();
     console.log('✅ Migration process completed successfully\n');
     process.exit(0);
-  } catch (error) {
-    console.error('\n❌ Migration failed:', error);
+  } catch (error: unknown) {
+    // ensure the caught value is safe to print
+    if (error instanceof Error) {
+      console.error('\n❌ Migration failed:', error);
+    } else {
+      console.error('\n❌ Migration failed:', String(error));
+    }
     process.exit(1);
   }
 }

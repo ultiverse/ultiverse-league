@@ -9,7 +9,7 @@ if (!globalThis.crypto) {
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, RequestMethod } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import * as express from 'express';
 import { Request, Response, NextFunction } from 'express';
 import { join } from 'path';
@@ -17,10 +17,8 @@ import { join } from 'path';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Add global API prefix for versioning, excluding health checks
-  app.setGlobalPrefix('api/v1', {
-    exclude: [{ path: 'health', method: RequestMethod.GET }],
-  });
+  // Add global API prefix for versioning
+  app.setGlobalPrefix('api/v1');
 
   // Serve static files from web app build
   const webDistPath = join(__dirname, '..', '..', '..', 'apps', 'web', 'dist');
@@ -28,9 +26,9 @@ async function bootstrap() {
 
   app.use(express.static(webDistPath));
 
-  // SPA fallback - serve index.html for any non-API and non-health routes
+  // SPA fallback - serve index.html for any non-API routes
   app.use((req: Request, res: Response, next: NextFunction) => {
-    if (req.path.startsWith('/api/') || req.path === '/health') {
+    if (req.path.startsWith('/api/')) {
       return next();
     }
     res.sendFile(join(webDistPath, 'index.html'));

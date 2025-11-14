@@ -80,9 +80,9 @@ export const theme = createTheme({
       page: '#f0f0f0',
     },
     integration: {
-      uc: '#1976d2',
-      ultiverse: '#7b1fa2',
-      zuluru: '#4caf50',
+      uc: '#4da8c2',
+      ultiverse: '#ca4523',
+      zuluru: '#da8034',
       synced: '#ff9800',
       unknown: '#9e9e9e',
     },

@@ -10,7 +10,7 @@ import {
 import { Account } from './account.entity';
 import { Team } from './team.entity';
 
-@Entity('user_team_memberships')
+@Entity('memberships')
 @Unique(['userId', 'teamId'])
 export class UserTeamMembership {
   @PrimaryGeneratedColumn('uuid')

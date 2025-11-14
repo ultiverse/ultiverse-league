@@ -1,6 +1,5 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { UCOAuthTokenResponse } from '../ports/';
 
 export interface UCCredentials {
@@ -29,7 +28,7 @@ export class UCClient {
   private tokenState: TokenState | null = null;
   private currentCredentials: UCCredentials | null = null;
 
-  constructor(private readonly cfg: ConfigService) {
+  constructor() {
     // Client will be initialized when credentials are set
   }
 
@@ -115,11 +114,21 @@ export class UCClient {
         const e: AxiosError = err;
         if (e.response?.status === 401) {
           // Refresh once
+          this.tokenState = null; // Clear stale token
           const t2 = await this.getAccessToken();
           return fn(this.client!, { Authorization: `Bearer ${t2}` });
         }
-        this.logger.error(`UC request failed: ${e.message}`, e.stack);
-        throw e;
+        const errorDetails = e.response?.data
+          ? JSON.stringify(e.response.data)
+          : e.message;
+        const statusText = e.response?.status
+          ? ` (HTTP ${e.response.status})`
+          : '';
+        this.logger.error(
+          `UC request failed${statusText}: ${errorDetails}`,
+          e.stack,
+        );
+        throw new Error(`UC API error${statusText}: ${errorDetails}`);
       }
       this.logger.error(`Unknown error in UC client: ${String(err)}`);
       throw err;

@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, OnModuleInit } from '@nestjs/common';
 import {
   IntegrationProvider,
   IntegrationConnection as SharedIntegrationConnection,
@@ -8,6 +8,9 @@ import {
 } from '@ultiverse/shared-types';
 import { AccountsService } from './accounts.service';
 import { UCEnrichmentService } from './uc/uc-enrichment.service';
+import { UCLeagueAdapter } from './uc/uc-league.adapter';
+import { ImportService } from '../imports/import.service';
+import { LeagueDiscoveryService } from './league-discovery.service';
 import axios from 'axios';
 
 interface UCConfigService {
@@ -24,17 +27,29 @@ interface UCProviderData {
 
 // TODO: Remove this constant once proper authentication is implemented
 const TEMP_SEEDED_ACCOUNT_EMAIL = 'greg@gregpike.ca';
-// TODO: This should come from the user's organization
-const TEMP_ORGANIZATION_ID = '00000000-0000-0000-0000-000000000001';
 
 @Injectable()
-export class IntegrationsService {
+export class IntegrationsService implements OnModuleInit {
   private ucConfigService?: UCConfigService; // Injected later to avoid circular dependency
 
   constructor(
     private readonly accountsService: AccountsService,
     private readonly ucEnrichmentService: UCEnrichmentService,
+    private readonly importService: ImportService,
+    private readonly ucLeagueAdapter: UCLeagueAdapter,
+    private readonly leagueDiscoveryService: LeagueDiscoveryService,
   ) {}
+
+  /**
+   * Register UC adapter with ImportService on module initialization
+   */
+  onModuleInit(): void {
+    this.importService.registerAdapter('uc', this.ucLeagueAdapter);
+    this.importService.registerAdapter(
+      'ultimate_central',
+      this.ucLeagueAdapter,
+    );
+  }
 
   setUCConfigService(ucConfigService: UCConfigService): void {
     this.ucConfigService = ucConfigService;
@@ -89,7 +104,8 @@ export class IntegrationsService {
     );
 
     return connections.map((conn) => ({
-      provider: conn.provider,
+      // Denormalize provider: 'ultimate_central' -> 'uc' for frontend compatibility
+      provider: conn.provider === 'ultimate_central' ? 'uc' : conn.provider,
       isConnected: conn.isConnected,
       status: conn.status,
       connectedEmail: conn.connectedEmail ?? undefined,
@@ -118,6 +134,10 @@ export class IntegrationsService {
       );
     }
 
+    // Normalize provider: 'uc' -> 'ultimate_central'
+    const normalizedProvider =
+      provider === 'uc' ? 'ultimate_central' : provider;
+
     // Validate provider
     const availableProviders = this.getAvailableProviders();
     const providerConfig = availableProviders.find(
@@ -135,7 +155,7 @@ export class IntegrationsService {
     }
 
     // Check if already connected
-    const existingConnection = await this.getConnection(provider);
+    const existingConnection = await this.getConnection(normalizedProvider);
     if (existingConnection?.isConnected) {
       return {
         success: true,
@@ -145,7 +165,7 @@ export class IntegrationsService {
     }
 
     // Handle OAuth flow for UC
-    if (provider === 'uc') {
+    if (normalizedProvider === 'ultimate_central') {
       // Validate OAuth credentials if provided
       if (
         connectionData &&
@@ -179,7 +199,7 @@ export class IntegrationsService {
         // Update database connection with OAuth credentials
         await this.accountsService.updateIntegrationConnection(
           account.id,
-          provider,
+          normalizedProvider,
           {
             isConnected: true,
             status: 'connected',
@@ -198,25 +218,27 @@ export class IntegrationsService {
           },
         );
 
-        // Refresh UC client with new credentials
+        // Refresh UC client with new credentials and then discover leagues
         if (this.ucConfigService) {
           await this.ucConfigService.refreshUCClient();
-        }
 
-        // Import teams from Ultimate Central into canonical schema
-        void this.ucEnrichmentService
-          .importTeamsForUser(account.id, TEMP_ORGANIZATION_ID)
-          .then((importResult) => {
+          // Now discover leagues after UC client is configured
+          try {
+            const discoveredLeagues =
+              await this.leagueDiscoveryService.discoverLeaguesForAccount(
+                account.id,
+                normalizedProvider,
+              );
             console.log(
-              `Imported ${importResult.imported} teams from UC (${importResult.errors} errors)`,
+              `Discovered ${discoveredLeagues.length} leagues from Ultimate Central`,
             );
-          })
-          .catch((error: unknown) => {
+          } catch (error: unknown) {
             console.error(
-              `Failed to import teams during UC connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
+              `Failed to discover leagues during UC connection: ${error instanceof Error ? error.message : 'Unknown error'}`,
             );
-            // Don't fail the connection if team import fails
-          });
+            // Don't fail the connection if league discovery fails
+          }
+        }
 
         return {
           success: true,
@@ -248,11 +270,17 @@ export class IntegrationsService {
       throw new Error('No account found');
     }
 
+    // Normalize provider: 'uc' -> 'ultimate_central'
+    const normalizedProvider =
+      provider === 'uc' ? 'ultimate_central' : provider;
+
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
       account.id,
     );
-    const connection = connections.find((conn) => conn.provider === provider);
+    const connection = connections.find(
+      (conn) => conn.provider === normalizedProvider,
+    );
 
     if (!connection) {
       throw new Error(`Unknown provider: ${provider}`);
@@ -268,7 +296,7 @@ export class IntegrationsService {
     // Update database connection
     await this.accountsService.updateIntegrationConnection(
       account.id,
-      provider,
+      normalizedProvider,
       {
         isConnected: false,
         status: 'disconnected',
@@ -302,11 +330,17 @@ export class IntegrationsService {
       throw new Error('No account found');
     }
 
+    // Normalize provider: 'uc' -> 'ultimate_central'
+    const normalizedProvider =
+      provider === 'uc' ? 'ultimate_central' : provider;
+
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
       account.id,
     );
-    const connection = connections.find((conn) => conn.provider === provider);
+    const connection = connections.find(
+      (conn) => conn.provider === normalizedProvider,
+    );
 
     if (!connection) {
       throw new Error(`Unknown provider: ${provider}`);
@@ -319,10 +353,34 @@ export class IntegrationsService {
     // Simulate refresh process
     await this.simulateAsync(800);
 
+    // Trigger league discovery for UC
+    if (normalizedProvider === 'ultimate_central') {
+      // Refresh UC client with credentials before discovering leagues
+      if (this.ucConfigService) {
+        await this.ucConfigService.refreshUCClient();
+
+        try {
+          const discoveredLeagues =
+            await this.leagueDiscoveryService.discoverLeaguesForAccount(
+              account.id,
+              normalizedProvider,
+            );
+          console.log(
+            `Discovered ${discoveredLeagues.length} leagues from Ultimate Central via refresh`,
+          );
+        } catch (error: unknown) {
+          console.error(
+            `Failed to discover leagues during refresh: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
+          // Don't fail the refresh if league discovery fails
+        }
+      }
+    }
+
     // Update last sync time
     await this.accountsService.updateIntegrationConnection(
       account.id,
-      provider,
+      normalizedProvider,
       {
         lastSyncAt: new Date(),
       },
@@ -402,7 +460,9 @@ export class IntegrationsService {
       account.id,
     );
     const ucConnection = connections.find(
-      (conn) => conn.provider === 'uc' && conn.isConnected,
+      (conn) =>
+        (conn.provider === 'uc' || conn.provider === 'ultimate_central') &&
+        conn.isConnected,
     );
 
     if (!ucConnection || !ucConnection.providerData) {
@@ -487,6 +547,47 @@ export class IntegrationsService {
       throw new Error(
         `Connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
+    }
+  }
+
+  /**
+   * Import leagues from Ultimate Central for a user
+   */
+  private async importLeaguesFromUC(
+    userId: string,
+    organizationId: string,
+  ): Promise<{ imported: number; errors: number }> {
+    try {
+      // Get user's leagues from UC
+      const leagues = await this.ucLeagueAdapter.listMyLeagues();
+
+      let imported = 0;
+      let errors = 0;
+
+      // Import each league (which also imports teams)
+      for (const league of leagues) {
+        try {
+          await this.importService.importLeague(
+            'ultimate_central',
+            { provider: 'ultimate_central', externalId: league.externalId },
+            userId,
+            organizationId,
+          );
+          imported++;
+        } catch (error) {
+          console.error(
+            `Failed to import league ${league.name}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          );
+          errors++;
+        }
+      }
+
+      return { imported, errors };
+    } catch (error) {
+      console.error(
+        `Failed to list leagues from UC: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+      return { imported: 0, errors: 1 };
     }
   }
 

@@ -41,18 +41,20 @@ export class AccountsService {
 
     await this.profilesRepository.save(profile);
 
-    // Create integration connection
-    const connection = this.integrationsRepository.create({
-      accountId: savedAccount.id,
-      provider,
-      externalUserId,
-      isConnected: true,
-      status: 'connected',
-      connectedEmail: email,
-      connectedAt: new Date(),
-    });
+    // Create integration connection only for actual integrations (not email login)
+    if (provider !== 'email') {
+      const connection = this.integrationsRepository.create({
+        accountId: savedAccount.id,
+        provider,
+        externalUserId,
+        isConnected: true,
+        status: 'connected',
+        connectedEmail: email,
+        connectedAt: new Date(),
+      });
 
-    await this.integrationsRepository.save(connection);
+      await this.integrationsRepository.save(connection);
+    }
 
     return savedAccount;
   }
