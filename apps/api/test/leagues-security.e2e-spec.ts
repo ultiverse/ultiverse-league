@@ -19,8 +19,7 @@ describe('Leagues security boundary (e2e)', () => {
   const bobEmail = 'bob-security@orgb.test';
   const charlieEmail = 'charlie-security@test.local';
 
-  const getServer = () =>
-    app.getHttpServer() as Parameters<typeof request>[0];
+  const getServer = () => app.getHttpServer() as Parameters<typeof request>[0];
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -33,7 +32,9 @@ describe('Leagues security boundary (e2e)', () => {
     });
     await app.init();
 
-    orgRepo = app.get<Repository<Organization>>(getRepositoryToken(Organization));
+    orgRepo = app.get<Repository<Organization>>(
+      getRepositoryToken(Organization),
+    );
     accountRepo = app.get<Repository<Account>>(getRepositoryToken(Account));
     leagueRepo = app.get<Repository<League>>(getRepositoryToken(League));
   });
@@ -115,8 +116,12 @@ describe('Leagues security boundary (e2e)', () => {
       .expect(200);
 
     expect(aliceResponse.body).toHaveLength(1);
-    expect(aliceResponse.body[0].id).toBe(summerLeague.id);
-    expect(aliceResponse.body[0].name).toBe('Summer League');
+    const aliceLeague = aliceResponse.body as Array<{
+      id: string;
+      name: string;
+    }>;
+    expect(aliceLeague[0]?.id).toBe(summerLeague.id);
+    expect(aliceLeague[0]?.name).toBe('Summer League');
 
     const bobResponse = await request(getServer())
       .get('/api/v1/leagues')
@@ -124,8 +129,9 @@ describe('Leagues security boundary (e2e)', () => {
       .expect(200);
 
     expect(bobResponse.body).toHaveLength(1);
-    expect(bobResponse.body[0].id).toBe(winterLeague.id);
-    expect(bobResponse.body[0].name).toBe('Winter League');
+    const bobLeague = bobResponse.body as Array<{ id: string; name: string }>;
+    expect(bobLeague[0]?.id).toBe(winterLeague.id);
+    expect(bobLeague[0]?.name).toBe('Winter League');
   });
 
   it('returns empty array and warns when account lacks organizationId', async () => {
@@ -146,11 +152,13 @@ describe('Leagues security boundary (e2e)', () => {
       .expect(200);
 
     expect(res.body).toEqual([]);
-    expect(
-      warnSpy.mock.calls.some((args) =>
-        args[0]?.includes('has no organization assigned'),
-      ),
-    ).toBe(true);
+    const warned = warnSpy.mock.calls.some(([message]) => {
+      if (typeof message !== 'string') {
+        return false;
+      }
+      return message.includes('has no organization assigned');
+    });
+    expect(warned).toBe(true);
 
     warnSpy.mockRestore();
   });
@@ -161,11 +169,13 @@ describe('Leagues security boundary (e2e)', () => {
     const res = await request(getServer()).get('/api/v1/leagues').expect(200);
 
     expect(res.body).toEqual([]);
-    expect(
-      warnSpy.mock.calls.some((args) =>
-        args[0]?.includes('No user email provided'),
-      ),
-    ).toBe(true);
+    const warned = warnSpy.mock.calls.some(([message]) => {
+      if (typeof message !== 'string') {
+        return false;
+      }
+      return message.includes('No user email provided');
+    });
+    expect(warned).toBe(true);
 
     warnSpy.mockRestore();
   });
