@@ -113,7 +113,11 @@ export function LeaguesListPage() {
         {hasLeagues && (
           <Grid container spacing={3}>
             {leaguesQuery.data.map((league) => (
-              <Grid item xs={12} sm={6} md={4} key={league.id}>
+              <Grid
+                key={league.id}
+                size={{ xs: 12, sm: 6, md: 4 }}
+                display="flex"
+              >
                 <LeagueCard league={league} onSelect={handleSelectLeague} />
               </Grid>
             ))}
