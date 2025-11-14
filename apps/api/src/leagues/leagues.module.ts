@@ -12,6 +12,7 @@ import {
   ExternalLeagueSource,
   IntegrationConnection,
   Team,
+  Account,
 } from '../database/entities';
 
 @Module({
@@ -23,6 +24,7 @@ import {
       ExternalLeagueSource,
       IntegrationConnection,
       Team,
+      Account,
     ]),
   ],
   controllers: [LeaguesController],
