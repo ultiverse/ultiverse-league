@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Account, Profile, IntegrationConnection } from '../database/entities';
+import {
+  Account,
+  Profile,
+  IntegrationConnection,
+  Organization,
+} from '../database/entities';
 
 @Injectable()
 export class AccountsService {
@@ -12,10 +17,13 @@ export class AccountsService {
     private profilesRepository: Repository<Profile>,
     @InjectRepository(IntegrationConnection)
     private integrationsRepository: Repository<IntegrationConnection>,
+    @InjectRepository(Organization)
+    private organizationsRepository: Repository<Organization>,
   ) {}
 
   /**
    * Create a new account with profile via integration
+   * Note: For email-only accounts, organizationId will be undefined until they connect an integration
    */
   async createAccountFromIntegration(
     email: string,
@@ -23,9 +31,11 @@ export class AccountsService {
     externalUserId: string,
     profileData?: Partial<Profile>,
   ): Promise<Account> {
-    // Create account
+    // Create account WITHOUT organization initially
+    // Organization will be set when user connects an integration (UC, Zuluru, etc.)
     const account = this.accountsRepository.create({
       email,
+      organizationId: undefined, // Will be set when connecting integration
       lastLoginProvider: provider,
       lastLoginAt: new Date(),
       status: 'active',
@@ -57,6 +67,44 @@ export class AccountsService {
     }
 
     return savedAccount;
+  }
+
+  /**
+   * Set or update organization for an account based on UC domain
+   * Extracts organization name from UC API domain (e.g., "maul.usetopscore.com" -> "MAUL")
+   */
+  async setOrganizationFromDomain(
+    accountId: string,
+    domain: string,
+  ): Promise<void> {
+    // Extract org name from domain
+    // Domain format: https://[org].usetopscore.com or [org].usetopscore.com
+    const cleanDomain = domain.replace(/^https?:\/\//, ''); // Remove protocol
+    const match = cleanDomain.match(/^([^.]+)\.usetopscore\.com/);
+
+    if (!match) {
+      console.warn(`Could not extract organization from domain: ${domain}`);
+      return;
+    }
+
+    const orgSlug = match[1]; // e.g., "maul"
+    const orgName = orgSlug.toUpperCase(); // e.g., "MAUL"
+
+    // Find or create organization
+    let organization = await this.organizationsRepository.findOne({
+      where: { name: orgName },
+    });
+
+    if (!organization) {
+      organization = await this.organizationsRepository.save(
+        this.organizationsRepository.create({ name: orgName }),
+      );
+    }
+
+    // Update account with organization
+    await this.accountsRepository.update(accountId, {
+      organizationId: organization.id,
+    });
   }
 
   /**

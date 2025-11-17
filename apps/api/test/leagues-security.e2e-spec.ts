@@ -138,7 +138,7 @@ describe('Leagues security boundary (e2e)', () => {
     const account = await accountRepo.save(
       accountRepo.create({
         email: charlieEmail,
-        organizationId: null,
+        organizationId: undefined,
         status: 'active',
       }),
     );

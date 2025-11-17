@@ -223,6 +223,71 @@ export class LeaguesController {
       }));
     }
 
+    // No teams found - check if this is an external league and auto-sync
+    this.logger.log(
+      `No teams found for league ${id}, checking if auto-sync needed`,
+    );
+
+    const league = await this.leagueRepo.findOne({
+      where: { id },
+      relations: ['externalSources'],
+    });
+
+    if (league && league.externalSources && league.externalSources.length > 0) {
+      const externalSource = league.externalSources[0];
+
+      // Check if a sync was recently triggered (within last 30 seconds)
+      // This prevents duplicate syncs while the background job is running
+      const recentlySynced =
+        externalSource.lastSyncedAt &&
+        Date.now() - externalSource.lastSyncedAt.getTime() < 30000;
+
+      if (!recentlySynced) {
+        // If no teams in database and no recent sync, trigger sync
+        this.logger.log(
+          `Auto-triggering sync for league ${id} (${league.name}) - no teams in database`,
+        );
+
+        // Find active connection for this provider
+        const connection = await this.integrationRepo.findOne({
+          where: {
+            provider: externalSource.provider,
+            isConnected: true,
+          },
+        });
+
+        if (connection) {
+          // Update lastSyncedAt to prevent duplicate syncs
+          await this.externalSourceRepo.update(externalSource.id, {
+            lastSyncedAt: new Date(),
+            syncStatus: 'active',
+          });
+
+          // Trigger background refresh
+          void this.performRefresh(
+            connection.accountId,
+            externalSource.provider,
+            id,
+          );
+
+          this.logger.log(
+            `Background sync started for league ${id}, returning empty array for now`,
+          );
+        } else {
+          this.logger.warn(
+            `No active connection found for provider ${externalSource.provider}, cannot auto-sync`,
+          );
+        }
+      } else {
+        this.logger.log(
+          `Sync recently triggered for league ${id}, waiting for completion`,
+        );
+      }
+
+      // Return empty array while sync is in progress
+      return [];
+    }
+
     // Fallback to external integration if no teams in database
     if (integration === 'external') {
       try {
@@ -352,7 +417,7 @@ export class LeaguesController {
    * Background refresh logic
    */
   private async performRefresh(
-    accountId: string,
+    _accountId: string,
     provider: string,
     leagueId: string,
   ) {
@@ -364,6 +429,19 @@ export class LeaguesController {
       // Use ImportService to refresh the league with full team/player data
       await this.importService.refreshLeague(leagueId);
 
+      // Update external source status on success
+      const league = await this.leagueRepo.findOne({
+        where: { id: leagueId },
+        relations: ['externalSources'],
+      });
+
+      if (league?.externalSources?.[0]) {
+        await this.externalSourceRepo.update(league.externalSources[0].id, {
+          syncStatus: 'active',
+          lastSyncedAt: new Date(),
+        });
+      }
+
       this.logger.log(
         `Successfully refreshed league ${leagueId} from provider ${provider}`,
       );
@@ -371,6 +449,18 @@ export class LeaguesController {
       this.logger.error(
         `Failed to refresh league ${leagueId}: ${error instanceof Error ? error.message : error}`,
       );
+
+      // Update external source status on error
+      const league = await this.leagueRepo.findOne({
+        where: { id: leagueId },
+        relations: ['externalSources'],
+      });
+
+      if (league?.externalSources?.[0]) {
+        await this.externalSourceRepo.update(league.externalSources[0].id, {
+          syncStatus: 'error',
+        });
+      }
     }
   }
 }

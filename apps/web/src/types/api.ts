@@ -30,6 +30,38 @@ export interface TeamSummary {
     integrationProvider?: IntegrationProvider;
 }
 
+export interface ExternalSource {
+    id: string;
+    provider: string;
+    externalId: string;
+    lastSyncedAt?: string;
+    rawData?: Record<string, unknown>;
+}
+
+export interface TeamDetail {
+    id: string;
+    name: string;
+    leagueId: string;
+    division?: string | null;
+    colour?: string | null;
+    altColour?: string | null;
+    photoUrl?: string | null;
+    location?: string | null;
+    createdAt: string;
+    updatedAt: string;
+    externalSources?: ExternalSource[];
+}
+
+export interface TeamPlayer {
+    id: string;
+    playerId: string;
+    fullName?: string;
+    primaryEmail?: string;
+    role: 'player' | 'captain' | 'coach';
+    joinedVia: 'manual' | 'uc_import' | 'zuluru_import';
+    externalSources?: ExternalSource[];
+}
+
 export interface GenerateScheduleRequest {
     pods: string[];
     rounds: number;

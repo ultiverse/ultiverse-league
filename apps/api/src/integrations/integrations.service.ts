@@ -196,6 +196,12 @@ export class IntegrationsService implements OnModuleInit {
           );
         }
 
+        // Set organization based on UC domain
+        await this.accountsService.setOrganizationFromDomain(
+          account.id,
+          connectionData.domain,
+        );
+
         // Update database connection with OAuth credentials
         await this.accountsService.updateIntegrationConnection(
           account.id,

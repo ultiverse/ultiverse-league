@@ -12,13 +12,13 @@ import {
     CircularProgress,
     Alert,
 } from '@mui/material';
-import { getLeagues } from '../api/uc';
+import { getAllLeagues } from '../api/user';
 import { LeagueSummary } from '../types/api';
 import { useLeague } from '../hooks/useLeague';
 import { useNavigate } from 'react-router-dom';
 import { SeasonChip } from '../components/SeasonChip.component';
-import { SourceBadge, SyncStatusBadge } from '../components/SourceBadge.component';
-import { transformLeagueData } from '../utils/dataTransform';
+import { SourceBadge } from '../components/SourceBadge.component';
+import { transformMeLeagueData } from '../utils/dataTransform';
 
 interface LeaguesProps {
     onLeagueSelect?: () => void;
@@ -30,10 +30,10 @@ export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
     const navigate = useNavigate();
 
     const leaguesQuery = useQuery({
-        queryKey: ['leagues'],
+        queryKey: ['leagues', 'all'],
         queryFn: async () => {
-            const rawLeagues = await getLeagues();
-            return transformLeagueData(rawLeagues);
+            const rawLeagues = await getAllLeagues();
+            return transformMeLeagueData(rawLeagues);
         },
         staleTime: 15 * 60 * 1000, // 15 minutes - leagues don't change very often
         gcTime: 30 * 60 * 1000, // 30 minutes cache retention
@@ -73,7 +73,6 @@ export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
                                 <TableCell>League Name</TableCell>
                                 <TableCell>Source</TableCell>
                                 <TableCell>Season</TableCell>
-                                <TableCell>Status</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -103,13 +102,6 @@ export function Leagues({ onLeagueSelect }: LeaguesProps = {}) {
                                     </TableCell>
                                     <TableCell>
                                         <SeasonChip dateStr={league.start} />
-                                    </TableCell>
-                                    <TableCell>
-                                        <SyncStatusBadge
-                                            syncStatus={league.syncStatus}
-                                            lastSynced={league.lastSynced}
-                                            size="small"
-                                        />
                                     </TableCell>
                                 </TableRow>
                             ))}

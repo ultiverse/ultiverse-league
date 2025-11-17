@@ -65,7 +65,11 @@ export function LeaguesListPage() {
 
   const leaguesQuery = useQuery({
     queryKey: ['leagues', 'all'],
-    queryFn: () => getAllLeagues(),
+    queryFn: async () => {
+      const leagues = await getAllLeagues();
+      // Transform to LeagueSummary format for consistency
+      return leagues;
+    },
     staleTime: 60_000, // 1 minute
   });
 

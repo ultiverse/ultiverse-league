@@ -6,6 +6,7 @@ export interface AuthContextType {
   login: (email: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -14,6 +15,7 @@ const AUTH_STORAGE_KEY = 'ultiverse_user_email';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load email from sessionStorage on mount
   useEffect(() => {
@@ -21,9 +23,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (stored) {
       setEmail(stored);
     }
+    setIsLoading(false);
   }, []);
 
   const login = async (userEmail: string) => {
+    // Set email in state and sessionStorage FIRST before API call
+    setEmail(userEmail);
+    sessionStorage.setItem(AUTH_STORAGE_KEY, userEmail);
+
     // Call the API to create/update the account
     try {
       await fetch('/api/v1/user/login', {
@@ -33,11 +40,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       console.error('Failed to create account:', error);
-      // Continue anyway - we'll create the account later if needed
+      // Continue anyway - email is already set in sessionStorage
     }
-
-    setEmail(userEmail);
-    sessionStorage.setItem(AUTH_STORAGE_KEY, userEmail);
   };
 
   const logout = () => {
@@ -50,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     logout,
     isAuthenticated: !!email,
+    isLoading,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

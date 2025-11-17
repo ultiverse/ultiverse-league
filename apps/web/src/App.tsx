@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, Modal, Backdrop, Fade, ThemeProvider, useTheme } from '@mui/material';
 import { HelmetProvider } from 'react-helmet-async';
@@ -10,12 +10,13 @@ import { IntegrationContextProvider } from './context/IntegrationContext';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import { useLeague } from './hooks/useLeague';
-import { useLastUrl, useInitialRedirect } from './hooks/useLastUrl';
+import { useLastUrl } from './hooks/useLastUrl';
 import { DashboardPage } from './pages/Dashboard.page';
 import { Leagues } from './pages/Leagues.page';
 import { LeaguesListPage } from './pages/LeaguesListPage';
 import { LoginPage } from './pages/Login.page';
 import { Teams } from './pages/Teams.page';
+import { TeamDetail } from './pages/TeamDetail.page';
 import { Games } from './pages/Games.page';
 import { Settings } from './pages/Settings.page';
 import { ProfilePage } from './pages/Profile.page';
@@ -25,7 +26,13 @@ import { NotFoundPage } from './pages/NotFound.page';
 import { theme } from './theme/theme';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, isLoading } = useAuth();
+
+    // Show nothing while checking sessionStorage
+    if (isLoading) {
+        return null;
+    }
+
     return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
@@ -34,15 +41,9 @@ function AppContent() {
     const { selectedLeague } = useLeague();
     const [showLeagueModal, setShowLeagueModal] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
-    const { redirectToLastUrl } = useInitialRedirect();
 
     // Track URL changes for persistence
     useLastUrl();
-
-    // Redirect to last URL on initial load
-    useEffect(() => {
-        redirectToLastUrl();
-    }, [redirectToLastUrl]);
 
     const handleLeagueClick = () => {
         setShowLeagueModal(true);
@@ -95,6 +96,7 @@ function AppContent() {
                                         <Route path="/leagues" element={<LeaguesListPage />} />
                                         <Route path="/dashboard" element={<DashboardPage />} />
                                         <Route path="/teams" element={<Teams />} />
+                                        <Route path="/teams/:teamId" element={<TeamDetail />} />
                                         <Route path="/games" element={<Games />} />
                                         <Route path="/profile" element={<ProfilePage />} />
                                         <Route path="/account" element={<AccountPage />} />

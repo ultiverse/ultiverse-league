@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Grid,
     Skeleton,
@@ -42,6 +43,7 @@ function TeamCardSkeleton() {
 export function Teams() {
     const { selectedLeague } = useLeague();
     const [isSyncing, setIsSyncing] = useState(false);
+    const navigate = useNavigate();
 
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
@@ -52,6 +54,11 @@ export function Teams() {
         enabled: !!selectedLeague,
         staleTime: 30 * 60 * 1000, // 30 minutes - teams rarely change
         gcTime: 60 * 60 * 1000, // 1 hour cache retention
+        refetchInterval: (query) => {
+            // If no teams found, poll every 3 seconds to check if import completed
+            // The API auto-triggers import when no teams are found
+            return query.state.data && query.state.data.length === 0 ? 3000 : false;
+        },
     });
 
     const handleForceSync = async () => {
@@ -77,6 +84,18 @@ export function Teams() {
             setIsSyncing(false);
         }
     };
+
+    // Stop polling after 30 seconds to avoid infinite loops
+    useEffect(() => {
+        if (teamsQuery.data?.length === 0 && !teamsQuery.isLoading) {
+            const timeout = setTimeout(() => {
+                // This will cause refetchInterval to return false
+                teamsQuery.refetch();
+            }, 30000);
+
+            return () => clearTimeout(timeout);
+        }
+    }, [teamsQuery]);
 
     // Build alerts array
     const alerts: PageAlert[] = [];
@@ -157,8 +176,7 @@ export function Teams() {
                                 <TeamCard
                                     team={team}
                                     onClick={(clickedTeam) => {
-                                        // Future: Navigate to team detail page
-                                        console.log('Team clicked:', clickedTeam.name);
+                                        navigate(`/teams/${clickedTeam.id}`);
                                     }}
                                     showSourceInfo={true}
                                 />

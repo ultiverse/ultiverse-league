@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useNavigationStorage } from './useNavigationStorage';
 
@@ -23,17 +23,17 @@ export function useLastUrl() {
   /**
    * Navigate to the last saved URL or fallback to a default
    */
-  const navigateToLastUrl = (fallbackUrl: string = '/teams') => {
+  const navigateToLastUrl = useCallback((fallbackUrl: string = '/teams') => {
     const lastUrl = loadLastUrl();
     navigate(lastUrl || fallbackUrl);
-  };
+  }, [loadLastUrl, navigate]);
 
   /**
    * Get the last saved URL without navigating
    */
-  const getLastUrl = (): string | null => {
+  const getLastUrl = useCallback((): string | null => {
     return loadLastUrl();
-  };
+  }, [loadLastUrl]);
 
   return {
     navigateToLastUrl,
@@ -50,14 +50,14 @@ export function useInitialRedirect() {
   const navigate = useNavigate();
   const { loadLastUrl } = useNavigationStorage();
 
-  const redirectToLastUrl = () => {
+  const redirectToLastUrl = useCallback(() => {
     const lastUrl = loadLastUrl();
     if (lastUrl && lastUrl !== '/') {
       navigate(lastUrl, { replace: true });
       return true; // Indicates a redirect happened
     }
     return false; // No redirect
-  };
+  }, [loadLastUrl, navigate]);
 
   return { redirectToLastUrl };
 }

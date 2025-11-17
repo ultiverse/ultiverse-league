@@ -1,9 +1,42 @@
 import { LeagueSummary, TeamSummary, DataSource, SyncStatus, IntegrationProvider } from '../types/api';
+import { MeLeague } from '../api/user';
 
 /**
  * Transform API data to include source and sync status information
  * This is a temporary solution until the backend provides these fields
  */
+
+/**
+ * Transform MeLeague from /api/v1/leagues to LeagueSummary
+ */
+export function transformMeLeagueData(leagues: MeLeague[]): LeagueSummary[] {
+    return leagues.map(league => {
+        // Map source to DataSource type
+        const sourceMap: Record<MeLeague['source'], DataSource> = {
+            'ultiverse': 'ultiverse',
+            'ultimate_central': 'uc',
+            'zuluru': 'zuluru',
+        };
+
+        // Map badge to IntegrationProvider
+        const providerMap: Record<MeLeague['badge'], IntegrationProvider | undefined> = {
+            'UV': undefined,
+            'UC': 'uc',
+            'Z': 'zuluru',
+        };
+
+        return {
+            id: league.id,
+            name: league.name,
+            start: league.seasonStart,
+            end: league.seasonEnd,
+            source: sourceMap[league.source],
+            syncStatus: (league.syncStatus || 'synced') as SyncStatus,
+            integrationProvider: providerMap[league.badge],
+            lastSynced: league.lastSyncedAt || null,
+        };
+    });
+}
 
 export function transformLeagueData(leagues: Omit<LeagueSummary, 'source' | 'syncStatus' | 'integrationProvider'>[]): LeagueSummary[] {
     return leagues.map(league => ({
