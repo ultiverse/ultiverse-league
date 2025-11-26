@@ -202,17 +202,30 @@ export class LeaguesController {
     @Query('pods') pods?: string,
     @Query('integration') integration?: string,
   ) {
-    // First try to get teams from database
-    const teams = await this.teamRepo.find({
-      where: { leagueId: id },
-      order: { name: 'ASC' },
-    });
+    // First try to get teams from database with player count
+    const teams = await this.teamRepo
+      .createQueryBuilder('team')
+      .leftJoin('team.memberships', 'membership', 'membership.isActive = :isActive', { isActive: true })
+      .where('team.leagueId = :leagueId', { leagueId: id })
+      .select([
+        'team.id',
+        'team.name',
+        'team.location',
+        'team.colour',
+        'team.altColour',
+        'team.seasonStart',
+        'team.seasonEnd',
+      ])
+      .addSelect('COUNT(DISTINCT membership.id)', 'playerCount')
+      .groupBy('team.id')
+      .orderBy('team.name', 'ASC')
+      .getRawAndEntities();
 
-    if (teams.length > 0) {
+    if (teams.entities.length > 0) {
       this.logger.log(
-        `Found ${teams.length} teams for league ${id} in database`,
+        `Found ${teams.entities.length} teams for league ${id} in database`,
       );
-      return teams.map((team) => ({
+      return teams.entities.map((team, index) => ({
         id: team.id,
         name: team.name,
         location: team.location,
@@ -220,6 +233,7 @@ export class LeaguesController {
         altColour: team.altColour,
         seasonStart: team.seasonStart,
         seasonEnd: team.seasonEnd,
+        playerCount: parseInt(teams.raw[index]?.playerCount || '0', 10),
       }));
     }
 

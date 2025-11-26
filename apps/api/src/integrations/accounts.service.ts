@@ -23,7 +23,6 @@ export class AccountsService {
 
   /**
    * Create a new account with profile via integration
-   * Note: For email-only accounts, organizationId will be undefined until they connect an integration
    */
   async createAccountFromIntegration(
     email: string,

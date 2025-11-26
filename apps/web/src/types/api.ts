@@ -24,6 +24,7 @@ export interface TeamSummary {
     dateJoined?: string;
     monthYear?: string;
     photoUrl?: string | null;
+    playerCount?: number;
     source: DataSource;
     lastSynced?: string | null;
     syncStatus: SyncStatus;
