@@ -9,7 +9,7 @@ export interface UCCredentials {
 }
 
 type TokenState = { accessToken: string; expiresAt: number };
-type UCParams = Record<string, string | number | boolean>;
+type UCParams = Record<string, string | number | boolean | string[]>;
 
 function normalizeHost(input: string): string {
   return input.replace(/^https?:\/\//i, '').replace(/\/+$/g, '');

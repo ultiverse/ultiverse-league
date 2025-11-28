@@ -106,7 +106,7 @@ export class UCController {
     @Query('includePerson') includePerson?: string,
   ) {
     const inc = includePerson !== 'false';
-    return this.regs.list(eventId, inc);
+    return this.regs.list(eventId, { includePerson: inc });
   }
 
   /**

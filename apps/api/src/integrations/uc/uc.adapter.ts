@@ -13,13 +13,15 @@ import type { ITeamsProvider, TeamSummary } from '../ports/teams.port';
 import type { IGamesProvider, GameSummary } from '../ports/games.port';
 import type { IUserProvider, UserProfile } from '../ports/user.port';
 import type { IFieldsProvider } from '../ports/fields.port';
+import type { IPlayersProvider, PlayerRosterItem } from '../ports/players.port';
 import { Field } from '@ultiverse/shared-types';
 
 import { UCEventsService } from './uc.events/uc.events.service';
 import { UCRegistrationsService } from './uc.registrations/uc.registrations.service';
 import { UCTeamsService } from './uc.teams/uc.teams.service';
-import { UCGamesService } from './uc.games/uc.games.service';
+import { UCGamesService} from './uc.games/uc.games.service';
 import { UCFieldsService } from './uc.fields/uc.fields.service';
+import { UCPlayersService } from './uc.players/uc.players.service';
 import { UCClient } from './uc.client';
 import { UCField } from './types/fields';
 import { UCStartParam, UC_EVENT_ORDER_BY } from '@ultiverse/shared-types';
@@ -36,7 +38,8 @@ export class UCAdapter
     ITeamsProvider,
     IGamesProvider,
     IUserProvider,
-    IFieldsProvider
+    IFieldsProvider,
+    IPlayersProvider
 {
   constructor(
     private readonly events: UCEventsService,
@@ -44,6 +47,7 @@ export class UCAdapter
     private readonly teams: UCTeamsService,
     private readonly games: UCGamesService,
     private readonly fields: UCFieldsService,
+    private readonly players: UCPlayersService,
     private readonly client: UCClient,
   ) {}
 
@@ -98,7 +102,7 @@ export class UCAdapter
     leagueExternalId: string,
     includePerson: boolean,
   ): Promise<Registration[]> {
-    const res = await this.regs.list(Number(leagueExternalId), includePerson);
+    const res = await this.regs.list(Number(leagueExternalId), { includePerson });
     const rows = Array.isArray(res.result) ? res.result : [];
     return rows.map((r) => {
       const person = r.Person
@@ -370,5 +374,19 @@ export class UCAdapter
     } catch {
       return 'Unknown';
     }
+  }
+
+  /** Implement IPlayersProvider - fetch players for a league */
+  async listPlayersForLeague(leagueId: string): Promise<PlayerRosterItem[]> {
+    const ucPlayers = await this.players.listPlayersForLeague(leagueId);
+
+    return ucPlayers.map((ucPlayer) => ({
+      externalPlayerId: ucPlayer.personId.toString(),
+      externalTeamId: ucPlayer.teamId.toString(),
+      internalTeamId: ucPlayer.internalTeamId,
+      fullName: ucPlayer.fullName,
+      email: ucPlayer.email,
+      rawData: ucPlayer.rawData,
+    }));
   }
 }

@@ -70,6 +70,18 @@ describe('LeaguesController', () => {
   const teamRepoMock = {
     find: jest.fn(),
     count: jest.fn(),
+    createQueryBuilder: jest.fn(() => ({
+      leftJoin: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      addSelect: jest.fn().mockReturnThis(),
+      groupBy: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      getRawAndEntities: jest.fn().mockResolvedValue({
+        entities: [],
+        raw: [],
+      }),
+    })),
   };
 
   const accountRepoMock = {
@@ -198,29 +210,73 @@ describe('LeaguesController', () => {
 
   describe('byIdTeams(id, pods?)', () => {
     it('passes kind=undefined when pods param is not "true"', async () => {
-      teamRepoMock.find.mockResolvedValueOnce([{ id: 'T1', name: 'Team 1' }]);
+      // Mock the query builder to return a team with player count
+      teamRepoMock.createQueryBuilder.mockReturnValueOnce({
+        leftJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        groupBy: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getRawAndEntities: jest.fn().mockResolvedValue({
+          entities: [{ id: 'T1', name: 'Team 1', colour: '#000', altColour: '#fff' }],
+          raw: [{ playerCount: '5' }],
+        }),
+      });
 
       const out = await controller.byIdTeams('L1', undefined);
-      expect(out).toEqual([{ id: 'T1', name: 'Team 1' }]);
-      expect(teamRepoMock.find).toHaveBeenCalledWith({
-        where: { leagueId: 'L1' },
-        order: { name: 'ASC' },
-      });
+      expect(out).toEqual([{
+        id: 'T1',
+        name: 'Team 1',
+        colour: '#000',
+        altColour: '#fff',
+        location: undefined,
+        seasonStart: undefined,
+        seasonEnd: undefined,
+        playerCount: 5,
+      }]);
     });
 
     it('passes kind="pod" when pods="true"', async () => {
-      teamRepoMock.find.mockResolvedValueOnce([{ id: 'P1', name: 'Pod 1' }]);
+      teamRepoMock.createQueryBuilder.mockReturnValueOnce({
+        leftJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        groupBy: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getRawAndEntities: jest.fn().mockResolvedValue({
+          entities: [{ id: 'P1', name: 'Pod 1', colour: '#000', altColour: '#fff' }],
+          raw: [{ playerCount: '3' }],
+        }),
+      });
 
       const out = await controller.byIdTeams('L1', 'true');
-      expect(out).toEqual([{ id: 'P1', name: 'Pod 1' }]);
-      expect(teamRepoMock.find).toHaveBeenCalledWith({
-        where: { leagueId: 'L1' },
-        order: { name: 'ASC' },
-      });
+      expect(out).toEqual([{
+        id: 'P1',
+        name: 'Pod 1',
+        colour: '#000',
+        altColour: '#fff',
+        location: undefined,
+        seasonStart: undefined,
+        seasonEnd: undefined,
+        playerCount: 3,
+      }]);
     });
 
     it('returns teams from external integration when specified', async () => {
-      teamRepoMock.find.mockResolvedValueOnce([]);
+      teamRepoMock.createQueryBuilder.mockReturnValueOnce({
+        leftJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        groupBy: jest.fn().mockReturnThis(),
+        orderBy: jest.fn().mockReturnThis(),
+        getRawAndEntities: jest.fn().mockResolvedValue({
+          entities: [],
+          raw: [],
+        }),
+      });
       const extTeams = [{ id: 'EXTT1' }, { id: 'EXTT2' }];
       teamsProviderMock.listTeams.mockResolvedValueOnce(extTeams);
 

@@ -1,15 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
   Player,
   ExternalPlayerSource,
   Membership,
-  Team,
-  League,
-  ExternalLeagueSource,
 } from '../database/entities';
-import { UCRegistrationsService } from './uc/uc.registrations/uc.registrations.service';
+import { PLAYERS_PROVIDER } from './ports/players.port';
+import type { IPlayersProvider } from './ports/players.port';
 import type { ProviderType } from '@ultiverse/shared-types';
 
 export interface DiscoveredPlayer {
@@ -40,14 +38,14 @@ export class PlayerDiscoveryService {
     private readonly externalPlayerSourceRepo: Repository<ExternalPlayerSource>,
     @InjectRepository(Membership)
     private readonly membershipRepo: Repository<Membership>,
-    @InjectRepository(Team)
-    private readonly teamRepo: Repository<Team>,
-    private readonly ucRegistrationsService: UCRegistrationsService,
+    @Inject(PLAYERS_PROVIDER)
+    private readonly playersProvider: IPlayersProvider,
   ) {}
 
   /**
    * Discover and persist players for all teams in a league.
    * Called when a league is opened/refreshed and rosters need to be synced.
+   * Uses bulk fetching from the provider for efficiency.
    */
   async discoverPlayersForLeague(
     leagueId: string,
@@ -57,159 +55,48 @@ export class PlayerDiscoveryService {
       `Discovering players for league ${leagueId} from provider ${provider}`,
     );
 
-    // Get all teams in the league
-    const teams = await this.teamRepo.find({
-      where: { leagueId },
-      relations: ['externalSources'],
-    });
-
-    if (teams.length === 0) {
-      this.logger.warn(`No teams found for league ${leagueId}`);
-      return [];
-    }
+    // Use the players provider to bulk fetch all players for the league
+    const players = await this.playersProvider.listPlayersForLeague(leagueId);
 
     this.logger.log(
-      `Found ${teams.length} teams in league, fetching rosters...`,
+      `Found ${players.length} players from provider, upserting...`,
     );
 
-    // Discover players for each team
-    const allPlayers: DiscoveredPlayer[] = [];
-    for (const team of teams) {
-      try {
-        const players = await this.discoverPlayersForTeam(
-          team.id,
-          leagueId,
-          provider,
+    const discoveredPlayers: DiscoveredPlayer[] = [];
+    for (const player of players) {
+      if (!player.internalTeamId) {
+        this.logger.warn(
+          `No internal team found for player ${player.externalPlayerId}, skipping`,
         );
-        allPlayers.push(...players);
+        continue;
+      }
+
+      try {
+        const discovered = await this.upsertExternalPlayer(
+          provider,
+          player.externalPlayerId,
+          player.fullName,
+          player.email,
+          player.internalTeamId,
+          leagueId,
+          player.rawData,
+        );
+        discoveredPlayers.push(discovered);
       } catch (error) {
         this.logger.error(
-          `Failed to discover players for team ${team.name} (${team.id}): ${error instanceof Error ? error.message : error}`,
+          `Failed to upsert player ${player.externalPlayerId}: ${error instanceof Error ? error.message : error}`,
         );
-        // Continue with other teams
+        // Continue with other players
       }
     }
 
     this.logger.log(
-      `Discovered ${allPlayers.length} total players for league ${leagueId}`,
+      `Discovered ${discoveredPlayers.length} total players for league ${leagueId}`,
     );
-
-    return allPlayers;
-  }
-
-  /**
-   * Discover and persist players for a specific team.
-   * Fetches roster from external source and creates Player + Membership records.
-   */
-  async discoverPlayersForTeam(
-    teamId: string,
-    leagueId: string,
-    provider: ProviderType,
-  ): Promise<DiscoveredPlayer[]> {
-    this.logger.log(
-      `Discovering players for team ${teamId} from provider ${provider}`,
-    );
-
-    // Find the team and its external source
-    const team = await this.teamRepo.findOne({
-      where: { id: teamId },
-      relations: ['externalSources'],
-    });
-
-    if (!team) {
-      throw new Error(`Team ${teamId} not found`);
-    }
-
-    // Find the external source for this team
-    const externalSource = team.externalSources?.find(
-      (s) => s.source === provider,
-    );
-
-    if (!externalSource) {
-      throw new Error(
-        `No external source found for team ${teamId} with provider ${provider}`,
-      );
-    }
-
-    // Fetch players from the provider
-    let externalPlayers: Array<{
-      externalId: string;
-      email?: string;
-      firstName?: string;
-      lastName?: string;
-      fullName?: string;
-      rawData: Record<string, unknown>;
-    }> = [];
-
-    if (provider === 'ultimate_central') {
-      // UC uses registrations to get team rosters
-      // We need the event_id which is stored in the league's external source
-      const league = (await this.teamRepo.manager.findOne('leagues', {
-        where: { id: leagueId },
-        relations: ['externalSources'],
-      })) as (League & { externalSources: ExternalLeagueSource[] }) | null;
-
-      if (!league) {
-        throw new Error(`League ${leagueId} not found`);
-      }
-
-      const leagueSource = league.externalSources?.find(
-        (s) => s.provider === provider,
-      );
-
-      if (!leagueSource) {
-        throw new Error(
-          `No external source found for league ${leagueId} with provider ${provider}`,
-        );
-      }
-
-      const eventId = Number(leagueSource.externalId);
-
-      // Fetch registrations for the event
-      const response = await this.ucRegistrationsService.list(eventId, true);
-
-      // Filter registrations by team_id if available in rawData
-      // Note: UC registrations might not have team assignments in the API
-      // This is a simplified version - you may need to adjust based on actual UC API
-      externalPlayers = response.result
-        .filter((reg) => reg.Person) // Only include registrations with person data
-        .map((reg) => ({
-          externalId: reg.person_id.toString(),
-          email: reg.Person?.email_address || reg.Person?.email_canonical,
-          firstName: reg.Person?.first_name,
-          lastName: reg.Person?.last_name,
-          fullName: reg.Person?.full_name,
-          rawData: { ...reg.Person },
-        }));
-    } else {
-      throw new Error(
-        `Provider ${provider} not supported for player discovery`,
-      );
-    }
-
-    this.logger.log(
-      `Found ${externalPlayers.length} players for team ${team.name}`,
-    );
-
-    // Process each player: de-dupe and persist
-    const discoveredPlayers: DiscoveredPlayer[] = [];
-
-    for (const extPlayer of externalPlayers) {
-      const discovered = await this.upsertExternalPlayer(
-        provider,
-        extPlayer.externalId,
-        extPlayer.fullName ||
-          `${extPlayer.firstName || ''} ${extPlayer.lastName || ''}`.trim(),
-        extPlayer.email,
-        teamId,
-        leagueId,
-        extPlayer.rawData,
-      );
-      discoveredPlayers.push(discovered);
-    }
 
     return discoveredPlayers;
   }
+
 
   /**
    * Upsert a single external player (de-dupe by provider + externalId).

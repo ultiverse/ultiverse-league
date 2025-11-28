@@ -25,26 +25,43 @@ describe('UCRegistrationsService', () => {
     expect(service).toBeDefined();
   });
 
-  it('list(eventId, includePerson=true) calls UCClient.get with fields=Person', async () => {
+  it('list(eventId) calls UCClient.get with fields=Person by default', async () => {
     clientMock.get.mockResolvedValueOnce({ result: [{ id: 1 }] });
 
-    const res = await service.list(156458, true);
+    const res = await service.list(156458);
 
     expect(clientMock.get).toHaveBeenCalledTimes(1);
     expect(clientMock.get).toHaveBeenCalledWith('/api/registrations', {
       event_id: 156458,
-      fields: 'Person',
+      'fields[]': ['Person'],
     });
     expect(res).toEqual({ result: [{ id: 1 }] });
   });
 
-  it('list(eventId, includePerson=false) omits fields', async () => {
+  it('list(eventId, { includePerson: false }) omits fields', async () => {
     clientMock.get.mockResolvedValueOnce({ result: [] });
 
-    await service.list(123, false);
+    await service.list(123, { includePerson: false });
 
     expect(clientMock.get).toHaveBeenCalledWith('/api/registrations', {
       event_id: 123,
+    });
+  });
+
+  it('list(eventId, { teamId, includeTeam }) filters by team and includes Team field', async () => {
+    clientMock.get.mockResolvedValueOnce({ result: [] });
+
+    await service.list(156458, {
+      teamId: 354111,
+      includeTeam: true,
+      perPage: 100,
+    });
+
+    expect(clientMock.get).toHaveBeenCalledWith('/api/registrations', {
+      event_id: 156458,
+      'fields[]': ['Person', 'Team'],
+      team_id: 354111,
+      per_page: 100,
     });
   });
 });

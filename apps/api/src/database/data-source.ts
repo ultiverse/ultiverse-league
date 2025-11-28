@@ -16,9 +16,12 @@ import {
   ExternalGameSource,
 } from './entities';
 
-// Auto-determine schema from NODE_ENV: staging uses 'staging' schema, others use 'public'
+// Auto-determine schema from NODE_ENV
+// For Supabase (identified by DATABASE_URL containing 'supabase'), always use 'public'
+// Otherwise: staging uses 'staging' schema, others use 'public'
 const nodeEnv = process.env.NODE_ENV || 'development';
-const schema = nodeEnv === 'staging' ? 'staging' : 'public';
+const isSupabase = process.env.DATABASE_URL?.includes('supabase');
+const schema = isSupabase ? 'public' : (nodeEnv === 'staging' ? 'staging' : 'public');
 
 // Use DATABASE_URL if available, otherwise fall back to individual variables for local dev
 const databaseUrl = process.env.DATABASE_URL;

@@ -12,15 +12,24 @@ export interface UCPerson {
   [k: string]: unknown;
 }
 
+export interface UCTeam {
+  model: 'team';
+  id: number;
+  name?: string;
+  [k: string]: unknown;
+}
+
 export interface UCRegistration {
   model: 'registration';
   id: number;
   person_id: number;
   event_id: number;
+  team_id?: number;
   status: string;
   role?: string;
   roles?: string[];
   Person?: UCPerson;
+  Team?: UCTeam;
   [k: string]: unknown;
 }
 
