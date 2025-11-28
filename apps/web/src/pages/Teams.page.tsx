@@ -18,7 +18,6 @@ import { TeamCard } from '../components/TeamCard.component';
 import { Section } from '../components/Layout/Section.component';
 import { Page } from '../components/Layout/Page.component';
 import { PageAlert } from '../types/components';
-import { transformTeamData } from '../utils/dataTransform';
 
 // Skeleton loading component for team cards
 function TeamCardSkeleton() {
@@ -48,8 +47,7 @@ export function Teams() {
     const teamsQuery = useQuery({
         queryKey: ['teams', selectedLeague?.id],
         queryFn: async () => {
-            const rawTeams = await getTeamsByLeague(selectedLeague!.id);
-            return transformTeamData(rawTeams);
+            return await getTeamsByLeague(selectedLeague!.id);
         },
         enabled: !!selectedLeague,
         staleTime: 30 * 60 * 1000, // 30 minutes - teams rarely change

@@ -22,7 +22,7 @@ export interface MeLeagueResponse {
   name: string;
   seasonStart?: string;
   seasonEnd?: string;
-  source: 'ultiverse' | 'ultimate_central' | 'zuluru';
+  source: 'ultiverse' | 'uc' | 'zuluru';
   badge: 'UV' | 'UC' | 'Z';
   lastSyncedAt?: string;
   syncStatus?: string;
@@ -98,7 +98,7 @@ export class UserService {
       altColour: team.altColour,
       dateJoined: team.seasonStart.toISOString(),
       monthYear: this.formatMonthYear(team.seasonStart),
-      source: team.sourceType === 'ultimate_central' ? 'uc' : 'ultiverse',
+      source: team.sourceType === 'uc' ? 'uc' : 'ultiverse',
     }));
 
     return {

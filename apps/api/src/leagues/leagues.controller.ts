@@ -215,6 +215,7 @@ export class LeaguesController {
         'team.altColour',
         'team.seasonStart',
         'team.seasonEnd',
+        'team.sourceType',
       ])
       .addSelect('COUNT(DISTINCT membership.id)', 'playerCount')
       .groupBy('team.id')
@@ -234,6 +235,9 @@ export class LeaguesController {
         seasonStart: team.seasonStart,
         seasonEnd: team.seasonEnd,
         playerCount: parseInt(teams.raw[index]?.playerCount || '0', 10),
+        source: team.sourceType === 'ultiverse' ? 'ultiverse' : team.sourceType,
+        integrationProvider: team.sourceType !== 'ultiverse' ? team.sourceType : undefined,
+        syncStatus: 'never_synced' as const,
       }));
     }
 

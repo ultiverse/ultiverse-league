@@ -49,45 +49,10 @@ export function transformLeagueData(leagues: Omit<LeagueSummary, 'source' | 'syn
     }));
 }
 
-export function transformTeamData(teams: Omit<TeamSummary, 'source' | 'syncStatus' | 'integrationProvider'>[]): TeamSummary[] {
-    return teams.map((team, index) => {
-        // Simulate different data sources for demo purposes
-        let source: DataSource;
-        let syncStatus: SyncStatus;
-        let integrationProvider: IntegrationProvider | undefined;
-
-        if (index % 4 === 0) {
-            // Every 4th team is local-only
-            source = 'ultiverse';
-            syncStatus = 'never_synced';
-            integrationProvider = undefined;
-        } else if (index % 4 === 1) {
-            // Some teams need pulling
-            source = 'uc';
-            syncStatus = 'needs_pull';
-            integrationProvider = 'uc';
-        } else if (index % 4 === 2) {
-            // Some teams need pushing
-            source = 'both';
-            syncStatus = 'needs_push';
-            integrationProvider = 'uc';
-        } else {
-            // Rest are synced
-            source = 'uc';
-            syncStatus = 'synced';
-            integrationProvider = 'uc';
-        }
-
-        return {
-            ...team,
-            source,
-            syncStatus,
-            integrationProvider,
-            lastSynced: syncStatus === 'never_synced'
-                ? null
-                : new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(), // Random time within last week
-        };
-    });
+export function transformTeamData(teams: TeamSummary[]): TeamSummary[] {
+    // The backend now provides source, syncStatus, and integrationProvider fields
+    // Just return the teams as-is
+    return teams;
 }
 
 /**

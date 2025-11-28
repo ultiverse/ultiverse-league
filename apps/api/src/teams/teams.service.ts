@@ -9,7 +9,7 @@ import {
 
 export interface ExternalTeamData {
   externalId: string;
-  source: 'ultimate_central' | 'zuluru';
+  source: 'uc' | 'zuluru';
   name: string;
   location?: string;
   seasonStart: Date;
@@ -78,8 +78,8 @@ export class TeamsService {
         seasonStart: externalTeam.seasonStart,
         seasonEnd: externalTeam.seasonEnd,
         sourceType:
-          externalTeam.source === 'ultimate_central'
-            ? 'ultimate_central'
+          externalTeam.source === 'uc'
+            ? 'uc'
             : 'ultiverse',
         isEditable: false, // External teams are read-only
         colour: externalTeam.colour || '#000000',

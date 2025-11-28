@@ -6,7 +6,7 @@ export const getLeagues = () =>
   api<LeagueSummary[]>('/leagues');
 
 export const getTeamsByLeague = (eventId: string) =>
-  api<Omit<TeamSummary, 'source' | 'syncStatus' | 'integrationProvider'>[]>(`/leagues/${eventId}/teams`);
+  api<TeamSummary[]>(`/leagues/${eventId}/teams`);
 
 export const getTeamById = (teamId: string) =>
   api<TeamDetail>(`/teams/${teamId}`);

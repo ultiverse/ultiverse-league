@@ -1,7 +1,8 @@
 /**
  * Supported integration provider types
+ * These are the canonical provider identifiers used throughout the system
  */
-export type ProviderType = 'ultimate_central' | 'zuluru' | 'ultiverse';
+export type ProviderType = 'uc' | 'zuluru' | 'ultiverse';
 
 /**
  * Integration provider definition

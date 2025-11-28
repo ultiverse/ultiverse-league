@@ -46,7 +46,7 @@ export class IntegrationsService implements OnModuleInit {
   onModuleInit(): void {
     this.importService.registerAdapter('uc', this.ucLeagueAdapter);
     this.importService.registerAdapter(
-      'ultimate_central',
+      'uc',
       this.ucLeagueAdapter,
     );
   }
@@ -104,8 +104,8 @@ export class IntegrationsService implements OnModuleInit {
     );
 
     return connections.map((conn) => ({
-      // Denormalize provider: 'ultimate_central' -> 'uc' for frontend compatibility
-      provider: conn.provider === 'ultimate_central' ? 'uc' : conn.provider,
+      // Denormalize provider: 'uc' -> 'uc' for frontend compatibility
+      provider: conn.provider === 'uc' ? 'uc' : conn.provider,
       isConnected: conn.isConnected,
       status: conn.status,
       connectedEmail: conn.connectedEmail ?? undefined,
@@ -134,9 +134,9 @@ export class IntegrationsService implements OnModuleInit {
       );
     }
 
-    // Normalize provider: 'uc' -> 'ultimate_central'
+    // Normalize provider: 'uc' -> 'uc'
     const normalizedProvider =
-      provider === 'uc' ? 'ultimate_central' : provider;
+      provider === 'uc' ? 'uc' : provider;
 
     // Validate provider
     const availableProviders = this.getAvailableProviders();
@@ -165,7 +165,7 @@ export class IntegrationsService implements OnModuleInit {
     }
 
     // Handle OAuth flow for UC
-    if (normalizedProvider === 'ultimate_central') {
+    if (normalizedProvider === 'uc') {
       // Validate OAuth credentials if provided
       if (
         connectionData &&
@@ -276,9 +276,9 @@ export class IntegrationsService implements OnModuleInit {
       throw new Error('No account found');
     }
 
-    // Normalize provider: 'uc' -> 'ultimate_central'
+    // Normalize provider: 'uc' -> 'uc'
     const normalizedProvider =
-      provider === 'uc' ? 'ultimate_central' : provider;
+      provider === 'uc' ? 'uc' : provider;
 
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
@@ -336,9 +336,9 @@ export class IntegrationsService implements OnModuleInit {
       throw new Error('No account found');
     }
 
-    // Normalize provider: 'uc' -> 'ultimate_central'
+    // Normalize provider: 'uc' -> 'uc'
     const normalizedProvider =
-      provider === 'uc' ? 'ultimate_central' : provider;
+      provider === 'uc' ? 'uc' : provider;
 
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
@@ -360,7 +360,7 @@ export class IntegrationsService implements OnModuleInit {
     await this.simulateAsync(800);
 
     // Trigger league discovery for UC
-    if (normalizedProvider === 'ultimate_central') {
+    if (normalizedProvider === 'uc') {
       // Refresh UC client with credentials before discovering leagues
       if (this.ucConfigService) {
         await this.ucConfigService.refreshUCClient();
@@ -467,7 +467,7 @@ export class IntegrationsService implements OnModuleInit {
     );
     const ucConnection = connections.find(
       (conn) =>
-        (conn.provider === 'uc' || conn.provider === 'ultimate_central') &&
+        (conn.provider === 'uc' || conn.provider === 'uc') &&
         conn.isConnected,
     );
 
@@ -574,8 +574,8 @@ export class IntegrationsService implements OnModuleInit {
       for (const league of leagues) {
         try {
           await this.importService.importLeague(
-            'ultimate_central',
-            { provider: 'ultimate_central', externalId: league.externalId },
+            'uc',
+            { provider: 'uc', externalId: league.externalId },
             userId,
             organizationId,
           );

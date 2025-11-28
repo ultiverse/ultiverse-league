@@ -83,7 +83,7 @@ export class LeagueDiscoveryService {
       rawData: Record<string, unknown>;
     }> = [];
 
-    if (provider === 'ultimate_central') {
+    if (provider === 'uc') {
       const ucLeagues = await this.ucAdapter.listRecent({ limit: 100 });
       externalLeagues = ucLeagues.map((league) => ({
         externalId: league.id,
