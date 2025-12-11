@@ -86,7 +86,7 @@ export function PastTeamsHistory({ pastTeams, isLoading }: PastTeamsHistoryProps
                                             </Stack>
                                             <SourceBadge
                                                 source={team.source}
-                                                integrationProvider={team.source === 'uc' ? 'uc' : team.source === 'zuluru' ? 'zuluru' : undefined}
+                                                integrationProvider={team.source === 'ultimate_central' ? 'ultimate_central' : team.source === 'zuluru' ? 'zuluru' : undefined}
                                                 size="small"
                                                 variant="outlined"
                                             />

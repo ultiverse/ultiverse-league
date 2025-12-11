@@ -181,7 +181,7 @@ export class UCEnrichmentService {
 
           const externalTeamData: ExternalTeamData = {
             externalId: ucTeam.id.toString(),
-            source: 'uc',
+            source: 'ultimate_central',
             name: ucTeam.name,
             seasonStart,
             seasonEnd,

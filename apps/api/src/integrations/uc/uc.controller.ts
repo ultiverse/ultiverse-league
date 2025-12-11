@@ -28,7 +28,7 @@ import {
  *       depend on the provider-agnostic ports (leagues, registrations, teams, games)
  *       via the Integrations facade or DI tokens.
  */
-@Controller('uc')
+@Controller('ultimate_central')
 export class UCController {
   constructor(
     private readonly client: UCClient,

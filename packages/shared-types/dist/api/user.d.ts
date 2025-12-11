@@ -1,3 +1,4 @@
+import { DATA_SOURCES, PROVIDERS } from '../constants/providers';
 export interface TeamSummary {
     id: string;
     name: string;
@@ -6,14 +7,14 @@ export interface TeamSummary {
     altColour: string;
     dateJoined?: string;
     monthYear?: string;
-    source: 'ultiverse' | 'uc' | 'zuluru';
+    source: typeof DATA_SOURCES[keyof typeof DATA_SOURCES] | typeof PROVIDERS[keyof typeof PROVIDERS];
 }
 export type PastTeam = TeamSummary;
 export interface UserProfile {
     email: string;
     firstName: string;
     lastName: string;
-    integration: 'uc' | 'native';
+    integration: typeof PROVIDERS.ULTIMATE_CENTRAL | 'native';
     pastTeams: PastTeam[];
     lastLogin: string;
     identifies: 'man' | 'boy' | 'woman' | 'girl' | 'not_defined';

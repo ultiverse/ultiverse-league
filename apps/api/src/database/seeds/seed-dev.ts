@@ -33,7 +33,7 @@ async function main() {
       id, "accountId", provider, "isConnected", status,
       "createdAt", "updatedAt"
     )
-    VALUES (gen_random_uuid(), $1, 'uc', false, 'disconnected', now(), now())
+    VALUES (gen_random_uuid(), $1, 'ultimate_central', false, 'disconnected', now(), now())
     ON CONFLICT ("accountId", provider) DO NOTHING;
     `,
     [accountId],

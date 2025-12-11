@@ -68,7 +68,7 @@ export class UcUserProvider implements IUserProvider {
           altColour: '#ffffff',
           dateJoined: team.created_at,
           monthYear: this.formatMonthYear(team.created_at),
-          source: 'uc' as const,
+          source: 'ultimate_central' as const,
         }),
       );
 
@@ -76,7 +76,7 @@ export class UcUserProvider implements IUserProvider {
         email: ucUser.email_address || '',
         firstName: ucUser.first_name || '',
         lastName: ucUser.last_name || '',
-        integration: 'uc',
+        integration: 'ultimate_central',
         pastTeams,
         lastLogin: ucUser.last_seen || '',
         identifies: mapGenderIdentification(ucUser.gender || ''),

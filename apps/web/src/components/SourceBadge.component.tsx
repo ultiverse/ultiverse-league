@@ -1,5 +1,6 @@
 import { Box, Chip, Tooltip, Stack, useTheme } from '@mui/material';
 import { DataSource, IntegrationProvider } from '../types/api';
+import { PROVIDER_BADGES, PROVIDER_NAMES } from '../constants/providers';
 
 // Extend the theme type to include our custom palette properties
 interface CustomTheme {
@@ -37,17 +38,17 @@ interface ProviderConfig {
 }
 
 const getProviderConfigs = (theme: CustomTheme): Record<IntegrationProvider, ProviderConfig> => ({
-    uc: {
-        name: 'Ultimate Central',
-        shortName: 'UC',
+    ultimate_central: {
+        name: PROVIDER_NAMES.ultimate_central,
+        shortName: PROVIDER_BADGES.ultimate_central,
         color: theme.palette.integration.uc,
-        iconText: 'UC',
+        iconText: PROVIDER_BADGES.ultimate_central,
     },
     zuluru: {
-        name: 'Zuluru',
-        shortName: 'Zuluru',
+        name: PROVIDER_NAMES.zuluru,
+        shortName: PROVIDER_BADGES.zuluru,
         color: theme.palette.integration.zuluru,
-        iconText: 'ZU',
+        iconText: PROVIDER_BADGES.zuluru,
     },
 });
 
@@ -56,12 +57,12 @@ const getSourceConfigs = (theme: CustomTheme): Record<DataSource, { name: string
         name: 'Ultiverse',
         color: theme.palette.integration.ultiverse,
     },
-    uc: {
-        name: 'Ultimate Central',
+    ultimate_central: {
+        name: PROVIDER_NAMES.ultimate_central,
         color: theme.palette.integration.uc,
     },
     zuluru: {
-        name: 'Zuluru',
+        name: PROVIDER_NAMES.zuluru,
         color: theme.palette.integration.zuluru,
     },
     both: {

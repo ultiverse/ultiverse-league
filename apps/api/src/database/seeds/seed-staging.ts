@@ -107,8 +107,8 @@ async function main() {
         "createdAt", "updatedAt"
       )
       VALUES
-        (gen_random_uuid(), $1, 'uc', false, 'disconnected', now(), now()),
-        (gen_random_uuid(), $2, 'uc', false, 'disconnected', now(), now())
+        (gen_random_uuid(), $1, 'ultimate_central', false, 'disconnected', now(), now()),
+        (gen_random_uuid(), $2, 'ultimate_central', false, 'disconnected', now(), now())
       ON CONFLICT ("accountId", provider) DO NOTHING;
       `,
       [adminId, userId],

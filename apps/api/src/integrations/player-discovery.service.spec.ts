@@ -94,7 +94,7 @@ describe('PlayerDiscoveryService', () => {
   describe('discoverPlayersForLeague', () => {
     it('should discover players for all teams in a league', async () => {
       const leagueId = 'league-123';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockTeams = [
         {
@@ -168,7 +168,7 @@ describe('PlayerDiscoveryService', () => {
 
       const result = await service.discoverPlayersForLeague(
         'league-123',
-        'uc',
+        'ultimate_central',
       );
 
       expect(result).toEqual([]);
@@ -179,7 +179,7 @@ describe('PlayerDiscoveryService', () => {
     it('should create new players from UC registrations', async () => {
       const teamId = 'team-123';
       const leagueId = 'league-456';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockTeam = {
         id: teamId,
@@ -244,7 +244,7 @@ describe('PlayerDiscoveryService', () => {
     it('should update existing players when found', async () => {
       const teamId = 'team-123';
       const leagueId = 'league-456';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const existingPlayer = {
         id: 'existing-player-id',
@@ -320,7 +320,7 @@ describe('PlayerDiscoveryService', () => {
     it('should skip players without Person data', async () => {
       const teamId = 'team-123';
       const leagueId = 'league-456';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockTeam = {
         id: teamId,
@@ -360,7 +360,7 @@ describe('PlayerDiscoveryService', () => {
     it('should not create duplicate memberships', async () => {
       const teamId = 'team-123';
       const leagueId = 'league-456';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const existingMembership = {
         id: 'membership-123',
@@ -475,7 +475,7 @@ describe('PlayerDiscoveryService', () => {
         service.discoverPlayersForTeam(
           'nonexistent-team',
           'league-123',
-          'uc',
+          'ultimate_central',
         ),
       ).rejects.toThrow('Team nonexistent-team not found');
     });
@@ -492,7 +492,7 @@ describe('PlayerDiscoveryService', () => {
         service.discoverPlayersForTeam(
           'team-123',
           'league-123',
-          'uc',
+          'ultimate_central',
         ),
       ).rejects.toThrow(
         'No external source found for team team-123 with provider ultimate_central',

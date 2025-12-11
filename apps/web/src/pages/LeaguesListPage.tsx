@@ -8,6 +8,7 @@ import {
   Grid,
   Box,
 } from '@mui/material';
+import { PROVIDERS } from '@ultiverse/shared-types';
 import { getAllLeagues, MeLeague } from '../api/user';
 import { useAuth } from '../hooks/useAuth';
 import { LeagueCard } from '../components/Leagues/LeagueCard';
@@ -23,9 +24,7 @@ export function LeaguesListPage() {
 
   const handleSelectLeague = async (league: MeLeague) => {
     // Convert MeLeague to LeagueSummary format
-    const normalizedSource: DataSource =
-      league.source === 'ultimate_central' ? 'uc' :
-      (league.source as DataSource);
+    const normalizedSource: DataSource = league.source as DataSource;
 
     const normalizedSyncStatus: SyncStatus =
       (league.syncStatus as SyncStatus) || 'synced';
@@ -37,7 +36,7 @@ export function LeaguesListPage() {
       end: league.seasonEnd,
       source: normalizedSource,
       syncStatus: normalizedSyncStatus,
-      integrationProvider: league.badge === 'UC' ? 'uc' : undefined,
+      integrationProvider: league.badge === 'UC' ? PROVIDERS.ULTIMATE_CENTRAL : undefined,
     };
 
     // Set the selected league in context

@@ -82,7 +82,7 @@ export class ProfileService {
 
     // Enrich with integration data
     for (const connection of connections.filter((c) => c.isConnected)) {
-      if (connection.provider === 'uc') {
+      if (connection.provider === 'ultimate_central') {
         const ucData = await this.ucEnrichmentService.getUserEnrichmentData();
         if (ucData) {
           userProfile.integrationData!.uc = ucData;
@@ -104,7 +104,7 @@ export class ProfileService {
       where: { accountId },
     });
 
-    if (provider === 'uc') {
+    if (provider === 'ultimate_central') {
       const ucData = await this.ucEnrichmentService.getUserEnrichmentData();
       if (ucData && profile) {
         // Update profile with UC data if Ultiverse fields are empty

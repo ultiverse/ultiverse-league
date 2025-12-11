@@ -96,7 +96,7 @@ describe('GameDiscoveryService', () => {
   describe('discoverGamesForLeague', () => {
     it('should discover games from UC and create Game records', async () => {
       const leagueId = 'league-123';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockLeague = {
         id: leagueId,
@@ -156,7 +156,7 @@ describe('GameDiscoveryService', () => {
 
     it('should update existing games when found', async () => {
       const leagueId = 'league-123';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const existingGame = {
         id: 'existing-game-id',
@@ -215,7 +215,7 @@ describe('GameDiscoveryService', () => {
 
     it('should skip games without date/time', async () => {
       const leagueId = 'league-123';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockLeague = {
         id: leagueId,
@@ -245,7 +245,7 @@ describe('GameDiscoveryService', () => {
 
     it('should handle games with TBD teams', async () => {
       const leagueId = 'league-123';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockLeague = {
         id: leagueId,
@@ -287,7 +287,7 @@ describe('GameDiscoveryService', () => {
 
     it('should map UC game status to canonical status', async () => {
       const leagueId = 'league-123';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockLeague = {
         id: leagueId,
@@ -387,7 +387,7 @@ describe('GameDiscoveryService', () => {
       mockLeagueRepo.findOne.mockResolvedValue(null);
 
       await expect(
-        service.discoverGamesForLeague('nonexistent', 'uc'),
+        service.discoverGamesForLeague('nonexistent', 'ultimate_central'),
       ).rejects.toThrow('League nonexistent not found');
     });
 
@@ -400,7 +400,7 @@ describe('GameDiscoveryService', () => {
       mockLeagueRepo.findOne.mockResolvedValue(mockLeague as any);
 
       await expect(
-        service.discoverGamesForLeague('league-123', 'uc'),
+        service.discoverGamesForLeague('league-123', 'ultimate_central'),
       ).rejects.toThrow(
         'No external source found for league league-123 with provider ultimate_central',
       );
@@ -421,7 +421,7 @@ describe('GameDiscoveryService', () => {
 
     it('should continue processing other games if one fails', async () => {
       const leagueId = 'league-123';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockLeague = {
         id: leagueId,
@@ -470,7 +470,7 @@ describe('GameDiscoveryService', () => {
   describe('date/time parsing', () => {
     it('should parse UC date and time correctly', async () => {
       const leagueId = 'league-123';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockLeague = {
         id: leagueId,
@@ -509,7 +509,7 @@ describe('GameDiscoveryService', () => {
 
     it('should handle date without time', async () => {
       const leagueId = 'league-123';
-      const provider = 'uc';
+      const provider = 'ultimate_central';
 
       const mockLeague = {
         id: leagueId,

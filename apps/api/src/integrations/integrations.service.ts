@@ -44,9 +44,9 @@ export class IntegrationsService implements OnModuleInit {
    * Register UC adapter with ImportService on module initialization
    */
   onModuleInit(): void {
-    this.importService.registerAdapter('uc', this.ucLeagueAdapter);
+    this.importService.registerAdapter('ultimate_central', this.ucLeagueAdapter);
     this.importService.registerAdapter(
-      'uc',
+      'ultimate_central',
       this.ucLeagueAdapter,
     );
   }
@@ -61,7 +61,7 @@ export class IntegrationsService implements OnModuleInit {
   getAvailableProviders(): IntegrationProvider[] {
     return [
       {
-        provider: 'uc',
+        provider: 'ultimate_central',
         name: 'Ultimate Central',
         description:
           'Your ultimate frisbee league management platform. Sync teams, games, and player data.',
@@ -104,8 +104,8 @@ export class IntegrationsService implements OnModuleInit {
     );
 
     return connections.map((conn) => ({
-      // Denormalize provider: 'uc' -> 'uc' for frontend compatibility
-      provider: conn.provider === 'uc' ? 'uc' : conn.provider,
+      // Denormalize provider: 'ultimate_central' -> 'ultimate_central' for frontend compatibility
+      provider: conn.provider === 'ultimate_central' ? 'ultimate_central' : conn.provider,
       isConnected: conn.isConnected,
       status: conn.status,
       connectedEmail: conn.connectedEmail ?? undefined,
@@ -134,9 +134,9 @@ export class IntegrationsService implements OnModuleInit {
       );
     }
 
-    // Normalize provider: 'uc' -> 'uc'
+    // Normalize provider: 'ultimate_central' -> 'ultimate_central'
     const normalizedProvider =
-      provider === 'uc' ? 'uc' : provider;
+      provider === 'ultimate_central' ? 'ultimate_central' : provider;
 
     // Validate provider
     const availableProviders = this.getAvailableProviders();
@@ -165,7 +165,7 @@ export class IntegrationsService implements OnModuleInit {
     }
 
     // Handle OAuth flow for UC
-    if (normalizedProvider === 'uc') {
+    if (normalizedProvider === 'ultimate_central') {
       // Validate OAuth credentials if provided
       if (
         connectionData &&
@@ -276,9 +276,9 @@ export class IntegrationsService implements OnModuleInit {
       throw new Error('No account found');
     }
 
-    // Normalize provider: 'uc' -> 'uc'
+    // Normalize provider: 'ultimate_central' -> 'ultimate_central'
     const normalizedProvider =
-      provider === 'uc' ? 'uc' : provider;
+      provider === 'ultimate_central' ? 'ultimate_central' : provider;
 
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
@@ -336,9 +336,9 @@ export class IntegrationsService implements OnModuleInit {
       throw new Error('No account found');
     }
 
-    // Normalize provider: 'uc' -> 'uc'
+    // Normalize provider: 'ultimate_central' -> 'ultimate_central'
     const normalizedProvider =
-      provider === 'uc' ? 'uc' : provider;
+      provider === 'ultimate_central' ? 'ultimate_central' : provider;
 
     // Get current connections to verify provider exists and is connected
     const connections = await this.accountsService.getIntegrationConnections(
@@ -360,7 +360,7 @@ export class IntegrationsService implements OnModuleInit {
     await this.simulateAsync(800);
 
     // Trigger league discovery for UC
-    if (normalizedProvider === 'uc') {
+    if (normalizedProvider === 'ultimate_central') {
       // Refresh UC client with credentials before discovering leagues
       if (this.ucConfigService) {
         await this.ucConfigService.refreshUCClient();
@@ -467,7 +467,7 @@ export class IntegrationsService implements OnModuleInit {
     );
     const ucConnection = connections.find(
       (conn) =>
-        (conn.provider === 'uc' || conn.provider === 'uc') &&
+        (conn.provider === 'ultimate_central' || conn.provider === 'ultimate_central') &&
         conn.isConnected,
     );
 
@@ -574,8 +574,8 @@ export class IntegrationsService implements OnModuleInit {
       for (const league of leagues) {
         try {
           await this.importService.importLeague(
-            'uc',
-            { provider: 'uc', externalId: league.externalId },
+            'ultimate_central',
+            { provider: 'ultimate_central', externalId: league.externalId },
             userId,
             organizationId,
           );

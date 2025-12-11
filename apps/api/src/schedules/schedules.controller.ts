@@ -20,7 +20,7 @@ export class SchedulesController {
   @Get('leagues/:leagueId/schedule')
   async getLeagueSchedule(
     @Param('leagueId') leagueId: string,
-    @Query('source') source: 'fixtures' | 'uc' = 'fixtures',
+    @Query('source') source: 'fixtures' | 'ultimate_central' = 'fixtures',
     @Query('eventId') eventId?: string,
     @Query('rounds', new DefaultValuePipe(6), ParseIntPipe) rounds?: number,
   ): Promise<ScheduleView> {

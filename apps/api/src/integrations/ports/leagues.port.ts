@@ -3,7 +3,7 @@ export interface LeagueSummary {
   name: string;
   start?: string; // ISO date
   end?: string;
-  provider?: string; // 'uc' | future
+  provider?: string; // 'ultimate_central' | future
   externalId?: string; // provider-native id
 }
 

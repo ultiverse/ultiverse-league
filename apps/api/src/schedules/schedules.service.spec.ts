@@ -136,7 +136,7 @@ describe('SchedulesService', () => {
     engineMock.generate.mockReturnValue(schedule);
     engineMock.assignTimesAndFields.mockReturnValue(schedule);
 
-    const view = await service.getLeagueSchedule('ignored', 'uc', 1, '169113');
+    const view = await service.getLeagueSchedule('ignored', 'ultimate_central', 1, '169113');
 
     expect(view.leagueId).toBe('uc:event:169113');
     expect(engineMock.generate).toHaveBeenCalledWith(

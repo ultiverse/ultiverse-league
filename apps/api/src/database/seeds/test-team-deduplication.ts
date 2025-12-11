@@ -57,7 +57,7 @@ async function main() {
   // Step 3: Define a shared UC team
   const sharedUCTeam: ExternalTeamData = {
     externalId: '12345', // Same UC team ID
-    source: 'uc',
+    source: 'ultimate_central',
     name: 'Vancouver Ultimate Warriors',
     location: 'Vancouver, BC',
     seasonStart: new Date('2024-06-01'),
@@ -107,7 +107,7 @@ async function main() {
      FROM teams t
      JOIN external_team_sources ets ON ets."teamId" = t.id
      WHERE ets.source = $1 AND ets."externalId" = $2`,
-    ['uc', '12345'],
+    ['ultimate_central', '12345'],
   );
   const count = parseInt(teamCount[0].count, 10);
 

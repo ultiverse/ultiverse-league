@@ -20,7 +20,7 @@ export class IntegrationConnection {
   accountId: string;
 
   @Column({ type: 'varchar' })
-  provider: string; // 'uc', 'zuluru', etc.
+  provider: string; // 'ultimate_central', 'zuluru', etc.
 
   @Column({ type: 'boolean', default: false })
   isConnected: boolean;

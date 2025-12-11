@@ -98,7 +98,7 @@ export class GameDiscoveryService {
       rawData: Record<string, unknown>;
     }> = [];
 
-    if (provider === 'uc') {
+    if (provider === 'ultimate_central') {
       const eventId = Number(externalLeagueId);
 
       // Fetch games for the event

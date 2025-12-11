@@ -6,7 +6,7 @@ export interface UserProfile {
   email: string;
   firstName: string;
   lastName: string;
-  integration: 'uc' | 'native'; // connected via Ultimate Central or native auth
+  integration: 'ultimate_central' | 'native'; // connected via Ultimate Central or native auth
   pastTeams: PastTeam[];
   lastLogin: string; // ISO date
   identifies: 'man' | 'boy' | 'woman' | 'girl' | 'not_defined';

@@ -43,7 +43,7 @@ export class UCPlayersService {
     }
 
     const leagueSource = league.externalSources?.find(
-      (s) => s.provider === 'uc',
+      (s) => s.provider === 'ultimate_central',
     );
 
     if (!leagueSource) {
@@ -72,7 +72,7 @@ export class UCPlayersService {
     const teamIdMap = new Map<number, string>();
     for (const team of teams) {
       const teamSource = team.externalSources?.find(
-        (s) => s.source === 'uc',
+        (s) => s.source === 'ultimate_central',
       );
       if (teamSource) {
         teamIdMap.set(Number(teamSource.externalId), team.id);

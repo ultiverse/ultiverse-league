@@ -1,6 +1,8 @@
-export type DataSource = 'ultiverse' | 'uc' | 'zuluru' | 'both';
+import { DATA_SOURCES, PROVIDERS } from '@ultiverse/shared-types';
+
+export type DataSource = typeof DATA_SOURCES[keyof typeof DATA_SOURCES];
 export type SyncStatus = 'synced' | 'needs_pull' | 'needs_push' | 'conflict' | 'never_synced';
-export type IntegrationProvider = 'uc' | 'zuluru';
+export type IntegrationProvider = typeof PROVIDERS.ULTIMATE_CENTRAL | typeof PROVIDERS.ZULURU;
 
 export interface LeagueSummary {
     id: string;

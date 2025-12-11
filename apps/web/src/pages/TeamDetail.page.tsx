@@ -27,6 +27,7 @@ import { Page } from '../components/Layout/Page.component';
 import { Section } from '../components/Layout/Section.component';
 import { SourceBadge } from '../components/SourceBadge.component';
 import { JerseyIcon } from '../assets/jersey-icon';
+import { DataSource } from '../types/api';
 
 const roleIcons = {
     player: <PersonIcon fontSize="small" />,
@@ -151,8 +152,8 @@ export function TeamDetail() {
                                         {team.externalSources.map((source) => (
                                             <SourceBadge
                                                 key={source.id}
-                                                source={source.provider === 'ultimate_central' ? 'uc' : source.provider}
-                                                integrationProvider={source.provider === 'ultimate_central' ? 'uc' : undefined}
+                                                source={source.provider as DataSource}
+                                                integrationProvider={source.provider === 'ultimate_central' ? 'ultimate_central' : undefined}
                                                 size="medium"
                                             />
                                         ))}
@@ -227,8 +228,8 @@ export function TeamDetail() {
                                                     {player.externalSources.map((source) => (
                                                         <SourceBadge
                                                             key={source.id}
-                                                            source={source.provider === 'ultimate_central' ? 'uc' : source.provider}
-                                                            integrationProvider={source.provider === 'ultimate_central' ? 'uc' : undefined}
+                                                            source={source.provider as DataSource}
+                                                            integrationProvider={source.provider === 'ultimate_central' ? 'ultimate_central' : undefined}
                                                             size="small"
                                                             variant="outlined"
                                                         />

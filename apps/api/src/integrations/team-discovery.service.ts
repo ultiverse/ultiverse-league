@@ -90,7 +90,7 @@ export class TeamDiscoveryService {
       rawData: Record<string, unknown>;
     }> = [];
 
-    if (provider === 'uc') {
+    if (provider === 'ultimate_central') {
       const ucTeams = await this.ucAdapter.listTeams(externalLeagueId);
       externalTeams = ucTeams.map((team) => ({
         externalId: team.id,

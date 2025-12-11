@@ -115,7 +115,7 @@ describe('ImportService', () => {
     organizationRepo = module.get(getRepositoryToken(Organization));
 
     // Register mock adapter
-    service.registerAdapter('uc', mockAdapter);
+    service.registerAdapter('ultimate_central', mockAdapter);
     service.setPlayerDiscoveryService(mockPlayerDiscoveryService);
     service.setGameDiscoveryService(mockGameDiscoveryService);
   });
@@ -126,7 +126,7 @@ describe('ImportService', () => {
 
   describe('importLeague', () => {
     it('should import league, teams, players, and games in sequence', async () => {
-      const provider = 'uc';
+      const provider = 'ultimate_central';
       const leagueKey = { provider, externalId: '999' };
       const userId = 'user-123';
       const organizationId = 'org-123';
@@ -226,7 +226,7 @@ describe('ImportService', () => {
     });
 
     it('should update existing league instead of creating new one', async () => {
-      const provider = 'uc';
+      const provider = 'ultimate_central';
       const leagueKey = { provider, externalId: '999' };
       const userId = 'user-123';
       const organizationId = 'org-123';
@@ -281,7 +281,7 @@ describe('ImportService', () => {
     });
 
     it('should continue if player discovery fails', async () => {
-      const provider = 'uc';
+      const provider = 'ultimate_central';
       const leagueKey = { provider, externalId: '999' };
       const userId = 'user-123';
       const organizationId = 'org-123';
@@ -321,7 +321,7 @@ describe('ImportService', () => {
     });
 
     it('should continue if game discovery fails', async () => {
-      const provider = 'uc';
+      const provider = 'ultimate_central';
       const leagueKey = { provider, externalId: '999' };
       const userId = 'user-123';
       const organizationId = 'org-123';
@@ -366,9 +366,9 @@ describe('ImportService', () => {
         organizationRepo,
       );
 
-      newService.registerAdapter('uc', mockAdapter);
+      newService.registerAdapter('ultimate_central', mockAdapter);
 
-      const provider = 'uc';
+      const provider = 'ultimate_central';
       const leagueKey = { provider, externalId: '999' };
 
       const mockExternalLeague = {
@@ -408,7 +408,7 @@ describe('ImportService', () => {
 
       const existingSource = {
         leagueId,
-        provider: 'uc',
+        provider: 'ultimate_central',
         externalId: '999',
         league: {
           id: leagueId,
@@ -436,7 +436,7 @@ describe('ImportService', () => {
       await service.refreshLeague(leagueId);
 
       expect(mockAdapter.fetchLeague).toHaveBeenCalledWith({
-        provider: 'uc',
+        provider: 'ultimate_central',
         externalId: '999',
       });
       expect(

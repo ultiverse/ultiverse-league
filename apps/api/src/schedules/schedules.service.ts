@@ -95,11 +95,11 @@ export class SchedulesService {
   /** GET schedule: fixtures or UC (teams as pods) */
   async getLeagueSchedule(
     leagueId: string,
-    source: 'fixtures' | 'uc',
+    source: 'fixtures' | 'ultimate_central',
     rounds: number,
     ucEventId?: string,
   ): Promise<ScheduleView> {
-    if (source === 'uc') {
+    if (source === 'ultimate_central') {
       if (!ucEventId) {
         throw new Error('eventId is required when source=uc');
       }

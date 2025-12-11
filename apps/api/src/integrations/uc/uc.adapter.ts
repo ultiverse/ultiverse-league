@@ -78,7 +78,7 @@ export class UCAdapter
       name: e.name,
       start: e.start,
       end: e.end,
-      provider: 'uc',
+      provider: 'ultimate_central',
       externalId: String(e.id),
     }));
   }
@@ -92,7 +92,7 @@ export class UCAdapter
       name: row.name,
       start: row.start,
       end: row.end,
-      provider: 'uc',
+      provider: 'ultimate_central',
       externalId: String(row.id),
     };
   }
@@ -145,7 +145,7 @@ export class UCAdapter
       division: t.division_name ?? null,
       colour: typeof t.color === 'string' ? t.color : '#000000',
       altColour: '#ffffff',
-      source: 'uc' as const,
+      source: 'ultimate_central' as const,
     }));
   }
 
@@ -341,7 +341,7 @@ export class UCAdapter
           altColour: '#ffffff',
           dateJoined: team.created_at,
           monthYear: this.formatMonthYear(team.created_at),
-          source: 'uc' as const,
+          source: 'ultimate_central' as const,
         }),
       );
 
@@ -349,7 +349,7 @@ export class UCAdapter
         email: ucUser.email_address || '',
         firstName: ucUser.first_name || '',
         lastName: ucUser.last_name || '',
-        integration: 'uc',
+        integration: 'ultimate_central',
         pastTeams,
         lastLogin: ucUser.last_seen || '',
         identifies: mapGenderIdentification(ucUser.gender || ''),

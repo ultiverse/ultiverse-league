@@ -1,8 +1,10 @@
+import { PROVIDERS } from '../constants/providers';
+
 /**
  * Supported integration provider types
  * These are the canonical provider identifiers used throughout the system
  */
-export type ProviderType = 'uc' | 'zuluru' | 'ultiverse';
+export type ProviderType = typeof PROVIDERS[keyof typeof PROVIDERS];
 
 /**
  * Integration provider definition

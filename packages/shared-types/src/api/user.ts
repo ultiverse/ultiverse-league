@@ -1,3 +1,5 @@
+import { DATA_SOURCES, PROVIDERS } from '../constants/providers';
+
 export interface TeamSummary {
   id: string;
   name: string;
@@ -6,7 +8,7 @@ export interface TeamSummary {
   altColour: string; // Secondary team color, defaults to white
   dateJoined?: string; // ISO date (for past teams)
   monthYear?: string; // e.g., "June 2023" (for past teams)
-  source: 'ultiverse' | 'uc' | 'zuluru'; // Source of the team data
+  source: typeof DATA_SOURCES[keyof typeof DATA_SOURCES] | typeof PROVIDERS[keyof typeof PROVIDERS]; // Source of the team data
 }
 
 export type PastTeam = TeamSummary;
@@ -15,7 +17,7 @@ export interface UserProfile {
   email: string;
   firstName: string;
   lastName: string;
-  integration: 'uc' | 'native'; // connected via Ultimate Central or native auth
+  integration: typeof PROVIDERS.ULTIMATE_CENTRAL | 'native'; // connected via Ultimate Central or native auth
   pastTeams: PastTeam[];
   lastLogin: string; // ISO date
   identifies: 'man' | 'boy' | 'woman' | 'girl' | 'not_defined';
