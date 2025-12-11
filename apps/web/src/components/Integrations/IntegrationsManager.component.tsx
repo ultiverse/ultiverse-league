@@ -15,6 +15,7 @@ import {
     Link as LinkIcon,
     LinkOff as LinkOffIcon,
 } from '@mui/icons-material';
+import { PROVIDERS } from '@ultiverse/shared-types';
 import {
     getIntegrationProviders,
     getIntegrationConnections,
@@ -121,7 +122,7 @@ export function IntegrationsManager() {
 
     const getInstructions = (provider: IntegrationProvider) => {
         switch (provider.provider) {
-            case 'uc':
+            case PROVIDERS.ULTIMATE_CENTRAL:
                 return <UCIntegrationInstructions />;
             default:
                 return null;
@@ -284,7 +285,7 @@ export function IntegrationsManager() {
                 instructions={currentProvider ? getInstructions(currentProvider) : null}
                 loading={connectingProvider === currentProvider?.provider}
                 error={error}
-                showDomainField={currentProvider?.provider === 'uc'}
+                showDomainField={currentProvider?.provider === PROVIDERS.ULTIMATE_CENTRAL}
                 domainLabel="API Domain"
                 domainPlaceholder="e.g., https://maul.usetopscore.com"
             />

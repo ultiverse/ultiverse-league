@@ -1,10 +1,11 @@
+import { PROVIDERS } from '@ultiverse/shared-types';
 import { IntegrationProvider } from '../api/integrations';
 import { theme } from '../theme/theme';
 
 // Available integration configurations
 export const AVAILABLE_INTEGRATIONS: IntegrationProvider[] = [
     {
-        provider: 'uc',
+        provider: PROVIDERS.ULTIMATE_CENTRAL,
         name: 'Ultimate Central',
         description: 'Your ultimate frisbee league management platform. Sync teams, games, and player data.',
         iconText: 'UC',
@@ -14,7 +15,7 @@ export const AVAILABLE_INTEGRATIONS: IntegrationProvider[] = [
         isAvailable: true,
     },
     {
-        provider: 'zuluru',
+        provider: PROVIDERS.ZULURU,
         name: 'Zuluru',
         description: 'Connect with Zuluru league management system.',
         iconText: 'ZU',

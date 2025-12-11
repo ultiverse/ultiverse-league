@@ -26,6 +26,7 @@ import {
     ExpandMore as ExpandMoreIcon,
     Help as HelpIcon
 } from '@mui/icons-material';
+import { PROVIDERS } from '@ultiverse/shared-types';
 import {
     getIntegrationProviders,
     getIntegrationConnections,
@@ -260,7 +261,7 @@ export function Integrations() {
                         To connect to {currentProvider?.name}, you'll need to provide your OAuth credentials.
                     </Typography>
 
-                    {currentProvider?.provider === 'uc' && (
+                    {currentProvider?.provider === PROVIDERS.ULTIMATE_CENTRAL && (
                         <Accordion sx={{ mb: 2 }}>
                             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                                 <Stack direction="row" spacing={1} alignItems="center">

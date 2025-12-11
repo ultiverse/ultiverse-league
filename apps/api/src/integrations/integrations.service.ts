@@ -104,8 +104,8 @@ export class IntegrationsService implements OnModuleInit {
     );
 
     return connections.map((conn) => ({
-      // Denormalize provider: 'ultimate_central' -> 'ultimate_central' for frontend compatibility
-      provider: conn.provider === 'ultimate_central' ? 'ultimate_central' : conn.provider,
+      // Normalize legacy 'uc' to 'ultimate_central' for consistency
+      provider: conn.provider === 'uc' ? 'ultimate_central' : conn.provider,
       isConnected: conn.isConnected,
       status: conn.status,
       connectedEmail: conn.connectedEmail ?? undefined,
