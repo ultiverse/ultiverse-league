@@ -66,7 +66,7 @@ export function TeamCard({ team, onClick, showSourceInfo = false }: TeamCardProp
                     }}
                 >
                     {/* Source badge in top-right corner if enabled */}
-                    {showSourceInfo && team.source && (
+                    {showSourceInfo && team.source && team.integrationProvider && (
                         <Box
                             sx={{
                                 position: 'absolute',

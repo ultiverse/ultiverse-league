@@ -6,12 +6,12 @@ import {
     Box,
     Divider,
     Button,
-    Chip,
     CircularProgress,
 } from '@mui/material';
 import { VerifiedUser, Link as LinkIcon, Settings as SettingsIcon } from '@mui/icons-material';
 import { getIntegrationConnections, type ApiIntegrationConnection } from '../../api/integrations';
 import { useNavigate } from 'react-router-dom';
+import { SourceBadge } from '../SourceBadge.component';
 
 interface AccountDetailsProps {
     user: {
@@ -106,12 +106,12 @@ export function AccountDetails({ user }: AccountDetailsProps) {
                                         {connections
                                             .filter(conn => conn.isConnected)
                                             .map(conn => (
-                                                <Chip
+                                                <SourceBadge
                                                     key={conn.provider}
-                                                    label={conn.provider.toUpperCase()}
+                                                    source={conn.provider as any}
+                                                    integrationProvider={conn.provider as any}
                                                     size="small"
-                                                    color="success"
-                                                    variant="outlined"
+                                                    showText={true}
                                                 />
                                             ))}
                                     </Stack>

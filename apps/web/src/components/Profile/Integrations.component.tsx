@@ -35,6 +35,7 @@ import {
     type IntegrationProvider,
     type ApiIntegrationConnection
 } from '../../api/integrations';
+import { SourceBadge } from '../SourceBadge.component';
 
 interface OAuthCredentials {
     clientId: string;
@@ -171,21 +172,13 @@ export function Integrations() {
                             <Card key={provider.provider} variant="outlined">
                                 <CardContent>
                                     <Stack direction="row" spacing={2} alignItems="center">
-                                        <Box
-                                            sx={{
-                                                width: 48,
-                                                height: 48,
-                                                borderRadius: 1,
-                                                bgcolor: provider.primaryColor,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                color: 'white',
-                                                fontWeight: 'bold',
-                                                fontSize: '1.2rem'
-                                            }}
-                                        >
-                                            {provider.iconText}
+                                        <Box sx={{ transform: 'scale(2)', transformOrigin: 'center' }}>
+                                            <SourceBadge
+                                                source={provider.provider as any}
+                                                integrationProvider={provider.provider as any}
+                                                size="medium"
+                                                showText={false}
+                                            />
                                         </Box>
                                         <Box sx={{ flexGrow: 1 }}>
                                             <Typography variant="h6">

@@ -2,8 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import {
     Box,
-    Card,
-    CardContent,
     Typography,
     Stack,
     Chip,
@@ -13,7 +11,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    Paper,
     Skeleton,
     Alert,
 } from '@mui/material';
@@ -39,6 +36,19 @@ const roleLabels = {
     player: 'Player',
     captain: 'Captain',
     coach: 'Coach',
+};
+
+const getSourceFromJoinedVia = (joinedVia: string): { source: DataSource; provider?: 'ultimate_central' | 'zuluru' } | null => {
+    if (joinedVia === 'manual') {
+        return { source: 'ultiverse' };
+    }
+    if (joinedVia === 'uc_import') {
+        return { source: 'ultimate_central', provider: 'ultimate_central' };
+    }
+    if (joinedVia === 'zuluru_import') {
+        return { source: 'zuluru', provider: 'zuluru' };
+    }
+    return null;
 };
 
 export function TeamDetail() {
@@ -84,85 +94,67 @@ export function TeamDetail() {
 
             {/* Team Info Card */}
             <Section>
-                <Card>
-                    <CardContent>
-                        {isLoading ? (
-                            <Stack spacing={2}>
-                                <Skeleton variant="text" width="60%" height={40} />
-                                <Skeleton variant="text" width="40%" height={24} />
-                                <Box sx={{ display: 'flex', gap: 1 }}>
-                                    <Skeleton variant="rectangular" width={100} height={32} />
-                                    <Skeleton variant="rectangular" width={120} height={32} />
-                                </Box>
-                            </Stack>
-                        ) : (
-                            <Stack spacing={3}>
-                                {/* Team Header */}
-                                <Stack direction="row" spacing={2} alignItems="center">
-                                    <JerseyIcon
-                                        color={team?.colour || '#666'}
-                                        sx={{ fontSize: 48 }}
-                                    />
-                                    <Box>
-                                        <Typography variant="h4" fontWeight={600}>
-                                            {team?.name}
-                                        </Typography>
-                                        {team?.division && (
-                                            <Typography variant="body1" color="text.secondary">
-                                                {team.division}
-                                            </Typography>
-                                        )}
-                                    </Box>
-                                </Stack>
-
-                                {/* Team Colors */}
-                                <Stack direction="row" spacing={2} alignItems="center">
-                                    <Typography variant="body2" color="text.secondary">
-                                        Team Colors:
+                {isLoading ? (
+                    <Stack spacing={2}>
+                        <Skeleton variant="text" width="60%" height={40} />
+                        <Skeleton variant="text" width="40%" height={24} />
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Skeleton variant="rectangular" width={100} height={32} />
+                            <Skeleton variant="rectangular" width={120} height={32} />
+                        </Box>
+                    </Stack>
+                ) : (
+                    <Stack spacing={3}>
+                        {/* Team Header */}
+                        <Stack direction="row" spacing={2} alignItems="center">
+                            <JerseyIcon
+                                color={team?.colour || '#666'}
+                                sx={{ fontSize: 48 }}
+                            />
+                            <Box>
+                                <Typography variant="h4" fontWeight={600}>
+                                    {team?.name}
+                                </Typography>
+                                {team?.division && (
+                                    <Typography variant="body1" color="text.secondary">
+                                        {team.division}
                                     </Typography>
-                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                        <Box
-                                            sx={{
-                                                width: 32,
-                                                height: 32,
-                                                borderRadius: 1,
-                                                backgroundColor: team?.colour || '#666',
-                                                border: '1px solid',
-                                                borderColor: 'divider',
-                                            }}
-                                        />
-                                        {team?.altColour && (
-                                            <Box
-                                                sx={{
-                                                    width: 32,
-                                                    height: 32,
-                                                    borderRadius: 1,
-                                                    backgroundColor: team.altColour,
-                                                    border: '1px solid',
-                                                    borderColor: 'divider',
-                                                }}
-                                            />
-                                        )}
-                                    </Box>
-                                </Stack>
-
-                                {/* External Sources */}
-                                {team?.externalSources && team.externalSources.length > 0 && (
-                                    <Stack direction="row" spacing={1} flexWrap="wrap">
-                                        {team.externalSources.map((source) => (
-                                            <SourceBadge
-                                                key={source.id}
-                                                source={source.provider as DataSource}
-                                                integrationProvider={source.provider === 'ultimate_central' ? 'ultimate_central' : undefined}
-                                                size="medium"
-                                            />
-                                        ))}
-                                    </Stack>
                                 )}
-                            </Stack>
-                        )}
-                    </CardContent>
-                </Card>
+                            </Box>
+                        </Stack>
+
+                        {/* Team Colors */}
+                        <Stack direction="row" spacing={2} alignItems="center">
+                            <Typography variant="body2" color="text.secondary">
+                                Team Colors:
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+                                <Box
+                                    sx={{
+                                        width: 32,
+                                        height: 32,
+                                        borderRadius: 1,
+                                        backgroundColor: team?.colour || '#666',
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                    }}
+                                />
+                                {team?.altColour && (
+                                    <Box
+                                        sx={{
+                                            width: 32,
+                                            height: 32,
+                                            borderRadius: 1,
+                                            backgroundColor: team.altColour,
+                                            border: '1px solid',
+                                            borderColor: 'divider',
+                                        }}
+                                    />
+                                )}
+                            </Box>
+                        </Stack>
+                    </Stack>
+                )}
             </Section>
 
             {/* Roster Section */}
@@ -182,7 +174,7 @@ export function TeamDetail() {
                         No players found for this team. Players will appear here after importing from Ultimate Central.
                     </Alert>
                 ) : (
-                    <TableContainer component={Paper}>
+                    <TableContainer>
                         <Table>
                             <TableHead>
                                 <TableRow>
@@ -190,7 +182,6 @@ export function TeamDetail() {
                                     <TableCell>Email</TableCell>
                                     <TableCell>Role</TableCell>
                                     <TableCell>Joined Via</TableCell>
-                                    <TableCell>Source</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -218,28 +209,24 @@ export function TeamDetail() {
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {player.joinedVia.replace('_import', '').replace('_', ' ')}
-                                            </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                            {player.externalSources && player.externalSources.length > 0 ? (
-                                                <Stack direction="row" spacing={0.5}>
-                                                    {player.externalSources.map((source) => (
-                                                        <SourceBadge
-                                                            key={source.id}
-                                                            source={source.provider as DataSource}
-                                                            integrationProvider={source.provider === 'ultimate_central' ? 'ultimate_central' : undefined}
-                                                            size="small"
-                                                            variant="outlined"
-                                                        />
-                                                    ))}
-                                                </Stack>
-                                            ) : (
-                                                <Typography variant="caption" color="text.secondary">
-                                                    Manual
-                                                </Typography>
-                                            )}
+                                            {(() => {
+                                                const sourceInfo = getSourceFromJoinedVia(player.joinedVia);
+                                                if (!sourceInfo) {
+                                                    return (
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {player.joinedVia}
+                                                        </Typography>
+                                                    );
+                                                }
+                                                return (
+                                                    <SourceBadge
+                                                        source={sourceInfo.source}
+                                                        integrationProvider={sourceInfo.provider}
+                                                        size="small"
+                                                        showText={true}
+                                                    />
+                                                );
+                                            })()}
                                         </TableCell>
                                     </TableRow>
                                 ))}

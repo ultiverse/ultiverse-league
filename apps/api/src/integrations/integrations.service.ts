@@ -66,7 +66,7 @@ export class IntegrationsService implements OnModuleInit {
         description:
           'Your ultimate frisbee league management platform. Sync teams, games, and player data.',
         iconText: 'UC',
-        primaryColor: '#1976d2',
+        primaryColor: '#4da8c2',
         features: ['Teams', 'Games', 'Players', 'League Info'],
         authType: 'oauth',
         isAvailable: true,
@@ -76,7 +76,7 @@ export class IntegrationsService implements OnModuleInit {
         name: 'Zuluru',
         description: 'Connect with Zuluru league management system.',
         iconText: 'ZU',
-        primaryColor: '#4caf50',
+        primaryColor: '#da8034',
         features: ['Teams', 'Schedules', 'Registration'],
         authType: 'api_key',
         isAvailable: false, // Coming soon
