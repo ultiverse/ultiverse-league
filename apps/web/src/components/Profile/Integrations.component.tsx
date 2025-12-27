@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
     Paper,
     Typography,
@@ -28,14 +28,12 @@ import {
 } from '@mui/icons-material';
 import { PROVIDERS } from '@ultiverse/shared-types';
 import {
-    getIntegrationProviders,
-    getIntegrationConnections,
     connectIntegrationProvider,
     disconnectIntegrationProvider,
     type IntegrationProvider,
-    type ApiIntegrationConnection
 } from '../../api/integrations';
 import { SourceBadge } from '../SourceBadge.component';
+import { useIntegrations } from '../../hooks/useIntegrations';
 
 interface OAuthCredentials {
     clientId: string;
@@ -43,35 +41,12 @@ interface OAuthCredentials {
 }
 
 export function Integrations() {
-    const [providers, setProviders] = useState<IntegrationProvider[]>([]);
-    const [connections, setConnections] = useState<ApiIntegrationConnection[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { availableIntegrations, connections, isLoading, connectProvider: contextConnectProvider, disconnectProvider: contextDisconnectProvider } = useIntegrations();
     const [connectingProvider, setConnectingProvider] = useState<string | null>(null);
     const [oauthDialogOpen, setOauthDialogOpen] = useState(false);
     const [currentProvider, setCurrentProvider] = useState<IntegrationProvider | null>(null);
     const [oauthCredentials, setOauthCredentials] = useState<OAuthCredentials>({ clientId: '', clientSecret: '' });
     const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        loadIntegrations();
-    }, []);
-
-    const loadIntegrations = async () => {
-        try {
-            setLoading(true);
-            const [providersData, connectionsData] = await Promise.all([
-                getIntegrationProviders(),
-                getIntegrationConnections()
-            ]);
-            setProviders(providersData);
-            setConnections(connectionsData);
-        } catch (err) {
-            setError('Failed to load integrations');
-            console.error('Failed to load integrations:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleConnect = async (provider: IntegrationProvider) => {
         if (provider.authType === 'oauth') {
@@ -101,7 +76,7 @@ export function Integrations() {
             setError(null);
 
             await connectIntegrationProvider(provider.provider, credentials);
-            await loadIntegrations(); // Refresh connections
+            // Context will automatically refresh after the API call
         } catch (err) {
             setError(`Failed to connect to ${provider.name}`);
             console.error('Failed to connect provider:', err);
@@ -116,7 +91,7 @@ export function Integrations() {
             setError(null);
 
             await disconnectIntegrationProvider(provider.provider);
-            await loadIntegrations(); // Refresh connections
+            // Context will automatically refresh after the API call
         } catch (err) {
             setError(`Failed to disconnect from ${provider.name}`);
             console.error('Failed to disconnect provider:', err);
@@ -126,14 +101,14 @@ export function Integrations() {
     };
 
     const isConnected = (provider: IntegrationProvider): boolean => {
-        return connections.some(conn => conn.provider === provider.provider && conn.isConnected);
+        return connections.some(conn => conn.provider.provider === provider.provider && conn.isConnected);
     };
 
-    const getConnection = (provider: IntegrationProvider): ApiIntegrationConnection | undefined => {
-        return connections.find(conn => conn.provider === provider.provider);
+    const getConnection = (provider: IntegrationProvider) => {
+        return connections.find(conn => conn.provider.provider === provider.provider);
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom>
@@ -163,7 +138,7 @@ export function Integrations() {
                 )}
 
                 <Stack spacing={2}>
-                    {providers.map((provider) => {
+                    {availableIntegrations.map((provider) => {
                         const connection = getConnection(provider);
                         const connected = isConnected(provider);
                         const isConnecting = connectingProvider === provider.provider;

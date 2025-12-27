@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import {
     Paper,
     Typography,
@@ -9,9 +8,9 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { VerifiedUser, Link as LinkIcon, Settings as SettingsIcon } from '@mui/icons-material';
-import { getIntegrationConnections, type ApiIntegrationConnection } from '../../api/integrations';
 import { useNavigate } from 'react-router-dom';
 import { SourceBadge } from '../SourceBadge.component';
+import { useIntegrations } from '../../hooks/useIntegrations';
 
 interface AccountDetailsProps {
     user: {
@@ -23,23 +22,7 @@ interface AccountDetailsProps {
 
 export function AccountDetails({ user }: AccountDetailsProps) {
     const navigate = useNavigate();
-    const [connections, setConnections] = useState<ApiIntegrationConnection[]>([]);
-    const [loadingConnections, setLoadingConnections] = useState(true);
-
-    useEffect(() => {
-        loadConnections();
-    }, []);
-
-    const loadConnections = async () => {
-        try {
-            const connectionsData = await getIntegrationConnections();
-            setConnections(connectionsData);
-        } catch (err) {
-            console.error('Failed to load connections:', err);
-        } finally {
-            setLoadingConnections(false);
-        }
-    };
+    const { connections, isLoading: loadingConnections } = useIntegrations();
 
     const connectedCount = connections.filter(conn => conn.isConnected).length;
 
@@ -107,9 +90,9 @@ export function AccountDetails({ user }: AccountDetailsProps) {
                                             .filter(conn => conn.isConnected)
                                             .map(conn => (
                                                 <SourceBadge
-                                                    key={conn.provider}
-                                                    source={conn.provider as any}
-                                                    integrationProvider={conn.provider as any}
+                                                    key={conn.provider.provider}
+                                                    source={conn.provider.provider as any}
+                                                    integrationProvider={conn.provider.provider as any}
                                                     size="small"
                                                     showText={true}
                                                 />
